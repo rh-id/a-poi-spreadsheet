@@ -15,6 +15,7 @@ jobs:
         api-level: [ 27, 29 ]
         target: [ default, google_apis ]
         ram-size: [ 4096M ]
+        heap-size: [ 2048M ]
     steps:
       - name: checkout
         uses: actions/checkout@v2
@@ -35,6 +36,7 @@ jobs:
         with:
           api-level: ${{ matrix.api-level }}
           ram-size: ${{ matrix.ram-size }}
+          heap-size: ${{ matrix.heap-size }}
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
@@ -45,6 +47,7 @@ jobs:
         with:
           api-level: ${{ matrix.api-level }}
           ram-size: ${{ matrix.ram-size }}
+          heap-size: ${{ matrix.heap-size }}
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
