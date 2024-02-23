@@ -1,0 +1,39 @@
+plugins {
+    id 'com.android.library'
+}
+
+android {
+    namespace 'm.co.rh.id.a_poi_spreadsheet.poi'
+    compileSdk 34
+
+    defaultConfig {
+        minSdk 26
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation project(':base')
+    api "org.apache.xmlbeans:xmlbeans:5.2.0"
+    api "com.fasterxml:aalto-xml:1.3.1"
+    api 'xml-apis:xml-apis:1.4.01'
+    api "commons-io:commons-io:2.15.1"
+    api 'org.apache.commons:commons-collections4:4.4'
+    api "org.apache.commons:commons-compress:1.25.0"
+    api 'com.zaxxer:SparseBitSet:1.3'
+    api "org.apache.commons:commons-math3:3.6.1"
+    api "commons-codec:commons-codec:1.16.1"
+}
