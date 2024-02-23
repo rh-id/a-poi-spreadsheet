@@ -14,6 +14,7 @@ jobs:
       matrix:
         api-level: [ 27, 29 ]
         target: [ default, google_apis ]
+        ram-size: [ 4096M, 4096M ]
     steps:
       - name: checkout
         uses: actions/checkout@v2
@@ -33,6 +34,7 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ matrix.api-level }}
+          ram-size: ${{ matrix.ram-size }}
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
@@ -42,6 +44,7 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ matrix.api-level }}
+          ram-size: ${{ matrix.ram-size }}
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
