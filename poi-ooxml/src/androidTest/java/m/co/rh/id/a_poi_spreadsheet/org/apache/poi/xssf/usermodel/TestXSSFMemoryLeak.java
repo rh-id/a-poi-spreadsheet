@@ -31,6 +31,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTCell;
 
 import java.io.File;
@@ -39,6 +40,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import m.co.rh.id.a_poi_spreadsheet.POIJUnit4ClassRunner;
 import m.co.rh.id.a_poi_spreadsheet.base.POISpreadsheetContext;
 import m.co.rh.id.a_poi_spreadsheet.org.apache.poi.ooxml.POIXMLException;
 import m.co.rh.id.a_poi_spreadsheet.org.apache.poi.openxml4j.exceptions.InvalidFormatException;
@@ -53,6 +55,7 @@ import m.co.rh.id.a_poi_spreadsheet.util.TestIOUtils;
  * <p>
  * E.g. verifies that objects are freed when stuff is removed from sheets or rows
  */
+@RunWith(POIJUnit4ClassRunner.class)
 public class TestXSSFMemoryLeak {
     private final MemoryLeakVerifier verifier = new MemoryLeakVerifier();
 

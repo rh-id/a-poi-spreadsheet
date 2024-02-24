@@ -6,13 +6,13 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -243,7 +243,7 @@ public class POISpreadsheetContext implements ExecutorService {
         @Override
         public synchronized void start() {
             if (callableQueue == null) {
-                callableQueue = new ArrayBlockingQueue<>(Integer.MAX_VALUE);
+                callableQueue = new LinkedBlockingQueue<>(Integer.MAX_VALUE);
             }
             super.start();
         }

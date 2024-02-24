@@ -33,7 +33,6 @@ import static m.co.rh.id.a_poi_spreadsheet.org.apache.poi.xssf.XSSFTestDataSampl
 
 import android.content.Context;
 
-import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
@@ -67,7 +66,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.zip.CRC32;
 
-import m.co.rh.id.a_poi_spreadsheet.base.POISpreadsheetContext;
+import m.co.rh.id.a_poi_spreadsheet.POIJUnit4ClassRunner;
 import m.co.rh.id.a_poi_spreadsheet.base.util.TempFile;
 import m.co.rh.id.a_poi_spreadsheet.org.apache.poi.POIDataSamples;
 import m.co.rh.id.a_poi_spreadsheet.org.apache.poi.hssf.HSSFTestDataSamples;
@@ -113,7 +112,7 @@ import m.co.rh.id.a_poi_spreadsheet.org.apache.poi.xssf.XSSFITestDataProvider;
 import m.co.rh.id.a_poi_spreadsheet.org.apache.poi.xssf.model.StylesTable;
 import m.co.rh.id.a_poi_spreadsheet.util.TestIOUtils;
 
-@RunWith(AndroidJUnit4.class)
+@RunWith(POIJUnit4ClassRunner.class)
 public final class TestXSSFWorkbook extends BaseTestXWorkbook {
 
     public TestXSSFWorkbook() {
@@ -123,13 +122,11 @@ public final class TestXSSFWorkbook extends BaseTestXWorkbook {
     @BeforeClass
     public static void setUp() {
         LocaleUtil.setUserLocale(Locale.US);
-        POISpreadsheetContext.getInstance().setAppContext(InstrumentationRegistry.getInstrumentation().getTargetContext());
     }
 
     @AfterClass
     public static void tearDown() {
         LocaleUtil.setUserLocale(null);
-        POISpreadsheetContext.getInstance().setAppContext(null);
         Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         TestIOUtils.deleteChildFiles(context.getCacheDir());
     }
