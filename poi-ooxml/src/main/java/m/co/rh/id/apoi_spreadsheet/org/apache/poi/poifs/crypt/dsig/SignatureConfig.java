@@ -66,9 +66,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.dsig.facets.Signat
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.dsig.facets.XAdESSignatureFacet;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.dsig.services.RevocationDataService;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.dsig.services.SignaturePolicyService;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.dsig.services.TSPTimeStampService;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.dsig.services.TimeStampHttpClient;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.dsig.services.TimeStampService;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.dsig.services.TimeStampServiceValidator;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.dsig.services.TimeStampSimpleHttpClient;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LocaleUtil;
@@ -141,7 +139,6 @@ public class SignatureConfig {
     /**
      * the time-stamp service used for XAdES-T and XAdES-X.
      */
-    private TimeStampService tspService = new TSPTimeStampService();
     private TimeStampHttpClient tspHttpClient = new TimeStampSimpleHttpClient();
 
 
@@ -577,20 +574,6 @@ public class SignatureConfig {
      */
     public void setProxyUrl(String proxyUrl) {
         this.proxyUrl = proxyUrl;
-    }
-
-    /**
-     * @return the timestamp service. Defaults to {@link TSPTimeStampService}
-     */
-    public TimeStampService getTspService() {
-        return tspService;
-    }
-
-    /**
-     * @param tspService the timestamp service
-     */
-    public void setTspService(TimeStampService tspService) {
-        this.tspService = tspService;
     }
 
     /**

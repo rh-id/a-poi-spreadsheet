@@ -36,16 +36,12 @@ android {
 }
 
 dependencies {
-    def bouncyCastleVersion = "1.77"
-
     implementation project(':base')
     implementation project(':poi')
     implementation 'org.apache.poi:poi-ooxml-full:5.2.5'
 
     implementation 'javax.xml.crypto:jsr105-api:1.0.1'
     implementation 'org.apache.santuario:xmlsec:3.0.3'
-    implementation "org.bouncycastle:bcpkix-jdk18on:${bouncyCastleVersion}"
-    implementation "org.bouncycastle:bcutil-jdk18on:${bouncyCastleVersion}"
 
     // (Required) Writing and executing Unit Tests on the JUnit Platform
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
