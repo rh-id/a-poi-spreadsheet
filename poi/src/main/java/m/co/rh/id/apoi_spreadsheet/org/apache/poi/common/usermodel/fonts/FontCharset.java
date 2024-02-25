@@ -17,11 +17,10 @@
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.common.usermodel.fonts;
 
+import android.util.Log;
+
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 /**
  * Charset represents the basic set of characters associated with a font (that it can display), and
@@ -31,7 +30,9 @@ import org.apache.logging.log4j.Logger;
  */
 @SuppressWarnings("java:S1192")
 public enum FontCharset {
-    /** Specifies the English character set. */
+    /**
+     * Specifies the English character set.
+     */
     ANSI(0x00000000, "Cp1252"),
     /**
      * Specifies a character set based on the current system locale;
@@ -39,40 +40,70 @@ public enum FontCharset {
      * the default character set is ANSI_CHARSET.
      */
     DEFAULT(0x00000001, "Cp1252"),
-    /** Specifies a character set of symbols. */
+    /**
+     * Specifies a character set of symbols.
+     */
     SYMBOL(0x00000002, ""),
-    /** Specifies the Apple Macintosh character set. */
+    /**
+     * Specifies the Apple Macintosh character set.
+     */
     MAC(0x0000004D, "MacRoman"),
-    /** Specifies the Japanese character set. */
+    /**
+     * Specifies the Japanese character set.
+     */
     SHIFTJIS(0x00000080, "Shift_JIS"),
-    /** Also spelled "Hangeul". Specifies the Hangul Korean character set. */
+    /**
+     * Also spelled "Hangeul". Specifies the Hangul Korean character set.
+     */
     HANGUL(0x00000081, "cp949"),
-    /** Also spelled "Johap". Specifies the Johab Korean character set. */
+    /**
+     * Also spelled "Johap". Specifies the Johab Korean character set.
+     */
     JOHAB(0x00000082, "x-Johab"),
-    /** Specifies the "simplified" Chinese character set for People's Republic of China. */
+    /**
+     * Specifies the "simplified" Chinese character set for People's Republic of China.
+     */
     GB2312(0x00000086, "GB2312"),
     /**
      * Specifies the "traditional" Chinese character set, used mostly in
      * Taiwan and in the Hong Kong and Macao Special Administrative Regions.
      */
     CHINESEBIG5(0x00000088, "Big5"),
-    /** Specifies the Greek character set. */
+    /**
+     * Specifies the Greek character set.
+     */
     GREEK(0x000000A1, "Cp1253"),
-    /** Specifies the Turkish character set. */
+    /**
+     * Specifies the Turkish character set.
+     */
     TURKISH(0x000000A2, "Cp1254"),
-    /** Specifies the Vietnamese character set. */
+    /**
+     * Specifies the Vietnamese character set.
+     */
     VIETNAMESE(0x000000A3, "Cp1258"),
-    /** Specifies the Hebrew character set. */
+    /**
+     * Specifies the Hebrew character set.
+     */
     HEBREW(0x000000B1, "Cp1255"),
-    /** Specifies the Arabic character set. */
+    /**
+     * Specifies the Arabic character set.
+     */
     ARABIC(0x000000B2, "Cp1256"),
-    /** Specifies the Baltic (Northeastern European) character set. */
+    /**
+     * Specifies the Baltic (Northeastern European) character set.
+     */
     BALTIC(0x000000BA, "Cp1257"),
-    /** Specifies the Russian Cyrillic character set. */
+    /**
+     * Specifies the Russian Cyrillic character set.
+     */
     RUSSIAN(0x000000CC, "Cp1251"),
-    /** Specifies the Thai character set. */
+    /**
+     * Specifies the Thai character set.
+     */
     THAI(0x000000DE, "x-windows-874"),
-    /** Specifies a Eastern European character set. */
+    /**
+     * Specifies a Eastern European character set.
+     */
     EASTEUROPE(0x000000EE, "Cp1250"),
     /**
      * Specifies a mapping to one of the OEM code pages,
@@ -99,17 +130,15 @@ public enum FontCharset {
                 charset = Charset.forName(javaCharsetName);
                 return;
             } catch (UnsupportedCharsetException e) {
-                Logger logger = LogManager.getLogger(FontCharset.class);
-                logger.atWarn().log("Unsupported charset: {}", javaCharsetName);
+                Log.w("FontCharset", String.format("Unsupported charset: %s", javaCharsetName));
             }
         }
         charset = null;
     }
 
     /**
-     *
      * @return charset for the font or <code>null</code> if there is no matching charset or
-     *         if the charset is a &quot;default&quot;
+     * if the charset is a &quot;default&quot;
      */
     public Charset getCharset() {
         return charset;
@@ -119,7 +148,7 @@ public enum FontCharset {
         return nativeId;
     }
 
-    public static FontCharset valueOf(int value){
+    public static FontCharset valueOf(int value) {
         return (value < 0 || value >= _table.length) ? null : _table[value];
     }
 }

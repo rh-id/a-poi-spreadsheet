@@ -26,5 +26,5 @@ android {
 }
 
 dependencies {
-    api 'androidx.graphics:graphics-path:1.0.0-beta02'
+    api 'androidx.graphics:graphics-path:1.0.0-rc01'
 }

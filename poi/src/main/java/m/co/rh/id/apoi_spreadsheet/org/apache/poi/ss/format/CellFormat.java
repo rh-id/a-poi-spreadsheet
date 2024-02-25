@@ -17,6 +17,8 @@
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.format;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -26,9 +28,6 @@ import java.util.WeakHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Cell;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.CellType;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.ConditionalFormatting;
@@ -82,7 +81,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LocaleUtil;
  * <p>
  * In addition to these, there is a general format that is used when no format
  * is specified.
- *
+ * <p>
  * TODO Merge this with {@link DataFormatter} so we only have one set of
  *  code for formatting numbers.
  * TODO Re-use parts of this logic with {@link ConditionalFormatting} /
@@ -91,8 +90,10 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LocaleUtil;
  *  native character numbers, as documented at https://help.libreoffice.org/Common/Number_Format_Codes
  */
 public class CellFormat {
-    /** The logger to use in the formatting code. */
-    private static final Logger LOG = LogManager.getLogger(CellFormat.class);
+    /**
+     * The logger to use in the formatting code.
+     */
+    private static final String TAG = "CellFormat";
 
     private static final Pattern ONE_PART = Pattern.compile(
             CellFormatPart.FORMAT_PAT.pattern() + "(;|$)",
@@ -105,10 +106,10 @@ public class CellFormat {
      */
     private static final String INVALID_VALUE_FOR_FORMAT =
             "###################################################" +
-            "###################################################" +
-            "###################################################" +
-            "###################################################" +
-            "###################################################";
+                    "###################################################" +
+                    "###################################################" +
+                    "###################################################" +
+                    "###################################################";
 
     private static final String QUOTE = "\"";
 
@@ -130,7 +131,9 @@ public class CellFormat {
         };
     }
 
-    /** Maps a format string to its parsed version for efficiencies sake. */
+    /**
+     * Maps a format string to its parsed version for efficiencies sake.
+     */
     private static final Map<Locale, Map<String, CellFormat>> formatCache =
             new WeakHashMap<>();
 
@@ -139,7 +142,6 @@ public class CellFormat {
      * with the same format may or may not return the same object.
      *
      * @param format The format.
-     *
      * @return A CellFormat that applies the given format.
      */
     public static CellFormat getInstance(String format) {
@@ -152,7 +154,6 @@ public class CellFormat {
      *
      * @param locale The locale.
      * @param format The format.
-     *
      * @return A CellFormat that applies the given format.
      */
     public static synchronized CellFormat getInstance(Locale locale, String format) {
@@ -190,7 +191,7 @@ public class CellFormat {
 
                 parts.add(new CellFormatPart(locale, valueDesc));
             } catch (RuntimeException e) {
-                LOG.log(Level.WARN, "Invalid format: " + CellFormatter.quote(m.group()), e);
+                Log.w(TAG, "Invalid format: " + CellFormatter.quote(m.group()), e);
                 parts.add(null);
             }
         }
@@ -198,31 +199,31 @@ public class CellFormat {
         formatPartCount = parts.size();
 
         switch (formatPartCount) {
-        case 1:
-            posNumFmt = parts.get(0);
-            negNumFmt = null;
-            zeroNumFmt = null;
-            textFmt = defaultTextFormat;
-            break;
-        case 2:
-            posNumFmt = parts.get(0);
-            negNumFmt = parts.get(1);
-            zeroNumFmt = null;
-            textFmt = defaultTextFormat;
-            break;
-        case 3:
-            posNumFmt = parts.get(0);
-            negNumFmt = parts.get(1);
-            zeroNumFmt = parts.get(2);
-            textFmt = defaultTextFormat;
-            break;
-        case 4:
-        default:
-            posNumFmt = parts.get(0);
-            negNumFmt = parts.get(1);
-            zeroNumFmt = parts.get(2);
-            textFmt = parts.get(3);
-            break;
+            case 1:
+                posNumFmt = parts.get(0);
+                negNumFmt = null;
+                zeroNumFmt = null;
+                textFmt = defaultTextFormat;
+                break;
+            case 2:
+                posNumFmt = parts.get(0);
+                negNumFmt = parts.get(1);
+                zeroNumFmt = null;
+                textFmt = defaultTextFormat;
+                break;
+            case 3:
+                posNumFmt = parts.get(0);
+                negNumFmt = parts.get(1);
+                zeroNumFmt = parts.get(2);
+                textFmt = defaultTextFormat;
+                break;
+            case 4:
+            default:
+                posNumFmt = parts.get(0);
+                negNumFmt = parts.get(1);
+                zeroNumFmt = parts.get(2);
+                textFmt = parts.get(3);
+                break;
         }
     }
 
@@ -232,7 +233,6 @@ public class CellFormat {
      * format type is chosen; otherwise it is considered a text object.
      *
      * @param value The value
-     *
      * @return The result, in a {@link CellFormatResult}.
      */
     public CellFormatResult apply(Object value) {
@@ -242,8 +242,8 @@ public class CellFormat {
             if (val < 0 &&
                     ((formatPartCount == 2
                             && !posNumFmt.hasCondition() && !negNumFmt.hasCondition())
-                    || (formatPartCount == 3 && !negNumFmt.hasCondition())
-                    || (formatPartCount == 4 && !negNumFmt.hasCondition()))) {
+                            || (formatPartCount == 3 && !negNumFmt.hasCondition())
+                            || (formatPartCount == 4 && !negNumFmt.hasCondition()))) {
                 // The negative number format has the negative formatting required,
                 // e.g. minus sign or brackets, so pass a positive value so that
                 // the default leading minus sign is not also output
@@ -270,7 +270,6 @@ public class CellFormat {
      *
      * @param date         The date.
      * @param numericValue The numeric value for the date.
-     *
      * @return The result, in a {@link CellFormatResult}.
      */
     private CellFormatResult apply(Date date, double numericValue) {
@@ -283,30 +282,29 @@ public class CellFormat {
      * value is what is used.
      *
      * @param c The cell.
-     *
      * @return The result, in a {@link CellFormatResult}.
      */
     public CellFormatResult apply(Cell c) {
         switch (ultimateType(c)) {
-        case BLANK:
-            return apply("");
-        case BOOLEAN:
-            return apply(c.getBooleanCellValue());
-        case NUMERIC:
-            double value = c.getNumericCellValue();
-            if (getApplicableFormatPart(value).getCellFormatType() == CellFormatType.DATE) {
-                if (DateUtil.isValidExcelDate(value)) {
-                    return apply(c.getDateCellValue(), value);
+            case BLANK:
+                return apply("");
+            case BOOLEAN:
+                return apply(c.getBooleanCellValue());
+            case NUMERIC:
+                double value = c.getNumericCellValue();
+                if (getApplicableFormatPart(value).getCellFormatType() == CellFormatType.DATE) {
+                    if (DateUtil.isValidExcelDate(value)) {
+                        return apply(c.getDateCellValue(), value);
+                    } else {
+                        return apply(INVALID_VALUE_FOR_FORMAT);
+                    }
                 } else {
-                    return apply(INVALID_VALUE_FOR_FORMAT);
+                    return apply(value);
                 }
-            } else {
-                return apply(value);
-            }
-        case STRING:
-            return apply(c.getStringCellValue());
-        default:
-            return apply("?");
+            case STRING:
+                return apply(c.getStringCellValue());
+            default:
+                return apply("?");
         }
     }
 
@@ -349,7 +347,7 @@ public class CellFormat {
                 } else if ((!negNumFmt.hasCondition() && val < 0)
                         || (negNumFmt.hasCondition() && negNumFmt.applies(val))) {
                     return negNumFmt;
-                // Only the first two format parts can have conditions
+                    // Only the first two format parts can have conditions
                 } else {
                     return zeroNumFmt;
                 }
@@ -367,7 +365,6 @@ public class CellFormat {
      * result of {@link Cell#getCellType()}.
      *
      * @param cell The cell.
-     *
      * @return The ultimate type of this cell.
      */
     public static CellType ultimateType(Cell cell) {
@@ -383,7 +380,6 @@ public class CellFormat {
      * with the same format.
      *
      * @param obj The other object.
-     *
      * @return {@code true} if the two objects are equal.
      */
     @Override

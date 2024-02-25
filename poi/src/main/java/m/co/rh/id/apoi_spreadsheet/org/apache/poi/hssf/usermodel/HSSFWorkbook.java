@@ -17,11 +17,16 @@
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.usermodel;
 
-import static org.apache.logging.log4j.util.Unbox.box;
 import static m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.model.InternalWorkbook.BOOK;
 import static m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.model.InternalWorkbook.OLD_WORKBOOK_DIR_ENTRY_NAME;
 import static m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.model.InternalWorkbook.WORKBOOK;
 import static m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.model.InternalWorkbook.WORKBOOK_DIR_ENTRY_NAMES;
+
+import android.util.Log;
+
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -47,11 +52,6 @@ import java.util.Set;
 import java.util.Spliterator;
 import java.util.regex.Pattern;
 
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.EncryptedDocumentException;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.POIDocument;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ddf.EscherBSERecord;
@@ -71,8 +71,24 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.model.InternalSheet.Unsup
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.model.InternalWorkbook;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.model.RecordStream;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.model.WorkbookRecordList;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.*;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.AbstractEscherHolderRecord;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.BackupRecord;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.BoundSheetRecord;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.DrawingGroupRecord;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.ExtendedFormatRecord;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.FilePassRecord;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.FontRecord;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.FormatRecord;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.LabelRecord;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.LabelSSTRecord;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.NameRecord;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.RecalcIdRecord;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.Record;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.RecordBase;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.RecordFactory;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.RefModeRecord;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.SSTRecord;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.UnknownRecord;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.aggregates.RecordAggregate.RecordVisitor;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.common.UnicodeString;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.crypto.Biff8DecryptingStream;
@@ -197,7 +213,7 @@ public final class HSSFWorkbook extends POIDocument implements Workbook {
      */
     private MissingCellPolicy missingCellPolicy = MissingCellPolicy.RETURN_NULL_AND_BLANK;
 
-    private static final Logger LOGGER = LogManager.getLogger(HSSFWorkbook.class);
+    private static final String TAG = "HSSFWorkbook";
 
     /**
      * The locator of user-defined functions.
@@ -257,9 +273,9 @@ public final class HSSFWorkbook extends POIDocument implements Workbook {
      * <p>This calls {@link #HSSFWorkbook(POIFSFileSystem, boolean)} with
      * preserve nodes set to true.
      *
-     * @throws IOException if the stream cannot be read
+     * @throws IOException           if the stream cannot be read
      * @throws IllegalStateException a number of runtime exceptions can be thrown, especially if there are problems with the
-     * input format
+     *                               input format
      * @see #HSSFWorkbook(POIFSFileSystem, boolean)
      * @see POIFSFileSystem
      */
@@ -276,9 +292,9 @@ public final class HSSFWorkbook extends POIDocument implements Workbook {
      *                      macros.  This takes more memory, so only say yes if you
      *                      need to. If set, will store all of the POIFSFileSystem
      *                      in memory
-     * @throws IOException if the stream cannot be read
+     * @throws IOException           if the stream cannot be read
      * @throws IllegalStateException a number of runtime exceptions can be thrown, especially if there are problems with the
-     * input format
+     *                               input format
      * @see POIFSFileSystem
      */
     public HSSFWorkbook(POIFSFileSystem fs, boolean preserveNodes)
@@ -329,9 +345,9 @@ public final class HSSFWorkbook extends POIDocument implements Workbook {
      *                      macros.  This takes more memory, so only say yes if you
      *                      need to. If set, will store all of the POIFSFileSystem
      *                      in memory
-     * @throws IOException if the stream cannot be read
+     * @throws IOException           if the stream cannot be read
      * @throws IllegalStateException a number of runtime exceptions can be thrown, especially if there are problems with the
-     * input format
+     *                               input format
      * @see POIFSFileSystem
      */
     public HSSFWorkbook(DirectoryNode directory, POIFSFileSystem fs, boolean preserveNodes)
@@ -349,9 +365,9 @@ public final class HSSFWorkbook extends POIDocument implements Workbook {
      *                      macros.  This takes more memory, so only say yes if you
      *                      need to. If set, will store all of the POIFSFileSystem
      *                      in memory
-     * @throws IOException if the stream cannot be read
+     * @throws IOException           if the stream cannot be read
      * @throws IllegalStateException a number of runtime exceptions can be thrown, especially if there are problems with the
-     * input format
+     *                               input format
      * @see POIFSFileSystem
      */
     public HSSFWorkbook(DirectoryNode directory, boolean preserveNodes)
@@ -389,7 +405,7 @@ public final class HSSFWorkbook extends POIDocument implements Workbook {
                 _sheets.add(new HSSFSheet(this, sheet));
             } catch (UnsupportedBOFType eb) {
                 // Hopefully there's a supported one after this!
-                LOGGER.atWarn().log("Unsupported BOF found of type {}", box(eb.getType()));
+                Log.w(TAG, String.format("Unsupported BOF found of type %d", eb.getType()));
             }
         }
 
@@ -406,9 +422,9 @@ public final class HSSFWorkbook extends POIDocument implements Workbook {
      * <p>This calls {@link #HSSFWorkbook(InputStream, boolean)} with
      * preserve nodes set to true.
      *
-     * @throws IOException if the stream cannot be read
+     * @throws IOException           if the stream cannot be read
      * @throws IllegalStateException a number of runtime exceptions can be thrown, especially if there are problems with the
-     * input format
+     *                               input format
      * @see #HSSFWorkbook(InputStream, boolean)
      * @see #HSSFWorkbook(POIFSFileSystem)
      * @see POIFSFileSystem
@@ -425,9 +441,9 @@ public final class HSSFWorkbook extends POIDocument implements Workbook {
      * @param preserveNodes whether to preserve other nodes, such as
      *                      macros.  This takes more memory, so only say yes if you
      *                      need to.
-     * @throws IOException if the stream cannot be read
+     * @throws IOException           if the stream cannot be read
      * @throws IllegalStateException a number of runtime exceptions can be thrown, especially if there are problems with the
-     * input format
+     *                               input format
      * @see POIFSFileSystem
      * @see #HSSFWorkbook(POIFSFileSystem)
      */
@@ -465,7 +481,7 @@ public final class HSSFWorkbook extends POIDocument implements Workbook {
      */
 
     private void convertLabelRecords(List<Record> records, int offset) {
-        LOGGER.atDebug().log("convertLabelRecords called");
+        Log.d(TAG, "convertLabelRecords called");
         for (int k = offset; k < records.size(); k++) {
             Record rec = records.get(k);
 
@@ -484,7 +500,7 @@ public final class HSSFWorkbook extends POIDocument implements Workbook {
                 records.add(k, newrec);
             }
         }
-        LOGGER.atDebug().log("convertLabelRecords exit");
+        Log.d(TAG, "convertLabelRecords exit");
     }
 
     /**
@@ -949,13 +965,13 @@ public final class HSSFWorkbook extends POIDocument implements Workbook {
         // Issue a WARNING though in order to prevent a situation, where the provided long sheet name is
         // not accessible due to the trimming while we are not even aware of the reason and continue to use
         // the long name in generated formulas
-        if(sheetname.length() > MAX_SENSITIVE_SHEET_NAME_LEN) {
+        if (sheetname.length() > MAX_SENSITIVE_SHEET_NAME_LEN) {
             String trimmedSheetname = sheetname.substring(0, MAX_SENSITIVE_SHEET_NAME_LEN);
 
             // we still need to warn about the trimming as the original sheet name won't be available
             // e.g. when referenced by formulas
-            LOGGER.atWarn().log("Sheet '{}' will be added with a trimmed name '{}' for MS Excel compliance.",
-                    sheetname, trimmedSheetname);
+            Log.w(TAG, String.format("Sheet '%s' will be added with a trimmed name '%s' for MS Excel compliance.",
+                    sheetname, trimmedSheetname));
             sheetname = trimmedSheetname;
         }
 
@@ -985,13 +1001,12 @@ public final class HSSFWorkbook extends POIDocument implements Workbook {
      * in sheet order. Includes hidden and very hidden sheets.
      *
      * @return a spliterator of the sheets.
-     *
      * @since POI 5.2.0
      */
     @Override
     @SuppressWarnings("unchecked")
     public Spliterator<Sheet> spliterator() {
-        return (Spliterator<Sheet>)(Spliterator<? extends Sheet>) _sheets.spliterator();
+        return (Spliterator<Sheet>) (Spliterator<? extends Sheet>) _sheets.spliterator();
     }
 
     private final class SheetIterator<T extends Sheet> implements Iterator<T> {
@@ -1251,7 +1266,7 @@ public final class HSSFWorkbook extends POIDocument implements Workbook {
 
     @Override
     @Deprecated
-    @Removal(version="6.0.0")
+    @Removal(version = "6.0.0")
     public int getNumberOfFontsAsInt() {
         return getNumberOfFonts();
     }
@@ -1494,7 +1509,7 @@ public final class HSSFWorkbook extends POIDocument implements Workbook {
      * sheets, rows, cells, etc.
      */
     public byte[] getBytes() {
-        LOGGER.atDebug().log("HSSFWorkbook.getBytes()");
+        Log.d(TAG, "HSSFWorkbook.getBytes()");
 
         HSSFSheet[] sheets = getSheets();
         int nSheets = sheets.length;
@@ -1764,7 +1779,7 @@ public final class HSSFWorkbook extends POIDocument implements Workbook {
             RefModeRecord refModeRecord = null;
             for (RecordBase record : records) {
                 if (record instanceof RefModeRecord) {
-                    refModeRecord = (RefModeRecord)record;
+                    refModeRecord = (RefModeRecord) record;
                     break;
                 }
             }
@@ -1782,10 +1797,11 @@ public final class HSSFWorkbook extends POIDocument implements Workbook {
     /**
      * Configure workbook to a specific cell reference type, e.g. R1C1 cell references (as opposed to A1 cell references).
      * <p>
-     *     Note that HSSF format stores this information at sheet level - so if the workbook has no sheets,
-     *     this call will have no effect. It is recommended that you call this (possibly again) just before
-     *     writing HSSFWorkbook.
+     * Note that HSSF format stores this information at sheet level - so if the workbook has no sheets,
+     * this call will have no effect. It is recommended that you call this (possibly again) just before
+     * writing HSSFWorkbook.
      * </p>
+     *
      * @param cellReferenceType the type of cell references used
      * @since POI 5.2.1
      */
@@ -1800,7 +1816,7 @@ public final class HSSFWorkbook extends POIDocument implements Workbook {
             RefModeRecord refModeRecord = null;
             for (RecordBase record : records) {
                 if (record instanceof RefModeRecord) {
-                    refModeRecord = (RefModeRecord)record;
+                    refModeRecord = (RefModeRecord) record;
                     break;
                 }
             }
@@ -2394,7 +2410,7 @@ public final class HSSFWorkbook extends POIDocument implements Workbook {
             throw new IllegalArgumentException("Only xor, binaryRC4 and cryptoAPI are supported.");
         }
 
-        FilePassRecord oldFPR = (FilePassRecord)getInternalWorkbook().findFirstRecordBySid(FilePassRecord.sid);
+        FilePassRecord oldFPR = (FilePassRecord) getInternalWorkbook().findFirstRecordBySid(FilePassRecord.sid);
         EncryptionMode oldMode = (oldFPR == null) ? null : oldFPR.getEncryptionInfo().getEncryptionMode();
         if (mode == oldMode) {
             return;
@@ -2415,7 +2431,7 @@ public final class HSSFWorkbook extends POIDocument implements Workbook {
      * @return the encryption mode or {@code null} if unset
      */
     public EncryptionMode getEncryptionMode() {
-        FilePassRecord r = (FilePassRecord)getInternalWorkbook().findFirstRecordBySid(FilePassRecord.sid);
+        FilePassRecord r = (FilePassRecord) getInternalWorkbook().findFirstRecordBySid(FilePassRecord.sid);
         return (r == null) ? null : r.getEncryptionInfo().getEncryptionMode();
     }
 }

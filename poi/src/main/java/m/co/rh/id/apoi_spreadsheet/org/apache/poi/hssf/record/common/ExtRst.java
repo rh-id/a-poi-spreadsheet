@@ -17,13 +17,13 @@
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.common;
 
+import android.util.Log;
+
 import java.util.Arrays;
 import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.common.usermodel.GenericRecord;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.cont.ContinuableRecordOutput;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -33,11 +33,9 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndianInput;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.StringUtil;
 
-import static org.apache.logging.log4j.util.Unbox.box;
-
 @Internal
 public class ExtRst implements Comparable<ExtRst>, GenericRecord {
-    private static final Logger LOG = LogManager.getLogger(ExtRst.class);
+    private static final String TAG = "ExtRst";
 
     private short reserved;
 
@@ -72,16 +70,16 @@ public class ExtRst implements Comparable<ExtRst>, GenericRecord {
         reserved = in.readShort();
 
         // Old style detection (Reserved = 0xFF)
-        if(reserved == -1) {
+        if (reserved == -1) {
             populateEmpty();
             return;
         }
 
         // Spot corrupt records
-        if(reserved != 1) {
-            LOG.atWarn().log("ExtRst has wrong magic marker, expecting 1 but found {} - ignoring", box(reserved));
+        if (reserved != 1) {
+            Log.w(TAG, String.format("ExtRst has wrong magic marker, expecting 1 but found %d - ignoring", reserved));
             // Grab all the remaining data, and ignore it
-            for(int i=0; i<expectedLength-2; i++) {
+            for (int i = 0; i < expectedLength - 2; i++) {
                 in.readByte();
             }
             // And make us be empty
@@ -93,7 +91,7 @@ public class ExtRst implements Comparable<ExtRst>, GenericRecord {
         short stringDataSize = in.readShort();
 
         formattingFontIndex = in.readShort();
-        formattingOptions   = in.readShort();
+        formattingOptions = in.readShort();
 
         // RPHSSub
         numberOfRuns = in.readUShort();
@@ -102,10 +100,10 @@ public class ExtRst implements Comparable<ExtRst>, GenericRecord {
         //  the docs on their datastructure...
         short length2 = in.readShort();
         // And sometimes they write out garbage :(
-        if(length1 == 0 && length2 > 0) {
+        if (length1 == 0 && length2 > 0) {
             length2 = 0;
         }
-        if(length1 != length2) {
+        if (length1 != length2) {
             throw new IllegalStateException(
                     "The two length fields of the Phonetic Text don't agree! " +
                             length1 + " vs " + length2
@@ -113,20 +111,20 @@ public class ExtRst implements Comparable<ExtRst>, GenericRecord {
         }
         phoneticText = StringUtil.readUnicodeLE(in, length1);
 
-        int runData = stringDataSize - 4 - 6 - (2*phoneticText.length());
+        int runData = stringDataSize - 4 - 6 - (2 * phoneticText.length());
         int numRuns = (runData / 6);
         phRuns = new PhRun[numRuns];
-        for(int i=0; i<phRuns.length; i++) {
+        for (int i = 0; i < phRuns.length; i++) {
             phRuns[i] = new PhRun(in);
         }
 
-        int extraDataLength = runData - (numRuns*6);
-        if(extraDataLength < 0) {
-            LOG.atWarn().log("ExtRst overran by {} bytes", box(-extraDataLength));
+        int extraDataLength = runData - (numRuns * 6);
+        if (extraDataLength < 0) {
+            Log.w(TAG, String.format("ExtRst overran by %d bytes", -extraDataLength));
             extraDataLength = 0;
         }
         extraData = IOUtils.safelyAllocate(extraDataLength, HSSFWorkbook.getMaxRecordLength());
-        for(int i=0; i<extraData.length; i++) {
+        for (int i = 0; i < extraData.length; i++) {
             extraData[i] = in.readByte();
         }
     }
@@ -140,12 +138,13 @@ public class ExtRst implements Comparable<ExtRst>, GenericRecord {
 
     /**
      * Returns our size, excluding our
-     *  4 byte header
+     * 4 byte header
      */
     protected int getDataSize() {
-        return 4 + 6 + (2*phoneticText.length()) +
-                (6*phRuns.length) + extraData.length;
+        return 4 + 6 + (2 * phoneticText.length()) +
+                (6 * phRuns.length) + extraData.length;
     }
+
     protected void serialize(ContinuableRecordOutput out) {
         int dataSize = getDataSize();
 
@@ -160,7 +159,7 @@ public class ExtRst implements Comparable<ExtRst>, GenericRecord {
         out.writeShort(phoneticText.length());
         out.writeShort(phoneticText.length());
 
-        out.writeContinueIfRequired(phoneticText.length()*2);
+        out.writeContinueIfRequired(phoneticText.length() * 2);
         StringUtil.putUnicodeLE(phoneticText, out);
 
         for (PhRun phRun : phRuns) {
@@ -171,12 +170,13 @@ public class ExtRst implements Comparable<ExtRst>, GenericRecord {
     }
 
     public boolean equals(Object obj) {
-        if(! (obj instanceof ExtRst)) {
+        if (!(obj instanceof ExtRst)) {
             return false;
         }
-        ExtRst other = (ExtRst)obj;
+        ExtRst other = (ExtRst) obj;
         return (compareTo(other) == 0);
     }
+
     public int compareTo(ExtRst o) {
         int result;
 
@@ -206,7 +206,7 @@ public class ExtRst implements Comparable<ExtRst>, GenericRecord {
         if (result != 0) {
             return result;
         }
-        for(int i=0; i<phRuns.length; i++) {
+        for (int i = 0; i < phRuns.length; i++) {
             result = phRuns[i].phoneticTextFirstCharacterOffset - o.phRuns[i].phoneticTextFirstCharacterOffset;
             if (result != 0) {
                 return result;
@@ -221,7 +221,7 @@ public class ExtRst implements Comparable<ExtRst>, GenericRecord {
             }
         }
 
-        result = Arrays.hashCode(extraData)-Arrays.hashCode(o.extraData);
+        result = Arrays.hashCode(extraData) - Arrays.hashCode(o.extraData);
 
         return result;
     }
@@ -238,15 +238,19 @@ public class ExtRst implements Comparable<ExtRst>, GenericRecord {
     public short getFormattingFontIndex() {
         return formattingFontIndex;
     }
+
     public short getFormattingOptions() {
         return formattingOptions;
     }
+
     public int getNumberOfRuns() {
         return numberOfRuns;
     }
+
     public String getPhoneticText() {
         return phoneticText;
     }
+
     public PhRun[] getPhRuns() {
         return phRuns;
     }
@@ -254,13 +258,13 @@ public class ExtRst implements Comparable<ExtRst>, GenericRecord {
     @Override
     public Map<String, Supplier<?>> getGenericProperties() {
         return GenericRecordUtil.getGenericProperties(
-            "reserved", () -> reserved,
-            "formattingFontIndex", this::getFormattingFontIndex,
-            "formattingOptions", this::getFormattingOptions,
-            "numberOfRuns", this::getNumberOfRuns,
-            "phoneticText", this::getPhoneticText,
-            "phRuns", this::getPhRuns,
-            "extraData", () -> extraData
+                "reserved", () -> reserved,
+                "formattingFontIndex", this::getFormattingFontIndex,
+                "formattingOptions", this::getFormattingOptions,
+                "numberOfRuns", this::getNumberOfRuns,
+                "phoneticText", this::getPhoneticText,
+                "phRuns", this::getPhRuns,
+                "extraData", () -> extraData
         );
     }
 }

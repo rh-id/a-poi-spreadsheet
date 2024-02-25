@@ -16,10 +16,7 @@
 ==================================================================== */
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.eventusermodel;
 
-import static org.apache.logging.log4j.util.Unbox.box;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import android.util.Log;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -44,7 +41,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LocaleUtil;
  * ids.
  */
 public class FormatTrackingHSSFListener implements HSSFListener {
-    private static final Logger LOG = LogManager.getLogger(FormatTrackingHSSFListener.class);
+    private static final String TAG = "FormatTrackingHSSFListener";
     private final HSSFListener _childListener;
     private final HSSFDataFormatter _formatter;
     private final NumberFormat _defaultFormat;
@@ -156,7 +153,7 @@ public class FormatTrackingHSSFListener implements HSSFListener {
         if (formatIndex >= HSSFDataFormat.getNumberOfBuiltinBuiltinFormats()) {
             FormatRecord tfr = _customFormatRecords.get(Integer.valueOf(formatIndex));
             if (tfr == null) {
-                LOG.atError().log("Requested format at index {}, but it wasn't found", box(formatIndex));
+                Log.e(TAG, String.format("Requested format at index %d, but it wasn't found", formatIndex));
             } else {
                 format = tfr.getFormatString();
             }
@@ -190,7 +187,7 @@ public class FormatTrackingHSSFListener implements HSSFListener {
     public int getFormatIndex(CellValueRecordInterface cell) {
         ExtendedFormatRecord xfr = _xfRecords.get(cell.getXFIndex());
         if (xfr == null) {
-            LOG.atError().log("Cell {},{} uses XF with index {}, but we don't have that", box(cell.getRow()), box(cell.getColumn()), box(cell.getXFIndex()));
+            Log.e(TAG, String.format("Cell %d,%d uses XF with index %d, but we don't have that", cell.getRow(), cell.getColumn(), cell.getXFIndex()));
             return -1;
         }
         return xfr.getFormatIndex();

@@ -24,6 +24,8 @@
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.dsig;
 
+import android.util.Log;
+
 import java.security.Key;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -38,23 +40,20 @@ import javax.xml.crypto.XMLStructure;
 import javax.xml.crypto.dsig.keyinfo.KeyInfo;
 import javax.xml.crypto.dsig.keyinfo.X509Data;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 /**
  * JSR105 key selector implementation using the ds:KeyInfo data of the signature
  * itself.
  */
 public class KeyInfoKeySelector extends KeySelector implements KeySelectorResult {
 
-    private static final Logger LOG = LogManager.getLogger(KeyInfoKeySelector.class);
+    private static final String TAG = "KeyInfoKeySelector";
 
     private final List<X509Certificate> certChain = new ArrayList<>();
 
     @SuppressWarnings("unchecked")
     @Override
     public KeySelectorResult select(KeyInfo keyInfo, Purpose purpose, AlgorithmMethod method, XMLCryptoContext context) throws KeySelectorException {
-        LOG.atDebug().log("select key");
+        Log.d(TAG, "select key");
         if (null == keyInfo) {
             throw new KeySelectorException("no ds:KeyInfo present");
         }
@@ -71,7 +70,7 @@ public class KeyInfoKeySelector extends KeySelector implements KeySelectorResult
                     continue;
                 }
                 X509Certificate certificate = (X509Certificate) x509DataObject;
-                LOG.atDebug().log("certificate: {}", certificate.getSubjectX500Principal());
+                Log.d(TAG, String.format("certificate: %s", certificate.getSubjectX500Principal()));
                 certChain.add(certificate);
             }
         }
