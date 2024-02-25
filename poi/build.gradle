@@ -3,7 +3,7 @@ plugins {
 }
 
 android {
-    namespace 'm.co.rh.id.a_poi_spreadsheet.poi'
+    namespace 'm.co.rh.id.apoi_spreadsheet.poi'
     compileSdk 34
 
     defaultConfig {
