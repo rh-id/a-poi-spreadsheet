@@ -46,6 +46,7 @@ dependencies {
     // (Required) Writing and executing Unit Tests on the JUnit Platform
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    androidTestImplementation 'org.mockito:mockito-android:5.10.0'
 }
 
 afterEvaluate {

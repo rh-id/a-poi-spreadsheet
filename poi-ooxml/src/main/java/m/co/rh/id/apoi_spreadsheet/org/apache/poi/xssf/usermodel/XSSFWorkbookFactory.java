@@ -37,10 +37,6 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
 @Internal
 public class XSSFWorkbookFactory implements WorkbookProvider {
 
-    static {
-        WorkbookFactory.addProvider(new XSSFWorkbookFactory());
-    }
-
     @Override
     public boolean accepts(FileMagic fm) {
         return fm == FileMagic.OOXML;

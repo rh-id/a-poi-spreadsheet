@@ -17,6 +17,17 @@
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel;
 
+import static m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFRelation.NS_SPREADSHEETML;
+
+import android.content.Context;
+
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+import org.apache.commons.io.output.StringBuilderWriter;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.EnumMap;
@@ -28,20 +39,13 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
-import org.apache.commons.io.output.StringBuilderWriter;
+import m.co.rh.id.apoi_spreadsheet.base.POISpreadsheetContext;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.util.DocumentHelper;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.DifferentialStyleProvider;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.TableStyle;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.TableStyleType;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.XMLHelper;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.model.StylesTable;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import static m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFRelation.NS_SPREADSHEETML;
 
 /**
  * Table style names defined in the OOXML spec.
@@ -392,7 +396,11 @@ public enum XSSFBuiltinTableStyle {
          *   </tableStyles>
          * </styleName>
          */
-        try (InputStream is = XSSFBuiltinTableStyle.class.getResourceAsStream("presetTableStyles.xml")) {
+        Context context = POISpreadsheetContext.getInstance().getAppContext();
+        if (context == null) {
+            throw new UnsupportedOperationException("Context must be set first");
+        }
+        try (InputStream is = context.getAssets().open("org/apache/poi/xssf/usermodel/presetTableStyles.xml");) {
             final Document doc = DocumentHelper.readDocument(is);
 
             final NodeList styleNodes = doc.getDocumentElement().getChildNodes();
@@ -426,18 +434,18 @@ public enum XSSFBuiltinTableStyle {
         dxfsNode.insertBefore(dxfsNode.getOwnerDocument().createElement("dxf"), dxfsNode.getFirstChild());
 
         return "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n" +
-            "<styleSheet xmlns=\"" + NS_SPREADSHEETML + "\" " +
-            "xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" " +
-            "xmlns:x14ac=\"http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac\" " +
-            "xmlns:x16r2=\"http://schemas.microsoft.com/office/spreadsheetml/2015/02/main\" " +
-            "mc:Ignorable=\"x14ac x16r2\">\n" +
-            writeToString(dxfsNode) +
-            writeToString(tableStyleNode) +
-            "</styleSheet>";
+                "<styleSheet xmlns=\"" + NS_SPREADSHEETML + "\" " +
+                "xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" " +
+                "xmlns:x14ac=\"http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac\" " +
+                "xmlns:x16r2=\"http://schemas.microsoft.com/office/spreadsheetml/2015/02/main\" " +
+                "mc:Ignorable=\"x14ac x16r2\">\n" +
+                writeToString(dxfsNode) +
+                writeToString(tableStyleNode) +
+                "</styleSheet>";
     }
 
     private static String writeToString(Node node) throws TransformerException {
-        try (StringBuilderWriter sw = new StringBuilderWriter(1024)){
+        try (StringBuilderWriter sw = new StringBuilderWriter(1024)) {
             Transformer transformer = XMLHelper.newTransformer();
             transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
             transformer.transform(new DOMSource(node), new StreamResult(sw));

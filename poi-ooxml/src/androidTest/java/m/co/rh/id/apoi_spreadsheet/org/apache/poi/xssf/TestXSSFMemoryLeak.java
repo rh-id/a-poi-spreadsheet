@@ -15,7 +15,7 @@
    limitations under the License.
 ==================================================================== */
 
-package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel;
+package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf;
 
 
 import static org.junit.Assert.assertNull;
@@ -47,6 +47,10 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.exceptions.InvalidFo
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.OPCPackage;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.MemoryLeakVerifier;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.XSSFTestDataSamples;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFCell;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFRow;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFSheet;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import m.co.rh.id.apoi_spreadsheet.util.TestIOUtils;
 
 /**

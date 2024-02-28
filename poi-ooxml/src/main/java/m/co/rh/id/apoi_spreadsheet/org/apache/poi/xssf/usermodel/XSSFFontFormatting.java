@@ -120,7 +120,7 @@ public class XSSFFontFormatting implements FontFormatting {
         if (xcolor == null) {
             _font.getColorList().clear();
         } else if(_font.sizeOfColorArray() == 0) {
-            _font.addNewColor().setRgb(xcolor.getRGB());
+            _font.addNewColor().setRgb(xcolor.getARGB());
         } else {
             _font.setColorArray(0, xcolor.getCTColor());
         }

@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ServiceLoader;
 
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.EmptyFileException;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.EncryptedDocumentException;
@@ -52,8 +53,8 @@ public final class WorkbookFactory {
     private final List<WorkbookProvider> provider = new ArrayList<>();
 
     private WorkbookFactory() {
-        //ClassLoader cl = WorkbookFactory.class.getClassLoader();
-        //ServiceLoader.load(WorkbookProvider.class, cl).forEach(provider::add);
+        ClassLoader cl = WorkbookFactory.class.getClassLoader();
+        ServiceLoader.load(WorkbookProvider.class, cl).forEach(provider::add);
     }
 
     /**

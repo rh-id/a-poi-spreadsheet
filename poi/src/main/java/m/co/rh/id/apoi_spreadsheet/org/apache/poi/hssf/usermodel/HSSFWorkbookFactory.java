@@ -38,10 +38,6 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
 @Internal
 public class HSSFWorkbookFactory implements WorkbookProvider {
 
-    static {
-        WorkbookFactory.addProvider(new HSSFWorkbookFactory());
-    }
-
     @Override
     public boolean accepts(FileMagic fm) {
         return FileMagic.OLE2 == fm;

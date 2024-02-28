@@ -282,10 +282,23 @@ public class SheetUtil {
     private static double getCellWidth(float defaultCharWidth, int colspan,
                                        CellStyle style, double minWidth, AttributedString str) {
         // FIXME: is this correct measurement?
+        // TestSXSSFSheetAutosizeColumn.java test seemed to pass
         AttributedCharacterIterator iterator = str.getIterator();
-        int stringSize = iterator.getEndIndex() - iterator.getBeginIndex();
+        float fontSize = 0;
+        int maxChar = iterator.getEndIndex();
+        Map<AttributedCharacterIterator.Attribute, Object> map = iterator.getAttributes();
+        Object sizeAttr = map.get(TextAttribute.SIZE);
+        float height = charHeight;
+        if (sizeAttr != null) {
+            float size = ((Number) sizeAttr).floatValue();
+            fontSize = size * maxChar;
+            height = size;
+        }
+        if (fontSize <= minWidth) {
+            fontSize = (float) minWidth;
+        }
         final Rect bounds;
-        RectF rectF = new RectF(0F, 0F, stringSize, charHeight);
+        RectF rectF = new RectF(0F, 0F, fontSize, height);
         if (style.getRotation() != 0) {
             /*
              * Transform the text using a scale so that its height is increased by a multiple of the leading,
@@ -302,10 +315,8 @@ public class SheetUtil {
             trans.setConcat(trans, scale);
 
             trans.mapRect(rectF);
-            bounds = new Rect((int) rectF.left, (int) rectF.top, (int) rectF.right, (int) rectF.bottom);
-        } else {
-            bounds = new Rect((int) rectF.left, (int) rectF.top, (int) rectF.right, (int) rectF.bottom);
         }
+        bounds = new Rect((int) rectF.left, (int) rectF.top, (int) rectF.right, (int) rectF.bottom);
         // frameWidth accounts for leading spaces which is excluded from bounds.getWidth()
         final double frameWidth = bounds.right;
         return Math.max(minWidth, ((frameWidth / colspan) / defaultCharWidth) + style.getIndention());
@@ -381,8 +392,8 @@ public class SheetUtil {
         try {
             // FIXME: is this correct char width?
             AttributedCharacterIterator iterator = str.getIterator();
-            int stringSize = iterator.getEndIndex() - iterator.getBeginIndex();
-            return stringSize + 1;
+            int stringSize = iterator.getEndIndex() - iterator.getBeginIndex() + 1;
+            return stringSize;
         } catch (Throwable t) {
             // ignore exception and return a default char width if
             // the ignore-feature is enabled and the exception indicates that
@@ -428,6 +439,27 @@ public class SheetUtil {
         }
 
         return getCellWidth(cell, defaultCharWidth, formatter, useMergedCells, mergedRegions);
+    }
+
+    /**
+     * Check if the Fonts are installed correctly so that Java can compute the size of
+     * columns.
+     * <p>
+     * If a Cell uses a Font which is not available on the operating system then Java may
+     * fail to return useful Font metrics and thus lead to an auto-computed size of 0.
+     * <p>
+     * This method allows to check if computing the sizes for a given Font will succeed or not.
+     *
+     * @param font The Font that is used in the Cell
+     * @return true if computing the size for this Font will succeed, false otherwise
+     */
+    public static boolean canComputeColumnWidth(Font font) {
+        // not sure what is the best value sample-here, only "1" did not work on some platforms...
+        AttributedString str = new AttributedString("1w");
+        copyAttributes(font, str, 0, "1w".length());
+
+        float size = (float) str.getIterator().getAttribute(TextAttribute.SIZE);
+        return (size > 0);
     }
 
     /**

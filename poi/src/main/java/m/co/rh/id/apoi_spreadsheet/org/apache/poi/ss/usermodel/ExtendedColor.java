@@ -30,7 +30,11 @@ public abstract class ExtendedColor implements Color {
      * @param clr awt Color to set
      */
     protected void setColor(android.graphics.Color clr) {
-        setRGB(new byte[]{(byte)clr.alpha(), (byte)clr.red(), (byte)clr.green(), (byte)clr.blue()});
+        int colorRGB = clr.toArgb();
+        setRGB(new byte[]{(byte)android.graphics.Color.alpha(colorRGB),
+                (byte)android.graphics.Color.red(colorRGB),
+                (byte)android.graphics.Color.green(colorRGB),
+                (byte)android.graphics.Color.blue(colorRGB)});
     }
 
     /**
