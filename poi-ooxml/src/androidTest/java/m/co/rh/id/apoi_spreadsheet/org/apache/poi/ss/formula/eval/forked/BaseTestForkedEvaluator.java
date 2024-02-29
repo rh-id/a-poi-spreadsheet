@@ -23,6 +23,7 @@ import static org.junit.Assert.assertThrows;
 
 import java.io.IOException;
 
+import m.co.rh.id.apoi_spreadsheet.POIJUnit4ClassRunner;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.IStabilityClassifier;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.NumberEval;
@@ -30,7 +31,9 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Row;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Sheet;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Workbook;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
+@RunWith(POIJUnit4ClassRunner.class)
 public class BaseTestForkedEvaluator {
 
     protected Workbook newWorkbook() {
