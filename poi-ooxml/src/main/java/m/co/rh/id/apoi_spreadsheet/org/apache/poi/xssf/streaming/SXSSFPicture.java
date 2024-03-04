@@ -17,11 +17,15 @@
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.streaming;
 
+import android.util.Log;
+
+import org.openxmlformats.schemas.drawingml.x2006.main.CTPositiveSize2D;
+import org.openxmlformats.schemas.drawingml.x2006.main.CTShapeProperties;
+import org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTPicture;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTCol;
+
 import java.io.IOException;
 import java.io.InputStream;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import m.co.rh.id.apoi_spreadsheet.base.model.Dimension;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackagePart;
@@ -39,25 +43,21 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFDrawing;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFPicture;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFPictureData;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.openxmlformats.schemas.drawingml.x2006.main.CTPositiveSize2D;
-import org.openxmlformats.schemas.drawingml.x2006.main.CTShapeProperties;
-import org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTPicture;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTCol;
 
 /**
  * Streaming version of Picture.
  * Most of the code is a copy of the non-streaming XSSFPicture code.
  * This is necessary as a private method getRowHeightInPixels of that class needs to be changed, which is called by a method call chain nested several levels.
- *
+ * <p>
  * The main change is to access the rows in the SXSSF sheet, not the always empty rows in the XSSF sheet when checking the row heights.
  */
 public final class SXSSFPicture implements Picture {
-    private static final Logger LOG = LogManager.getLogger(SXSSFPicture.class);
+    private static final String TAG = "SXSSFPicture";
     /**
      * Column width measured as the number of characters of the maximum digit width of the
      * numbers 0, 1, 2, ..., 9 as rendered in the normal style's font. There are 4 pixels of margin
      * padding (two on each side), plus 1 pixel padding for the gridlines.
-     *
+     * <p>
      * This value is the same for default font in Office 2007 (Calibri) and Office 2003 and earlier (Arial)
      */
     private static final float DEFAULT_COLUMN_WIDTH = 9.140625f;
@@ -76,7 +76,7 @@ public final class SXSSFPicture implements Picture {
      * @return the underlying CTPicture bean
      */
     @Internal
-    public CTPicture getCTPicture(){
+    public CTPicture getCTPicture() {
         return _picture.getCTPicture();
     }
 
@@ -90,7 +90,7 @@ public final class SXSSFPicture implements Picture {
      * </p>
      */
     @Override
-    public void resize(){
+    public void resize() {
         resize(1.0);
     }
 
@@ -103,15 +103,15 @@ public final class SXSSFPicture implements Picture {
      * </p>
      *
      * @param scale the amount by which image dimensions are multiplied relative to the original size.
-     * <code>resize(1.0)</code> sets the original size, <code>resize(0.5)</code> resize to 50% of the original,
-     * <code>resize(2.0)</code> resizes to 200% of the original.
+     *              <code>resize(1.0)</code> sets the original size, <code>resize(0.5)</code> resize to 50% of the original,
+     *              <code>resize(2.0)</code> resizes to 200% of the original.
      */
     @Override
-    public void resize(double scale){
+    public void resize(double scale) {
         XSSFClientAnchor anchor = getClientAnchor();
         XSSFClientAnchor pref = getPreferredSize(scale);
         if (anchor == null || pref == null) {
-            LOG.atWarn().log("picture is not anchored via client anchor - ignoring resize call");
+            Log.w(TAG, "picture is not anchored via client anchor - ignoring resize call");
             return;
         }
 
@@ -133,7 +133,7 @@ public final class SXSSFPicture implements Picture {
      * @return XSSFClientAnchor with the preferred size for this image
      */
     @Override
-    public XSSFClientAnchor getPreferredSize(){
+    public XSSFClientAnchor getPreferredSize() {
         return getPreferredSize(1.0);
     }
 
@@ -143,10 +143,10 @@ public final class SXSSFPicture implements Picture {
      * @param scale the amount by which image dimensions are multiplied relative to the original size.
      * @return XSSFClientAnchor with the preferred size for this image
      */
-    public XSSFClientAnchor getPreferredSize(double scale){
+    public XSSFClientAnchor getPreferredSize(double scale) {
         XSSFClientAnchor anchor = getClientAnchor();
         if (anchor == null) {
-            LOG.atWarn().log("picture is not anchored via client anchor - ignoring resize call");
+            Log.w(TAG, "picture is not anchored via client anchor - ignoring resize call");
             return null;
         }
 
@@ -156,7 +156,7 @@ public final class SXSSFPicture implements Picture {
         double scaledHeight = size.getHeight() * scale;
 
         float w = 0;
-        int col2 = anchor.getCol1()-1;
+        int col2 = anchor.getCol1() - 1;
 
         while (w <= scaledWidth) {
             w += getColumnWidthInPixels(++col2);
@@ -165,13 +165,13 @@ public final class SXSSFPicture implements Picture {
         assert (w > scaledWidth);
         double cw = getColumnWidthInPixels(col2);
         double deltaW = w - scaledWidth;
-        int dx2 = (int)(Units.EMU_PER_PIXEL * (cw - deltaW));
+        int dx2 = (int) (Units.EMU_PER_PIXEL * (cw - deltaW));
 
         anchor.setCol2(col2);
         anchor.setDx2(dx2);
 
         double h = 0;
-        int row2 = anchor.getRow1()-1;
+        int row2 = anchor.getRow1() - 1;
 
         while (h <= scaledHeight) {
             h += getRowHeightInPixels(++row2);
@@ -180,24 +180,24 @@ public final class SXSSFPicture implements Picture {
         assert (h > scaledHeight);
         double ch = getRowHeightInPixels(row2);
         double deltaH = h - scaledHeight;
-        int dy2 = (int)(Units.EMU_PER_PIXEL * (ch - deltaH));
+        int dy2 = (int) (Units.EMU_PER_PIXEL * (ch - deltaH));
         anchor.setRow2(row2);
         anchor.setDy2(dy2);
 
-        CTPositiveSize2D size2d =  getCTPicture().getSpPr().getXfrm().getExt();
-        size2d.setCx((long)(scaledWidth * Units.EMU_PER_PIXEL));
-        size2d.setCy((long)(scaledHeight * Units.EMU_PER_PIXEL));
+        CTPositiveSize2D size2d = getCTPicture().getSpPr().getXfrm().getExt();
+        size2d.setCx((long) (scaledWidth * Units.EMU_PER_PIXEL));
+        size2d.setCy((long) (scaledHeight * Units.EMU_PER_PIXEL));
 
         return anchor;
     }
 
-    private float getColumnWidthInPixels(int columnIndex){
+    private float getColumnWidthInPixels(int columnIndex) {
         XSSFSheet sheet = getSheet();
 
         CTCol col = sheet.getColumnHelper().getColumn(columnIndex, false);
         double numChars = col == null || !col.isSetWidth() ? DEFAULT_COLUMN_WIDTH : col.getWidth();
 
-        return (float)numChars*Units.DEFAULT_CHARACTER_WIDTH;
+        return (float) numChars * Units.DEFAULT_CHARACTER_WIDTH;
     }
 
     private float getRowHeightInPixels(int rowIndex) {
@@ -207,24 +207,24 @@ public final class SXSSFPicture implements Picture {
         SXSSFSheet sxSheet = _wb.getSXSSFSheet(xssfSheet);
         Sheet sheet = sxSheet == null ? xssfSheet : sxSheet;
         Row row = sheet.getRow(rowIndex);
-        float height = row != null ?  row.getHeightInPoints() : sheet.getDefaultRowHeightInPoints();
+        float height = row != null ? row.getHeightInPoints() : sheet.getDefaultRowHeightInPoints();
         return height * Units.PIXEL_DPI / Units.POINT_DPI;
     }
+
     /**
      * Return the dimension of this image
      *
      * @param part the package part holding raw picture data
      * @param type type of the picture: {@link Workbook#PICTURE_TYPE_JPEG},
-     * {@link Workbook#PICTURE_TYPE_PNG} or {@link Workbook#PICTURE_TYPE_DIB}
-     *
+     *             {@link Workbook#PICTURE_TYPE_PNG} or {@link Workbook#PICTURE_TYPE_DIB}
      * @return image dimension in pixels
      */
-    protected static Dimension getImageDimension(PackagePart part, int type){
+    protected static Dimension getImageDimension(PackagePart part, int type) {
         try (InputStream stream = part.getInputStream()) {
             return ImageUtils.getImageDimension(stream, type);
-        } catch (IOException e){
+        } catch (IOException e) {
             //return a "singulariry" if ImageIO failed to read the image
-            LOG.atWarn().withThrowable(e).log("Failed to read image");
+            Log.w(TAG, "Failed to read image", e);
             return new Dimension();
         }
     }
@@ -239,7 +239,7 @@ public final class SXSSFPicture implements Picture {
         return _picture.getPictureData();
     }
 
-    protected CTShapeProperties getShapeProperties(){
+    protected CTShapeProperties getShapeProperties() {
         return getCTPicture().getSpPr();
     }
 
@@ -266,7 +266,7 @@ public final class SXSSFPicture implements Picture {
     @Override
     public XSSFClientAnchor getClientAnchor() {
         XSSFAnchor a = getAnchor();
-        return (a instanceof XSSFClientAnchor) ? (XSSFClientAnchor)a : null;
+        return (a instanceof XSSFClientAnchor) ? (XSSFClientAnchor) a : null;
     }
 
     public XSSFDrawing getDrawing() {
@@ -304,7 +304,7 @@ public final class SXSSFPicture implements Picture {
     }
 
     @Override
-    public void setLineStyleColor( int red, int green, int blue ) {
+    public void setLineStyleColor(int red, int green, int blue) {
         _picture.setLineStyleColor(red, green, blue);
     }
 }

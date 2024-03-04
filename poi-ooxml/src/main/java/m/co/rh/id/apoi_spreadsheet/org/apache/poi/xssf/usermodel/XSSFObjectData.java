@@ -17,22 +17,8 @@
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel;
 
-import java.io.IOException;
-import java.io.InputStream;
+import android.util.Log;
 
-import javax.xml.namespace.QName;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.POIXMLDocumentPart;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.POIXMLException;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackagePart;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackageRelationshipTypes;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.filesystem.DirectoryEntry;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.filesystem.FileMagic;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.filesystem.POIFSFileSystem;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.ObjectData;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.IOUtils;
 import org.apache.xmlbeans.XmlCursor;
 import org.openxmlformats.schemas.drawingml.x2006.main.CTNonVisualDrawingProps;
 import org.openxmlformats.schemas.drawingml.x2006.main.CTOfficeArtExtension;
@@ -47,11 +33,26 @@ import org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTShape;
 import org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTShapeNonVisual;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTOleObject;
 
+import java.io.IOException;
+import java.io.InputStream;
+
+import javax.xml.namespace.QName;
+
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.POIXMLDocumentPart;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.POIXMLException;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackagePart;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackageRelationshipTypes;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.filesystem.DirectoryEntry;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.filesystem.FileMagic;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.ObjectData;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.IOUtils;
+
 /**
  * Represents binary object (i.e. OLE) data stored in the file.  Eg. A GIF, JPEG etc...
  */
 public class XSSFObjectData extends XSSFSimpleShape implements ObjectData {
-    private static final Logger LOG = LogManager.getLogger(XSSFObjectData.class);
+    private static final String TAG = "XSSFObjectData";
 
     /**
      * A default instance of CTShape used for creating new shapes.
@@ -70,7 +71,7 @@ public class XSSFObjectData extends XSSFSimpleShape implements ObjectData {
     protected static CTShape prototype() {
         final String drawNS = "http://schemas.microsoft.com/office/drawing/2010/main";
 
-        if(prototype == null) {
+        if (prototype == null) {
             CTShape shape = CTShape.Factory.newInstance();
 
             CTShapeNonVisual nv = shape.addNewNvSpPr();
@@ -108,8 +109,6 @@ public class XSSFObjectData extends XSSFSimpleShape implements ObjectData {
         }
         return prototype;
     }
-
-
 
 
     @Override
@@ -157,7 +156,7 @@ public class XSSFObjectData extends XSSFSimpleShape implements ObjectData {
             is = FileMagic.prepareToCheckMagic(is);
             return FileMagic.valueOf(is) == FileMagic.OLE2;
         } catch (IOException e) {
-            LOG.atWarn().withThrowable(e).log("can't determine if directory entry exists");
+            Log.w(TAG, "can't determine if directory entry exists", e);
             return false;
         } finally {
             IOUtils.closeQuietly(is);
@@ -180,7 +179,7 @@ public class XSSFObjectData extends XSSFSimpleShape implements ObjectData {
     }
 
     protected XSSFSheet getSheet() {
-        return (XSSFSheet)getDrawing().getParent();
+        return (XSSFSheet) getDrawing().getParent();
     }
 
     @Override
@@ -188,7 +187,7 @@ public class XSSFObjectData extends XSSFSimpleShape implements ObjectData {
         try (XmlCursor cur = getOleObject().newCursor()) {
             if (cur.toChild(XSSFRelation.NS_SPREADSHEETML, "objectPr")) {
                 String blipId = cur.getAttributeText(new QName(PackageRelationshipTypes.CORE_PROPERTIES_ECMA376_NS, "id"));
-                return (XSSFPictureData)getSheet().getRelationById(blipId);
+                return (XSSFPictureData) getSheet().getRelationById(blipId);
             }
             return null;
         }

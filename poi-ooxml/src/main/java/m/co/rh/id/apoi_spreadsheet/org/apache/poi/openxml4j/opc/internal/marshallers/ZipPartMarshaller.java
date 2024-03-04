@@ -17,12 +17,10 @@
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.internal.marshallers;
 
+import android.util.Log;
+
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.internal.PartMarshaller;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.internal.ZipHelper;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -41,6 +39,8 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackageRelations
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackagingURIHelper;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.StreamHelper;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.TargetMode;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.internal.PartMarshaller;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.internal.ZipHelper;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.IOUtils;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFRelation;
 
@@ -48,7 +48,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFRelation;
  * Zip part marshaller. This marshaller is use to save any part in a zip stream.
  */
 public final class ZipPartMarshaller implements PartMarshaller {
-    private static final Logger LOG = LogManager.getLogger(ZipPartMarshaller.class);
+    private static final String TAG = "ZipPartMarshaller";
 
     /**
      * Save the specified part to the given stream.
@@ -64,7 +64,7 @@ public final class ZipPartMarshaller implements PartMarshaller {
     public boolean marshall(PackagePart part, OutputStream os)
             throws OpenXML4JException {
         if (!(os instanceof ZipArchiveOutputStream)) {
-            LOG.atError().log("Unexpected class {}", os.getClass().getName());
+            Log.e(TAG, String.format("Unexpected class %s", os.getClass().getName()));
             throw new OpenXML4JException("ZipOutputStream expected !");
             // Normally should happen only in development phase, so just throw
             // exception
@@ -91,7 +91,7 @@ public final class ZipPartMarshaller implements PartMarshaller {
                 zos.closeArchiveEntry();
             }
         } catch (IOException ioe) {
-            LOG.atError().withThrowable(ioe).log("Cannot write: {}: in ZIP", part.getPartName());
+            Log.e(TAG, String.format("Cannot write: %s: in ZIP", part.getPartName()), ioe);
             return false;
         }
 
@@ -182,7 +182,7 @@ public final class ZipPartMarshaller implements PartMarshaller {
                 zos.closeArchiveEntry();
             }
         } catch (IOException e) {
-            LOG.atError().withThrowable(e).log("Cannot create zip entry {}", relPartName);
+            Log.e(TAG, String.format("Cannot create zip entry %s", relPartName), e);
             return false;
         }
     }

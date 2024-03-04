@@ -16,8 +16,8 @@
 ==================================================================== */
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.eventusermodel;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import android.util.Log;
+
 import org.apache.xmlbeans.XmlException;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -76,7 +76,7 @@ public class XSSFReader {
                             XSSFRelation.CHARTSHEET.getRelation(),
                             XSSFRelation.MACRO_SHEET_XML.getRelation())
             ));
-    private static final Logger LOGGER = LogManager.getLogger(XSSFReader.class);
+    private static final String TAG = "XSSFReader";
 
     protected OPCPackage pkg;
     protected PackagePart workbookPart;
@@ -431,7 +431,7 @@ public class XSSFReader {
                     return parseComments(commentsPart);
                 }
             } catch (InvalidFormatException | IOException e) {
-                LOGGER.atWarn().withThrowable(e).log("Failed to load sheet comments");
+                Log.w(TAG, "Failed to load sheet comments", e);
                 return null;
             }
             return null;
@@ -459,14 +459,14 @@ public class XSSFReader {
                     PackagePart drawingsPart = sheetPkg.getPackage().getPart(drawingsName);
                     if (drawingsPart == null) {
                         //parts can go missing; Excel ignores them silently -- TIKA-2134
-                        LOGGER.atWarn().log("Missing drawing: {}. Skipping it.", drawingsName);
+                        Log.w(TAG, String.format("Missing drawing: %s. Skipping it.", drawingsName));
                         continue;
                     }
                     XSSFDrawing drawing = new XSSFDrawing(drawingsPart);
                     shapes.addAll(drawing.getShapes());
                 }
             } catch (XmlException | InvalidFormatException | IOException e) {
-                LOGGER.atWarn().withThrowable(e).log("Failed to load shapes");
+                Log.w(TAG, "Failed to load shapes", e);
                 return null;
             }
             return shapes;

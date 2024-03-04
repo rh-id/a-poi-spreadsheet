@@ -20,12 +20,11 @@ package m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc;
 import static m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.ContentTypes.RELATIONSHIPS_PART;
 import static m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.internal.ContentTypeManager.CONTENT_TYPES_PART_NAME;
 
+import android.util.Log;
+
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.compress.archivers.zip.ZipFile;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.message.SimpleMessage;
 
 import java.io.File;
 import java.io.IOException;
@@ -71,7 +70,7 @@ public final class ZipPackage extends OPCPackage {
     private static boolean useTempFilePackageParts = false;
     private static boolean encryptTempFilePackageParts = false;
 
-    private static final Logger LOG = LogManager.getLogger(ZipPackage.class);
+    private static final String TAG = "ZipPackage";
 
     /**
      * Zip archive, as either a file on disk,
@@ -117,7 +116,7 @@ public final class ZipPackage extends OPCPackage {
         try {
             this.contentTypeManager = new ZipContentTypeManager(null, this);
         } catch (InvalidFormatException e) {
-            LOG.atWarn().withThrowable(e).log("Could not parse ZipPackage");
+            Log.w(TAG, "Could not parse ZipPackage", e);
         }
     }
 
@@ -188,7 +187,7 @@ public final class ZipPackage extends OPCPackage {
                 throw new InvalidOperationException("Can't open the specified file: '" + file + "'", e);
             }
 
-            LOG.atWarn().log("Error in zip file {} - falling back to stream processing (i.e. ignoring zip central directory)", file);
+            Log.w(TAG, String.format("Error in zip file %s - falling back to stream processing (i.e. ignoring zip central directory)", file));
             ze = openZipEntrySourceStream(file);
         }
         this.zipArchive = ze;
@@ -342,7 +341,7 @@ public final class ZipPackage extends OPCPackage {
                             : PackagingURIHelper.createPartName(ZipHelper.getOPCNameFromZipItemName(entryName));
                 } catch (Exception e) {
                     // We assume we can continue, even in degraded mode ...
-                    LOG.atWarn().withThrowable(e).log("Entry {} is not valid, so this part won't be added to the package.", entryName);
+                    Log.w(TAG, String.format("Entry %s is not valid, so this part won't be added to the package.", entryName), e);
                 }
             }
 
@@ -409,7 +408,7 @@ public final class ZipPackage extends OPCPackage {
                 return new MemoryPackagePart(this, partName, contentType, loadRelationships);
             }
         } catch (Exception e) {
-            LOG.atWarn().withThrowable(e).log("Failed to create part {}", partName);
+            Log.w(TAG, String.format("Failed to create part %s", partName));
             return null;
         }
     }
@@ -488,7 +487,7 @@ public final class ZipPackage extends OPCPackage {
             } finally {
                 // Either the save operation succeed or not, we delete the temporary file
                 if (!tempFile.delete()) {
-                    LOG.atWarn().log("The temporary file: '{}' cannot be deleted ! Make sure that no other application use it.", targetFile.getAbsolutePath());
+                    Log.w(TAG, String.format("The temporary file: '%s' cannot be deleted ! Make sure that no other application use it.", targetFile.getAbsolutePath()));
                 }
             }
         }
@@ -542,7 +541,7 @@ public final class ZipPackage extends OPCPackage {
             // we save it as well
             if (this.getPartsByRelationshipType(PackageRelationshipTypes.CORE_PROPERTIES).isEmpty() &&
                     this.getPartsByRelationshipType(PackageRelationshipTypes.CORE_PROPERTIES_ECMA376).isEmpty()) {
-                LOG.atDebug().log("Save core properties part");
+                Log.d(TAG, "Save core properties part");
 
                 // Ensure that core properties are added if missing
                 getPackageProperties();
@@ -564,11 +563,11 @@ public final class ZipPackage extends OPCPackage {
             }
 
             // Save content type part.
-            LOG.atDebug().log("Save content types part");
+            Log.d(TAG, "Save content types part");
             this.contentTypeManager.save(zos);
 
             // Save package relationships part.
-            LOG.atDebug().log("Save package relationships");
+            Log.d(TAG, "Save package relationships");
             ZipPartMarshaller.marshallRelationshipPart(this.getRelationships(),
                     PackagingURIHelper.PACKAGE_RELATIONSHIPS_ROOT_PART_NAME,
                     zos);
@@ -582,7 +581,7 @@ public final class ZipPackage extends OPCPackage {
                 }
 
                 final PackagePartName ppn = part.getPartName();
-                LOG.atDebug().log(() -> new SimpleMessage("Save part '" + ZipHelper.getZipItemNameFromOPCName(ppn.getName()) + "'"));
+                Log.d(TAG, "Save part '" + ZipHelper.getZipItemNameFromOPCName(ppn.getName()) + "'");
                 final PartMarshaller marshaller = partMarshallers.get(part._contentType);
 
                 final PartMarshaller pm = (marshaller != null) ? marshaller : defaultPartMarshaller;

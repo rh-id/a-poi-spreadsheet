@@ -18,8 +18,8 @@
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel;
 
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import android.util.Log;
+
 import org.openxmlformats.schemas.drawingml.x2006.main.CTBlipFillProperties;
 import org.openxmlformats.schemas.drawingml.x2006.main.CTNonVisualDrawingProps;
 import org.openxmlformats.schemas.drawingml.x2006.main.CTNonVisualPictureProperties;
@@ -47,7 +47,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
  * Represents a picture shape in a SpreadsheetML drawing.
  */
 public final class XSSFPicture extends XSSFShape implements Picture {
-    private static final Logger LOG = LogManager.getLogger(XSSFPicture.class);
+    private static final String TAG = "XSSFPicture";
 
     /*
      * Column width measured as the number of characters of the maximum digit width of the
@@ -180,7 +180,7 @@ public final class XSSFPicture extends XSSFShape implements Picture {
         XSSFClientAnchor anchor = getClientAnchor();
         XSSFClientAnchor pref = getPreferredSize(scaleX, scaleY);
         if (anchor == null || pref == null) {
-            LOG.atWarn().log("picture is not anchored via client anchor - ignoring resize call");
+            Log.w(TAG, "picture is not anchored via client anchor - ignoring resize call");
             return;
         }
 
@@ -245,7 +245,7 @@ public final class XSSFPicture extends XSSFShape implements Picture {
             return ImageUtils.getImageDimension(stream, type);
         } catch (IOException e) {
             //return a "singulariry" if ImageIO failed to read the image
-            LOG.atWarn().withThrowable(e).log("Failed to read image");
+            Log.w(TAG, "Failed to read image", e);
             return new Dimension();
         }
     }

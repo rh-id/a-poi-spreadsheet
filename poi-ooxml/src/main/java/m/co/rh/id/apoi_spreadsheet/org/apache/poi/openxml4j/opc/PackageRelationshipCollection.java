@@ -16,20 +16,26 @@
 ==================================================================== */
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc;
 
-import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.*;
+import android.util.Log;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.exceptions.InvalidOperationException;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.util.DocumentHelper;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Locale;
+import java.util.Spliterator;
+import java.util.TreeMap;
+
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.util.DocumentHelper;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.exceptions.InvalidOperationException;
 
 /**
  * Represents a collection of PackageRelationship elements that are owned by a
@@ -37,7 +43,7 @@ import org.w3c.dom.NodeList;
  */
 public final class PackageRelationshipCollection implements Iterable<PackageRelationship> {
 
-    private static final Logger LOG = LogManager.getLogger(PackageRelationshipCollection.class);
+    private static final String TAG = "PackageRelationshipCollection";
 
     /**
      * Package relationships ordered by ID.
@@ -72,7 +78,7 @@ public final class PackageRelationshipCollection implements Iterable<PackageRela
 
     /**
      * The ID number of the next rID# to generate, or -1
-     *  if that is still to be determined.
+     * if that is still to be determined.
      */
     private int nextRelationshipId = -1;
 
@@ -84,18 +90,16 @@ public final class PackageRelationshipCollection implements Iterable<PackageRela
 
     /**
      * Copy constructor.
-     *
+     * <p>
      * This collection will contain only elements from the specified collection
      * for which the type is compatible with the specified relationship type
      * filter.
      *
-     * @param coll
-     *            Collection to import.
-     * @param filter
-     *            Relationship type filter.
+     * @param coll   Collection to import.
+     * @param filter Relationship type filter.
      */
     public PackageRelationshipCollection(PackageRelationshipCollection coll,
-            String filter) {
+                                         String filter) {
         this();
         for (PackageRelationship rel : coll.relationshipsByID.values()) {
             if (filter == null || rel.getRelationshipType().equals(filter))
@@ -114,11 +118,8 @@ public final class PackageRelationshipCollection implements Iterable<PackageRela
     /**
      * Constructor.
      *
-     * @throws InvalidFormatException
-     *             Throws if the format of the content part is invalid.
-     *
-     * @throws InvalidOperationException
-     *             Throws if the specified part is a relationship part.
+     * @throws InvalidFormatException    Throws if the format of the content part is invalid.
+     * @throws InvalidOperationException Throws if the specified part is a relationship part.
      */
     public PackageRelationshipCollection(PackagePart part)
             throws InvalidFormatException {
@@ -128,14 +129,11 @@ public final class PackageRelationshipCollection implements Iterable<PackageRela
     /**
      * Constructor. Parse the existing package relationship part if one exists.
      *
-     * @param container
-     *            The parent package.
-     * @param part
-     *            The part that own this relationships collection. If <b>null</b>
-     *            then this part is considered as the package root.
-     * @throws InvalidFormatException
-     *             If an error occurs during the parsing of the relationships
-     *             part fo the specified part.
+     * @param container The parent package.
+     * @param part      The part that own this relationships collection. If <b>null</b>
+     *                  then this part is considered as the package root.
+     * @throws InvalidFormatException If an error occurs during the parsing of the relationships
+     *                                part fo the specified part.
      */
     public PackageRelationshipCollection(OPCPackage container, PackagePart part)
             throws InvalidFormatException {
@@ -159,13 +157,11 @@ public final class PackageRelationshipCollection implements Iterable<PackageRela
     /**
      * Get the relationship part name of the specified part.
      *
-     * @param part
-     *            The part .
+     * @param part The part .
      * @return The relationship part name of the specified part. Be careful,
-     *         only the correct name is returned, this method does not check if
-     *         the part really exist in a package !
-     * @throws InvalidOperationException
-     *             Throws if the specified part is a relationship part.
+     * only the correct name is returned, this method does not check if
+     * the part really exist in a package !
+     * @throws InvalidOperationException Throws if the specified part is a relationship part.
      */
     private static PackagePartName getRelationshipPartName(PackagePart part)
             throws InvalidOperationException {
@@ -181,8 +177,7 @@ public final class PackageRelationshipCollection implements Iterable<PackageRela
     /**
      * Add the specified relationship to the collection.
      *
-     * @param relPart
-     *            The relationship to add.
+     * @param relPart The relationship to add.
      */
     public void addRelationship(PackageRelationship relPart) {
         if (relPart == null || relPart.getId() == null || relPart.getId().isEmpty()) {
@@ -195,35 +190,31 @@ public final class PackageRelationshipCollection implements Iterable<PackageRela
     /**
      * Add a relationship to the collection.
      *
-     * @param targetUri
-     *            Target URI.
-     * @param targetMode
-     *            The target mode : INTERNAL or EXTERNAL
-     * @param relationshipType
-     *            Relationship type.
-     * @param id
-     *            Relationship ID.
+     * @param targetUri        Target URI.
+     * @param targetMode       The target mode : INTERNAL or EXTERNAL
+     * @param relationshipType Relationship type.
+     * @param id               Relationship ID.
      * @return The newly created relationship.
      * @see PackageAccess
      */
     public PackageRelationship addRelationship(URI targetUri,
-            TargetMode targetMode, String relationshipType, String id) {
-      if (id == null || id.isEmpty()) {
-         // Generate a unique ID if id parameter is null.
-         if (nextRelationshipId == -1) {
-            nextRelationshipId = size() + 1;
-         }
+                                               TargetMode targetMode, String relationshipType, String id) {
+        if (id == null || id.isEmpty()) {
+            // Generate a unique ID if id parameter is null.
+            if (nextRelationshipId == -1) {
+                nextRelationshipId = size() + 1;
+            }
 
-         // Work up until we find a unique number (there could be gaps etc)
-         do {
-            id = "rId" + nextRelationshipId++;
-         } while (relationshipsByID.get(id) != null);
-      }
+            // Work up until we find a unique number (there could be gaps etc)
+            do {
+                id = "rId" + nextRelationshipId++;
+            } while (relationshipsByID.get(id) != null);
+        }
 
         PackageRelationship rel = new PackageRelationship(container,
                 sourcePart, targetUri, targetMode, relationshipType, id);
         addRelationship(rel);
-        if (targetMode == TargetMode.INTERNAL){
+        if (targetMode == TargetMode.INTERNAL) {
             internalRelationshipsByTargetName.put(targetUri.toASCIIString(), rel);
         }
         return rel;
@@ -232,8 +223,7 @@ public final class PackageRelationshipCollection implements Iterable<PackageRela
     /**
      * Remove a relationship by its ID.
      *
-     * @param id
-     *            The relationship ID to remove.
+     * @param id The relationship ID to remove.
      */
     public void removeRelationship(String id) {
         PackageRelationship rel = relationshipsByID.get(id);
@@ -246,8 +236,7 @@ public final class PackageRelationshipCollection implements Iterable<PackageRela
     /**
      * Retrieves a relationship by its index in the collection.
      *
-     * @param index
-     *            Must be a value between [0-relationships_count-1]
+     * @param index Must be a value between [0-relationships_count-1]
      */
     public PackageRelationship getRelationship(int index) {
         if (index < 0 || index > relationshipsByID.values().size())
@@ -265,8 +254,7 @@ public final class PackageRelationshipCollection implements Iterable<PackageRela
     /**
      * Retrieves a package relationship based on its id.
      *
-     * @param id
-     *            ID of the package relationship to retrieve.
+     * @param id ID of the package relationship to retrieve.
      * @return The package relationship identified by the specified id.
      */
     public PackageRelationship getRelationshipByID(String id) {
@@ -287,6 +275,7 @@ public final class PackageRelationshipCollection implements Iterable<PackageRela
 
     /**
      * Is this collection empty?
+     *
      * @since POI 5.2.0
      */
     public boolean isEmpty() {
@@ -296,15 +285,13 @@ public final class PackageRelationshipCollection implements Iterable<PackageRela
     /**
      * Parse the relationship part and add all relationship in this collection.
      *
-     * @param relPart
-     *            The package part to parse.
-     * @throws InvalidFormatException
-     *             Throws if the relationship part is invalid.
+     * @param relPart The package part to parse.
+     * @throws InvalidFormatException Throws if the relationship part is invalid.
      */
     public void parseRelationshipsPart(PackagePart relPart)
             throws InvalidFormatException {
         try {
-            LOG.atDebug().log("Parsing relationship: {}", relPart.getPartName());
+            Log.d(TAG, String.format("Parsing relationship: %s", relPart.getPartName()));
             Document xmlRelationshipsDoc;
             try (InputStream partStream = relPart.getInputStream()) {
                 xmlRelationshipsDoc = DocumentHelper.readDocument(partStream);
@@ -319,7 +306,7 @@ public final class PackageRelationshipCollection implements Iterable<PackageRela
             NodeList nodeList = root.getElementsByTagNameNS(PackageNamespaces.RELATIONSHIPS, PackageRelationship.RELATIONSHIP_TAG_NAME);
             int nodeCount = nodeList.getLength();
             for (int i = 0; i < nodeCount; i++) {
-                Element element = (Element)nodeList.item(i);
+                Element element = (Element) nodeList.item(i);
                 // Relationship ID
                 String id = element.getAttribute(PackageRelationship.ID_ATTRIBUTE_NAME);
                 // Relationship type
@@ -355,7 +342,7 @@ public final class PackageRelationshipCollection implements Iterable<PackageRela
                     // package
                     target = PackagingURIHelper.toURI(value);
                 } catch (URISyntaxException e) {
-                    LOG.atError().withThrowable(e).log("Cannot convert {} in a valid relationship URI-> dummy-URI used", value);
+                    Log.e(TAG, String.format("Cannot convert %s in a valid relationship URI-> dummy-URI used", value), e);
                 }
                 addRelationship(target, targetMode, type, id);
             }
@@ -367,9 +354,8 @@ public final class PackageRelationshipCollection implements Iterable<PackageRela
     /**
      * Retrieves all relations with the specified type.
      *
-     * @param typeFilter
-     *            Relationship type filter. If <b>null</b> then all
-     *            relationships are returned.
+     * @param typeFilter Relationship type filter. If <b>null</b> then all
+     *                   relationships are returned.
      * @return All relationships of the type specified by the filter.
      */
     public PackageRelationshipCollection getRelationships(String typeFilter) {
@@ -397,10 +383,9 @@ public final class PackageRelationshipCollection implements Iterable<PackageRela
      * Get an iterator of a collection with all relationship with the specified
      * type.
      *
-     * @param typeFilter
-     *            Type filter.
+     * @param typeFilter Type filter.
      * @return An iterator to a collection containing all relationships with the
-     *         specified type contain in this collection.
+     * specified type contain in this collection.
      */
     public Iterator<PackageRelationship> iterator(String typeFilter) {
         ArrayList<PackageRelationship> retArr = new ArrayList<>();
