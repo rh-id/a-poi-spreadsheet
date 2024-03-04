@@ -59,7 +59,7 @@ afterEvaluate {
 
                 // You can then customize attributes of the publication as shown below.
                 groupId = 'com.github.rh-id'
-                artifactId = 'a-poi-spreadsheet'
+                artifactId = 'a-poi-spreadsheet-ooxml'
                 version = '0.0.1'
             }
         }
