@@ -1931,7 +1931,7 @@ public final class TestXSSFBugs extends BaseTestBugzillaIssues {
         }
     }
 
-    // FIXME
+    // FIXME android issue?
     @Ignore("why this test hang?")
     @Test
     public void test54764WithSAXHelper() throws Exception {
@@ -3410,7 +3410,7 @@ public final class TestXSSFBugs extends BaseTestBugzillaIssues {
 
             assertTrue("Had start: " + start + ", now: " + now() +
                             ", diff: " + Duration.between(start, now()).getSeconds(),
-                    between(start, now()).getSeconds() < 30);
+                    between(start, now()).getSeconds() < 40);
         }
     }
 

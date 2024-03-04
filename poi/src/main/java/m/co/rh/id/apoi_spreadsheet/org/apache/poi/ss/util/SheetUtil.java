@@ -66,7 +66,7 @@ public class SheetUtil {
     /**
      * Dummy formula evaluator that does nothing.
      * YK: The only reason of having this class is that
-     * {@link m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.DataFormatter#formatCellValue(org.apache.poi.ss.usermodel.Cell)}
+     * {@link m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.DataFormatter#formatCellValue(m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Cell)}
      * returns formula string for formula cells. Dummy evaluator makes it to format the cached formula result.
      * <p>
      * See Bugzilla #50021
@@ -281,8 +281,6 @@ public class SheetUtil {
      */
     private static double getCellWidth(float defaultCharWidth, int colspan,
                                        CellStyle style, double minWidth, AttributedString str) {
-        // FIXME: is this correct measurement?
-        // TestSXSSFSheetAutosizeColumn.java test seemed to pass
         AttributedCharacterIterator iterator = str.getIterator();
         float fontSize = 0;
         int maxChar = iterator.getEndIndex();
@@ -293,9 +291,6 @@ public class SheetUtil {
             float size = ((Number) sizeAttr).floatValue();
             fontSize = size * maxChar;
             height = size;
-        }
-        if (fontSize <= minWidth) {
-            fontSize = (float) minWidth;
         }
         final Rect bounds;
         RectF rectF = new RectF(0F, 0F, fontSize, height);
@@ -318,7 +313,7 @@ public class SheetUtil {
         }
         bounds = new Rect((int) rectF.left, (int) rectF.top, (int) rectF.right, (int) rectF.bottom);
         // frameWidth accounts for leading spaces which is excluded from bounds.getWidth()
-        final double frameWidth = bounds.right;
+        final double frameWidth = bounds.left + bounds.width();
         return Math.max(minWidth, ((frameWidth / colspan) / defaultCharWidth) + style.getIndention());
     }
 
@@ -390,10 +385,9 @@ public class SheetUtil {
         AttributedString str = new AttributedString(String.valueOf(defaultChar));
         copyAttributes(defaultFont, str, 0, 1);
         try {
-            // FIXME: is this correct char width?
             AttributedCharacterIterator iterator = str.getIterator();
-            int stringSize = iterator.getEndIndex() - iterator.getBeginIndex() + 1;
-            return stringSize;
+            return (iterator.getEndIndex()) *
+                    ((Number) iterator.getAttribute(TextAttribute.SIZE)).intValue();
         } catch (Throwable t) {
             // ignore exception and return a default char width if
             // the ignore-feature is enabled and the exception indicates that

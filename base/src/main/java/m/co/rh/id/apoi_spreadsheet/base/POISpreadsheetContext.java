@@ -295,7 +295,7 @@ public class POISpreadsheetContext implements ExecutorService {
                 try {
                     FutureTask<?> task = callableQueue.take();
                     task.run();
-                } catch (InterruptedException e) {
+                } catch (Throwable e) {
                     Log.e(getName(), e.getMessage(), e);
                 }
             }

@@ -611,8 +611,6 @@ public abstract class BaseTestBugzillaIssues {
         }
     }
 
-    // FIXME how to fix this?
-    @Ignore("Each android seemed to have different fontAccuracy")
     @Test
     public void stackoverflow23114397() throws IOException {
         try (Workbook wb = _testDataProvider.createWorkbook()) {
