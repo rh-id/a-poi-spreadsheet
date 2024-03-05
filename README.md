@@ -53,7 +53,36 @@ Set application context during `Application.onCreate` or before using it to poi 
 
 `POISpreadsheetContext` implements `ExecutorService` in hope that you will use this context to execute any of the Apache POI operation.
 
-### Licenses
+## Proguard Configuration
+
+```
+-dontwarn org.apache.**
+-dontwarn org.openxmlformats.schemas.**
+-dontwarn org.etsi.**
+-dontwarn org.w3.**
+-dontwarn com.microsoft.schemas.**
+-dontwarn com.graphbuilder.**
+-dontwarn aQute.bnd.annotation.spi.ServiceProvider
+-dontnote org.apache.**
+-dontnote org.openxmlformats.schemas.**
+-dontnote org.etsi.**
+-dontnote org.w3.**
+-dontnote com.microsoft.schemas.**
+-dontnote com.graphbuilder.**
+
+-keeppackagenames org.apache.poi.ss.formula.function
+
+-keep class org.apache.logging.** { *; }
+-keep class org.apache.commons.** { *; }
+-keep class org.apache.xmlbeans.** { *; }
+-keep class org.openxmlformats.schemas.** { *; }
+-keep class com.microsoft.schemas.** { *; }
+-keep class javax.xml.** { *; }
+
+-keep class schemaorg_apache_xmlbeans.system.sF1327CCA741569E70F9CA8C9AF9B44B2.TypeSystemHolder { public final static *** typeSystem; }
+```
+
+## Licenses
 
 Copyright 2024 Ruby Hartono
 
