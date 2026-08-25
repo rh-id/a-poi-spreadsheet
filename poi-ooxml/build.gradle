@@ -27,6 +27,10 @@ android {
 
     packagingOptions {
         exclude 'META-INF/DEPENDENCIES'
+        resources {
+            excludes.remove('META-INF/LICENSE.txt')
+            excludes.remove('META-INF/NOTICE.txt')
+        }
     }
     publishing {
         singleVariant('release') {
@@ -61,7 +65,30 @@ afterEvaluate {
                 // You can then customize attributes of the publication as shown below.
                 groupId = 'com.github.rh-id'
                 artifactId = 'a-poi-spreadsheet-ooxml'
-                version = '0.0.1'
+                version = '0.0.4'
+                pom {
+                    name = 'a-poi-spreadsheet-ooxml'
+                    description = 'Apache POI spreadsheet support for Android - OOXML (.xlsx) support adapted from Apache POI ooxml module'
+                    url = 'https://github.com/rh-id/a-poi-spreadsheet'
+                    licenses {
+                        license {
+                            name = 'The Apache License, Version 2.0'
+                            url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
+                            distribution = 'repo'
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = 'rh-id'
+                            name = 'Ruby Hartono'
+                        }
+                    }
+                    scm {
+                        connection = 'scm:git:github.com/rh-id/a-poi-spreadsheet.git'
+                        developerConnection = 'scm:git:ssh://github.com/rh-id/a-poi-spreadsheet.git'
+                        url = 'https://github.com/rh-id/a-poi-spreadsheet/tree/master'
+                    }
+                }
             }
         }
     }

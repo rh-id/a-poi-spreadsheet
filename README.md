@@ -41,9 +41,9 @@ allprojects {
 Include this to your module dependency (module build.gradle)
 ```
 dependencies {
-    implementation 'com.github.rh-id.a-poi-spreadsheet:a-poi-spreadsheet:v0.0.1'
-    implementation "com.github.rh-id.a-poi-spreadsheet:a-poi-spreadsheet-base:v0.0.1"
-    implementation "com.github.rh-id.a-poi-spreadsheet:a-poi-spreadsheet-ooxml:v0.0.1"
+    implementation 'com.github.rh-id.a-poi-spreadsheet:a-poi-spreadsheet:v0.0.4'
+    implementation "com.github.rh-id.a-poi-spreadsheet:a-poi-spreadsheet-base:v0.0.4"
+    implementation "com.github.rh-id.a-poi-spreadsheet:a-poi-spreadsheet-ooxml:v0.0.4"
 }
 ```
 
@@ -84,9 +84,19 @@ Set application context during `Application.onCreate` or before using it to poi 
 
 ## Licenses
 
-Copyright 2024 Ruby Hartono
+This project is an independent Android adaptation of [Apache POI](https://poi.apache.org/) (fork point: [apache/poi@6a8994e](https://github.com/apache/poi/commit/6a8994ee0e6c59aa231570307a5dd213784993c3)). It is **not** an official Apache POI product.
 
-Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+- Upstream Apache POI code remains Copyright 2003-2024 The Apache Software Foundation, licensed under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0). The upstream LICENSE and NOTICE texts are preserved in [`poi_legal`](poi_legal) and shipped inside each published artifact under `META-INF/LICENSE-a-poi-spreadsheet.txt` and `META-INF/NOTICE-a-poi-spreadsheet.txt`.
+- Modifications and additions for Android are Copyright 2024 Ruby Hartono, licensed under the Apache License, Version 2.0 (see [LICENSE](LICENSE)).
+- The `javax.xml.crypto:jsr105-api` dependency used for XML digital signatures is Sun Microsystems code dual-licensed under CDDL / GPLv2 with Classpath Exception. Linking against it does not affect your licensing.
 
-Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+**Downstream projects may license their own applications/libraries under any terms.** Using this library only incurs the attribution obligations listed above and in the packaged NOTICE.
+
+### Changelog
+
+#### v0.0.4
+- Added Maven POM license/developer/scm metadata to all published artifacts
+- LICENSE and NOTICE now packaged inside artifacts (`META-INF/`)
+- Disclosed third-party licensing for `jsr105-api` (CDDL/GPLv2+Classpath Exception)
+- Added modification notices and license headers per Apache-2.0 §4 requirements
 

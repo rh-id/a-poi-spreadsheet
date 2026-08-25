@@ -18,6 +18,7 @@
    Alfresco Software has modified source of this file
    The details of changes as svn diff can be found in svn at location root/projects/3rd-party/src
 ==================================================================== */
+// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel;
 
 import android.util.Log;

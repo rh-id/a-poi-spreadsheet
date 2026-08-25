@@ -24,6 +24,14 @@ android {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
+
+    packagingOptions {
+        resources {
+            excludes.remove('META-INF/LICENSE.txt')
+            excludes.remove('META-INF/NOTICE.txt')
+        }
+    }
+
     publishing {
         singleVariant('release') {
             withSourcesJar()
@@ -46,7 +54,30 @@ afterEvaluate {
                 // You can then customize attributes of the publication as shown below.
                 groupId = 'com.github.rh-id'
                 artifactId = 'a-poi-spreadsheet-base'
-                version = '0.0.1'
+                version = '0.0.4'
+                pom {
+                    name = 'a-poi-spreadsheet-base'
+                    description = 'Apache POI spreadsheet support for Android - core compatibility module providing Graphics2D bridge, XML constants and POISpreadsheetContext'
+                    url = 'https://github.com/rh-id/a-poi-spreadsheet'
+                    licenses {
+                        license {
+                            name = 'The Apache License, Version 2.0'
+                            url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
+                            distribution = 'repo'
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = 'rh-id'
+                            name = 'Ruby Hartono'
+                        }
+                    }
+                    scm {
+                        connection = 'scm:git:github.com/rh-id/a-poi-spreadsheet.git'
+                        developerConnection = 'scm:git:ssh://github.com/rh-id/a-poi-spreadsheet.git'
+                        url = 'https://github.com/rh-id/a-poi-spreadsheet/tree/master'
+                    }
+                }
             }
         }
     }
