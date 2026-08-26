@@ -29,6 +29,8 @@ android {
         resources {
             excludes.remove('META-INF/LICENSE.txt')
             excludes.remove('META-INF/NOTICE.txt')
+            pickFirsts += 'META-INF/LICENSE-a-poi-spreadsheet.txt'
+            pickFirsts += 'META-INF/NOTICE-a-poi-spreadsheet.txt'
         }
     }
 
