@@ -4,8 +4,8 @@ plugins {
 }
 
 android {
-    namespace 'm.co.rh.id.apoi_spreadsheet.base'
-    compileSdk 34
+    namespace = 'm.co.rh.id.apoi_spreadsheet.base'
+    compileSdk 37
 
     defaultConfig {
         minSdk 26
@@ -25,7 +25,7 @@ android {
         targetCompatibility JavaVersion.VERSION_17
     }
 
-    packagingOptions {
+    packaging {
         resources {
             excludes.remove('META-INF/LICENSE.txt')
             excludes.remove('META-INF/NOTICE.txt')
