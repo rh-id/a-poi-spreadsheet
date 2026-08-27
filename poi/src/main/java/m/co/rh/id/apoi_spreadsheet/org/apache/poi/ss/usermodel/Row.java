@@ -15,11 +15,14 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel;
 
 import java.util.Iterator;
 import java.util.Spliterator;
 import java.util.Spliterators;
+
 
 /**
  * High level representation of a row of a spreadsheet.
@@ -30,7 +33,7 @@ public interface Row extends Iterable<Cell> {
      * Use this to create new cells within the row and return it.
      * <p>
      * The cell that is returned is a {@link CellType#BLANK}. The type can be changed
-     * either through calling <code>setCellValue</code> or <code>setCellType</code>.
+     * either through calling <code>setCellValue</code> or <code>setCellFormula</code>.
      *
      * @param column - the column number this cell represents
      * @return Cell a high level representation of the created cell.
@@ -44,7 +47,7 @@ public interface Row extends Iterable<Cell> {
      * <p>
      * The cell that is returned will be of the requested type.
      * The type can be changed either through calling setCellValue 
-     *  or setCellType, but there is a small overhead to doing this,
+     *  or setCellFormula, but there is a small overhead to doing this,
      *  so it is best to create of the required type up front.
      *
      * @param column - the column number this cell represents
@@ -83,12 +86,12 @@ public interface Row extends Iterable<Cell> {
      *
      * @param cellnum  0 based column number
      * @return Cell representing that column or null if undefined.
-     * @see #getCell(int, m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Row.MissingCellPolicy)
+     * @see #getCell(int, org.apache.poi.ss.usermodel.Row.MissingCellPolicy)
      */
     Cell getCell(int cellnum);
     
     /**
-     * Returns the cell at the given (0 based) index, with the specified {@link m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Row.MissingCellPolicy}
+     * Returns the cell at the given (0 based) index, with the specified {@link org.apache.poi.ss.usermodel.Row.MissingCellPolicy}
      *
      * @return the cell at the given (0 based) index
      * @throws IllegalArgumentException if cellnum &lt; 0 or the specified MissingCellPolicy is invalid

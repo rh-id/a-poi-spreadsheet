@@ -1,15 +1,25 @@
-/*
- * ==================================================================== Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements. See the NOTICE file distributed with this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or
- * agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- * ====================================================================
- */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+/* ====================================================================
+   Licensed to the Apache Software Foundation (ASF) under one or more
+   contributor license agreements.  See the NOTICE file distributed with
+   this work for additional information regarding copyright ownership.
+   The ASF licenses this file to You under the Apache License, Version 2.0
+   (the "License"); you may not use this file except in compliance with
+   the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+==================================================================== */
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.atp;
+
+import android.util.Log;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -23,52 +33,9 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.NotImplemented
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.ValueEval;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.function.FunctionMetadata;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.function.FunctionMetadataRegistry;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.AverageIf;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.Averageifs;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.BesselJ;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.Bin2Dec;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.CeilingMath;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.CeilingPrecise;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.Complex;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.Countifs;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.Covar;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.Days;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.Dec2Bin;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.Dec2Hex;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.Delta;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.DollarDe;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.DollarFr;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.EDate;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.EOMonth;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.FactDouble;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.FloorMath;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.FloorPrecise;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.Forecast;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.FreeRefFunction;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.Gcd;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.Hex2Dec;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.ImReal;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.Imaginary;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.Lcm;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.Maxifs;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.Minifs;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.NormDist;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.NormInv;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.NormSDist;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.NormSInv;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.NumberValueFunction;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.Oct2Dec;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.Poisson;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.Quotient;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.Single;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.Sqrtpi;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.Sumifs;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.TDist2t;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.TDistLt;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.TDistRt;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.TextFunction;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.WeekNum;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.*;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.udf.UDFFinder;
+
 
 /**
  * Analysis Toolpack Function Definitions
@@ -76,6 +43,8 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.udf.UDFFinder;
 public final class AnalysisToolPak implements UDFFinder {
 
     public static final UDFFinder instance = new AnalysisToolPak();
+
+    private static final String TAG = "AnalysisToolPak";
 
     private static final class NotImplemented implements FreeRefFunction {
         private final String _functionName;
@@ -100,7 +69,7 @@ public final class AnalysisToolPak implements UDFFinder {
         // if you save such a .xlsx workbook as .xls
         final String prefix = "_xlfn.";
         // case-sensitive
-        if (name.startsWith(prefix)) name = name.substring(prefix.length());
+        if(name.startsWith(prefix)) name = name.substring(prefix.length());
 
         // FIXME: inconsistent case-sensitivity
         return _functionsByName.get(name.toUpperCase(Locale.ROOT));
@@ -225,6 +194,7 @@ public final class AnalysisToolPak implements UDFFinder {
         r(m, "RECEIVED", null);
         r(m, "RTD", null);
         r(m, "SERIESSUM", null);
+         r(m, "SHEET", null);
         r(m, "SINGLE", Single.instance);
         r(m, "SQRTPI", Sqrtpi.instance);
         r(m, "STDEV.S", Stdevs.instance);
@@ -260,8 +230,8 @@ public final class AnalysisToolPak implements UDFFinder {
         m.put(functionName, func);
     }
 
-    public static boolean isATPFunction(String name) {
-        AnalysisToolPak inst = (AnalysisToolPak) instance;
+    public static boolean isATPFunction(String name){
+        AnalysisToolPak inst = (AnalysisToolPak)instance;
         // FIXME: inconsistent case-sensitivity
         return inst._functionsByName.containsKey(name);
     }
@@ -272,12 +242,12 @@ public final class AnalysisToolPak implements UDFFinder {
      * @return an array of supported functions
      * @since 3.8 beta6
      */
-    public static Collection<String> getSupportedFunctionNames() {
-        AnalysisToolPak inst = (AnalysisToolPak) instance;
+    public static Collection<String> getSupportedFunctionNames(){
+        AnalysisToolPak inst = (AnalysisToolPak)instance;
         Collection<String> lst = new TreeSet<>();
-        for (Map.Entry<String, FreeRefFunction> me : inst._functionsByName.entrySet()) {
+        for(Map.Entry<String, FreeRefFunction> me : inst._functionsByName.entrySet()){
             FreeRefFunction func = me.getValue();
-            if (func != null && !(func instanceof NotImplemented)) {
+            if(func != null && !(func instanceof NotImplemented)){
                 lst.add(me.getKey());
             }
         }
@@ -290,10 +260,10 @@ public final class AnalysisToolPak implements UDFFinder {
      * @return an array of not supported functions
      * @since 3.8 beta6
      */
-    public static Collection<String> getNotSupportedFunctionNames() {
-        AnalysisToolPak inst = (AnalysisToolPak) instance;
+    public static Collection<String> getNotSupportedFunctionNames(){
+        AnalysisToolPak inst = (AnalysisToolPak)instance;
         Collection<String> lst = new TreeSet<>();
-        for (Map.Entry<String, FreeRefFunction> me : inst._functionsByName.entrySet()) {
+        for(Map.Entry<String, FreeRefFunction> me : inst._functionsByName.entrySet()){
             FreeRefFunction func = me.getValue();
             if (func instanceof NotImplemented) {
                 lst.add(me.getKey());
@@ -305,29 +275,53 @@ public final class AnalysisToolPak implements UDFFinder {
     /**
      * Register an ATP function in runtime.
      *
-     * @param name the function name
-     * @param func the function to register
+     * @param name  the function name
+     * @param func  the function to register
      * @throws IllegalArgumentException if the function is unknown or already registered.
      * @since 3.8 beta6
      */
     public static void registerFunction(String name, FreeRefFunction func) {
-        AnalysisToolPak inst = (AnalysisToolPak) instance;
-        if (!isATPFunction(name)) {
+        registerFunction(name, func, false);
+    }
+
+    /**
+     * Register an ATP function in runtime.
+     *
+     * @param name  the function name
+     * @param func  the function to register
+     * @param force force registration even if the function is already registered or unknown to POI
+     * @throws IllegalArgumentException if the function is unknown or already registered (and `force` is not true).
+     * @since POI 5.5.0
+     */
+    public static void registerFunction(String name, FreeRefFunction func, boolean force) {
+        AnalysisToolPak inst = (AnalysisToolPak)instance;
+        if (force) {
+            // Excel regularly adds new functions, so the ones registered in POI
+            // can be well out of date - allow users who know what they are doing
+            // to force their update
+        } else if(!isATPFunction(name)) {
             FunctionMetadata metaData = FunctionMetadataRegistry.getFunctionByName(name);
-            if (metaData != null) {
+            if(metaData != null) {
                 throw new IllegalArgumentException(name + " is a built-in Excel function. " +
                         "Use FunctionEval.registerFunction(String name, Function func) instead.");
             }
 
             throw new IllegalArgumentException(name + " is not a function from the Excel Analysis Toolpack.");
         }
+
         FreeRefFunction f = inst.findFunction(name);
-        if (f != null && !(f instanceof NotImplemented)) {
-            throw new IllegalArgumentException("POI already implements " + name +
-                    ". You cannot override POI's implementations of Excel functions");
+        if(f != null && !(f instanceof NotImplemented)) {
+            if (force) {
+                Log.i(TAG, "POI already implements " + name +
+                        ". You are overriding the implementation.");
+            } else {
+                throw new IllegalArgumentException("POI already implements " + name +
+                        ". You cannot override POI's implementations of Excel functions");
+            }
         }
 
         // FIXME: inconsistent case-sensitivity
         inst._functionsByName.put(name, func);
     }
+
 }

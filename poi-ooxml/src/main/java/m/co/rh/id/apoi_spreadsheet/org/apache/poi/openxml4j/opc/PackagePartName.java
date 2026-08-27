@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc;
 
@@ -25,6 +26,7 @@ import java.util.Locale;
 
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.exceptions.OpenXML4JRuntimeException;
+
 
 /**
  * An immutable Open Packaging Convention compliant part name.
@@ -75,7 +77,7 @@ public final class PackagePartName implements Comparable<PackagePartName> {
      * @throws InvalidFormatException
      *             Throw if the specified part name is not conform to Open
      *             Packaging Convention specifications.
-     * @see URI
+     * @see java.net.URI
      */
     PackagePartName(URI uri, boolean checkConformance)
             throws InvalidFormatException {
@@ -140,7 +142,8 @@ public final class PackagePartName implements Comparable<PackagePartName> {
             throw new IllegalArgumentException("partUri");
         }
 
-        return partUri.getPath().matches(
+        final String uriPath = partUri.getPath();
+        return uriPath != null && uriPath.matches(
                 "^.*/" + PackagingURIHelper.RELATIONSHIP_PART_SEGMENT_NAME + "/.*\\"
                         + PackagingURIHelper.RELATIONSHIP_PART_EXTENSION_NAME
                         + "$");
@@ -356,7 +359,7 @@ public final class PackagePartName implements Comparable<PackagePartName> {
     private static void throwExceptionIfPartNameNotStartsWithForwardSlashChar(
             URI partUri) throws InvalidFormatException {
         String uriPath = partUri.getPath();
-        if (uriPath.length() > 0
+        if (!uriPath.isEmpty()
                 && uriPath.charAt(0) != PackagingURIHelper.FORWARD_SLASH_CHAR) {
             throw new InvalidFormatException(
                     "A part name shall start with a forward slash ('/') character [M1.4]: "
@@ -377,7 +380,7 @@ public final class PackagePartName implements Comparable<PackagePartName> {
     private static void throwExceptionIfPartNameEndsWithForwardSlashChar(
             URI partUri) throws InvalidFormatException {
         String uriPath = partUri.getPath();
-        if (uriPath.length() > 0
+        if (!uriPath.isEmpty()
                 && uriPath.charAt(uriPath.length() - 1) == PackagingURIHelper.FORWARD_SLASH_CHAR) {
             throw new InvalidFormatException(
                     "A part name shall not have a forward slash as the last character [M1.5]: "
@@ -422,7 +425,7 @@ public final class PackagePartName implements Comparable<PackagePartName> {
      */
     public String getExtension() {
         String fragment = this.partNameURI.getPath();
-        if (fragment.length() > 0) {
+        if (!fragment.isEmpty()) {
             int i = fragment.lastIndexOf('.');
             if (i > -1) {
                 return fragment.substring(i + 1);

@@ -14,18 +14,24 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions;
+
+
+
+import android.util.Log;
 
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.ErrorEval;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.EvaluationException;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.NumberEval;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.ValueEval;
 
+
 /**
  * Calculates the internal rate of return.
- * <p>
+ *
  * Syntax is IRR(values) or IRR(values,guess)
  *
  * @see <a href="http://en.wikipedia.org/wiki/Internal_rate_of_return#Numerical_solution">Wikipedia on IRR</a>
@@ -34,11 +40,11 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.ValueEval;
 public final class Irr implements Function {
     private static final int MAX_ITERATION_COUNT = 1000;
     private static final double ABSOLUTE_ACCURACY = 1E-7;
-    private static final String TAG = "Irr";
+    private static final String LOGGER_TAG = "Irr";
 
 
     public ValueEval evaluate(final ValueEval[] args, final int srcRowIndex, final int srcColumnIndex) {
-        if (args.length == 0 || args.length > 2) {
+        if(args.length == 0 || args.length > 2) {
             // Wrong number of arguments
             return ErrorEval.VALUE_INVALID;
         }
@@ -46,7 +52,7 @@ public final class Irr implements Function {
         try {
             double[] values = AggregateFunction.ValueCollector.collectValues(args[0]);
             double guess;
-            if (args.length == 2) {
+            if(args.length == 2) {
                 guess = NumericFunction.singleOperandEvaluate(args[1], srcRowIndex, srcColumnIndex);
             } else {
                 guess = 0.1d;
@@ -54,7 +60,7 @@ public final class Irr implements Function {
             double result = irr(values, guess);
             NumericFunction.checkValue(result);
             return new NumberEval(result);
-        } catch (EvaluationException e) {
+        } catch (EvaluationException e){
             return e.getErrorEval();
         }
     }
@@ -78,17 +84,19 @@ public final class Irr implements Function {
      * after 1000 tries, the {@code Double.NaN} is returned.
      *
      * <p>
-     * The implementation is inspired by the NewtonSolver from the Apache Commons-Math library,
+     *   The implementation is inspired by the NewtonSolver from the Apache Commons-Math library,
+     *   @see <a href="http://commons.apache.org">http://commons.apache.org</a>
      *
-     * @param values the income values.
-     * @param guess  the initial guess of irr.
+     *
+     * @param values        the income values.
+     * @param guess         the initial guess of irr.
      * @return the irr value. The method returns {@code Double.NaN}
-     * if the maximum iteration count is exceeded
-     * @see <a href="http://commons.apache.org">http://commons.apache.org</a>
+     *  if the maximum iteration count is exceeded
+     *
      * @see <a href="http://en.wikipedia.org/wiki/Internal_rate_of_return#Numerical_solution">
-     * http://en.wikipedia.org/wiki/Internal_rate_of_return#Numerical_solution</a>
+     *     http://en.wikipedia.org/wiki/Internal_rate_of_return#Numerical_solution</a>
      * @see <a href="http://en.wikipedia.org/wiki/Newton%27s_method">
-     * http://en.wikipedia.org/wiki/Newton%27s_method</a>
+     *     http://en.wikipedia.org/wiki/Newton%27s_method</a>
      */
     public static double irr(double[] values, double guess) {
 
@@ -100,7 +108,7 @@ public final class Irr implements Function {
             final double factor = 1.0 + x0;
             double denominator = factor;
             if (denominator == 0) {
-                android.util.Log.w(TAG, "Returning NaN because IRR has found an denominator of 0");
+                Log.w(LOGGER_TAG, "Returning NaN because IRR has found an denominator of 0");
                 return Double.NaN;
             }
 
@@ -115,10 +123,10 @@ public final class Irr implements Function {
 
             // the essence of the Newton-Raphson Method
             if (fDerivative == 0) {
-                android.util.Log.w(TAG, "Returning NaN because IRR has found an fDerivative of 0");
+                Log.w(LOGGER_TAG, "Returning NaN because IRR has found an fDerivative of 0");
                 return Double.NaN;
             }
-            double x1 = x0 - fValue / fDerivative;
+            double x1 =  x0 - fValue/fDerivative;
 
             if (Math.abs(x1 - x0) <= ABSOLUTE_ACCURACY) {
                 return x1;
@@ -127,7 +135,7 @@ public final class Irr implements Function {
             x0 = x1;
         }
         // maximum number of iterations is exceeded
-        android.util.Log.w(TAG, String.format("Returning NaN because IRR has reached max number of iterations allowed: %d", MAX_ITERATION_COUNT));
+        Log.w(LOGGER_TAG, String.format("Returning NaN because IRR has reached max number of iterations allowed: %s", MAX_ITERATION_COUNT));
         return Double.NaN;
     }
 }

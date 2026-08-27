@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.dsig;
 
@@ -51,7 +52,6 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import javax.xml.crypto.URIDereferencer;
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 import javax.xml.crypto.dsig.DigestMethod;
@@ -68,10 +68,12 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.dsig.facets.XAdESS
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.dsig.services.RevocationDataService;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.dsig.services.SignaturePolicyService;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.dsig.services.TimeStampHttpClient;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.dsig.services.TimeStampService;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.dsig.services.TimeStampServiceValidator;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.dsig.services.TimeStampSimpleHttpClient;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LocaleUtil;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Removal;
+
 
 /**
  * This class bundles the configuration options used for the existing
@@ -79,7 +81,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Removal;
  * Apart from the thread local members (e.g. opc-package) most values will probably be constant, so
  * it might be configured centrally (e.g. by spring)
  */
-@SuppressWarnings({"unused", "WeakerAccess"})
+@SuppressWarnings({"unused","WeakerAccess"})
 public class SignatureConfig {
     public static class CRLEntry {
         private final String crlURL;
@@ -113,12 +115,12 @@ public class SignatureConfig {
     private static final String XMLSEC_SANTUARIO = "org.apache.jcp.xml.dsig.internal.dom.XMLDSigRI";
     private static final String XMLSEC_JDK = "org.jcp.xml.dsig.internal.dom.XMLDSigRI";
 
-    private static final List<Supplier<SignatureFacet>> DEFAULT_FACETS = Arrays.asList(
-            OOXMLSignatureFacet::new,
-            KeyInfoSignatureFacet::new,
-            XAdESSignatureFacet::new,
-            Office2010SignatureFacet::new
-    );
+    private static final List<Supplier<SignatureFacet>> DEFAULT_FACETS = Collections.unmodifiableList(Arrays.asList(
+        OOXMLSignatureFacet::new,
+        KeyInfoSignatureFacet::new,
+        XAdESSignatureFacet::new,
+        Office2010SignatureFacet::new
+    ));
 
     private List<SignatureFacet> signatureFacets = new ArrayList<>();
     private HashAlgorithm digestAlgo = HashAlgorithm.sha256;
@@ -136,10 +138,6 @@ public class SignatureConfig {
     private boolean includeEntireCertificateChain = true;
     private boolean includeIssuerSerial;
     private boolean includeKeyValue;
-
-    /**
-     * the time-stamp service used for XAdES-T and XAdES-X.
-     */
     private TimeStampHttpClient tspHttpClient = new TimeStampSimpleHttpClient();
 
 
@@ -225,7 +223,7 @@ public class SignatureConfig {
      * Map of namespace uris to prefix
      * If a mapping is specified, the corresponding elements will be prefixed
      */
-    private final Map<String, String> namespacePrefixes = new HashMap<>();
+    private final Map<String,String> namespacePrefixes = new HashMap<>();
 
     /**
      * if true, the signature config is updated based on the validated document
@@ -336,7 +334,7 @@ public class SignatureConfig {
 
     /**
      * @param signingCertificateChain the certificate chain, index 0 should be
-     *                                the certificate matching the private key
+     * the certificate matching the private key
      */
     public void setSigningCertificateChain(
             List<X509Certificate> signingCertificateChain) {
@@ -360,6 +358,7 @@ public class SignatureConfig {
 
     /**
      * @return the formatted execution time ({@link #SIGNATURE_TIME_FORMAT})
+     *
      * @since POI 4.0.0
      */
     public String formatExecutionTime() {
@@ -370,12 +369,12 @@ public class SignatureConfig {
 
     /**
      * Sets the executionTime which is in standard format ({@link #SIGNATURE_TIME_FORMAT})
-     *
      * @param executionTime the execution time
+     *
      * @since POI 4.0.0
      */
     public void setExecutionTime(String executionTime) {
-        if (executionTime != null && !"".equals(executionTime)) {
+        if (executionTime != null && !executionTime.isEmpty()){
             final DateFormat fmt = new SimpleDateFormat(SIGNATURE_TIME_FORMAT, Locale.ROOT);
             fmt.setTimeZone(LocaleUtil.TIMEZONE_UTC);
             try {
@@ -402,6 +401,7 @@ public class SignatureConfig {
 
     /**
      * @return the dereferencer used for Reference/@URI attributes, defaults to {@link OOXMLURIDereferencer}
+     *
      * @deprecated in POI 5.0.0 - use {@link SignatureInfo#getUriDereferencer()} instead
      */
     @Deprecated
@@ -412,6 +412,7 @@ public class SignatureConfig {
 
     /**
      * @param uriDereferencer the dereferencer used for Reference/@URI attributes
+     *
      * @deprecated in POI 5.0.0 - use {@link SignatureInfo#setUriDereferencer(URIDereferencer)} instead
      */
     @Deprecated
@@ -430,7 +431,7 @@ public class SignatureConfig {
 
     /**
      * @param signatureDescription the human-readable description of
-     *                             what the citizen will be signing.
+     * what the citizen will be signing.
      */
     public void setSignatureDescription(String signatureDescription) {
         this.signatureDescription = signatureDescription;
@@ -496,7 +497,7 @@ public class SignatureConfig {
                 return canonicalizationMethod;
         }
 
-        throw new EncryptedDocumentException("Unknown CanonicalizationMethod: " + canonicalizationMethod);
+        throw new EncryptedDocumentException("Unknown CanonicalizationMethod: "+canonicalizationMethod);
     }
 
     /**
@@ -509,10 +510,10 @@ public class SignatureConfig {
 
     /**
      * @param packageSignatureId The signature Id attribute value used to create the XML signature.
-     *                           A {@code null} value will trigger an automatically generated signature Id.
+     * A {@code null} value will trigger an automatically generated signature Id.
      */
     public void setPackageSignatureId(String packageSignatureId) {
-        this.packageSignatureId = nvl(packageSignatureId, "xmldsig-" + UUID.randomUUID());
+        this.packageSignatureId = nvl(packageSignatureId,"xmldsig-"+UUID.randomUUID());
     }
 
     /**
@@ -550,12 +551,12 @@ public class SignatureConfig {
      * Defaults to the hash algorithm of the main entry
      */
     public HashAlgorithm getTspDigestAlgo() {
-        return nvl(tspDigestAlgo, digestAlgo);
+        return nvl(tspDigestAlgo,digestAlgo);
     }
 
     /**
      * @param tspDigestAlgo the algorithm to be used for the timestamp entry.
-     *                      if {@code null}, the hash algorithm of the main entry
+     * if {@code null}, the hash algorithm of the main entry
      */
     public void setTspDigestAlgo(HashAlgorithm tspDigestAlgo) {
         this.tspDigestAlgo = tspDigestAlgo;
@@ -571,7 +572,7 @@ public class SignatureConfig {
 
     /**
      * @param proxyUrl the proxy url to be used for all communications.
-     *                 Currently this affects the timestamp service
+     * Currently this affects the timestamp service
      */
     public void setProxyUrl(String proxyUrl) {
         this.proxyUrl = proxyUrl;
@@ -579,6 +580,7 @@ public class SignatureConfig {
 
     /**
      * @return the http client used for timestamp server connections
+     *
      * @since POI 5.2.1
      */
     public TimeStampHttpClient getTspHttpClient() {
@@ -587,6 +589,7 @@ public class SignatureConfig {
 
     /**
      * @param tspHttpClient the http client used for timestamp server connections
+     *
      * @since POI 5.2.1
      */
     public void setTspHttpClient(TimeStampHttpClient tspHttpClient) {
@@ -645,7 +648,7 @@ public class SignatureConfig {
 
     /**
      * @param revocationDataService the optional revocation data service used for XAdES-C and XAdES-X-L.
-     *                              When {@code null} the signature will be limited to XAdES-T only.
+     * When {@code null} the signature will be limited to XAdES-T only.
      */
     public void setRevocationDataService(RevocationDataService revocationDataService) {
         this.revocationDataService = revocationDataService;
@@ -655,12 +658,12 @@ public class SignatureConfig {
      * @return hash algorithm used for XAdES. Defaults to the {@link #getDigestAlgo()}
      */
     public HashAlgorithm getXadesDigestAlgo() {
-        return nvl(xadesDigestAlgo, digestAlgo);
+        return nvl(xadesDigestAlgo,digestAlgo);
     }
 
     /**
      * @param xadesDigestAlgo hash algorithm used for XAdES.
-     *                        When {@code null}, defaults to {@link #getDigestAlgo()}
+     * When {@code null}, defaults to {@link #getDigestAlgo()}
      */
     public void setXadesDigestAlgo(HashAlgorithm xadesDigestAlgo) {
         this.xadesDigestAlgo = xadesDigestAlgo;
@@ -668,7 +671,8 @@ public class SignatureConfig {
 
     /**
      * @param xadesDigestAlgo hash algorithm used for XAdES.
-     *                        When {@code null}, defaults to {@link #getDigestAlgo()}
+     * When {@code null}, defaults to {@link #getDigestAlgo()}
+     *
      * @since POI 4.0.0
      */
     public void setXadesDigestAlgo(String xadesDigestAlgo) {
@@ -714,7 +718,7 @@ public class SignatureConfig {
 
     /**
      * @param includeEntireCertificateChain if true, include the whole certificate chain.
-     *                                      If false, only include the signer cert
+     * If false, only include the signer cert
      */
     public void setIncludeEntireCertificateChain(boolean includeEntireCertificateChain) {
         this.includeEntireCertificateChain = includeEntireCertificateChain;
@@ -773,7 +777,7 @@ public class SignatureConfig {
 
     /**
      * @param xadesSignatureId the Id for the XAdES SignedProperties element.
-     *                         When {@code null} defaults to {@code idSignedProperties}
+     * When {@code null} defaults to {@code idSignedProperties}
      */
     public void setXadesSignatureId(String xadesSignatureId) {
         this.xadesSignatureId = xadesSignatureId;
@@ -798,7 +802,7 @@ public class SignatureConfig {
      * Make sure the DN is encoded using the same order as present
      * within the certificate. This is an Office2010 work-around.
      * Should be reverted back.
-     * <p>
+     *
      * XXX: not correct according to RFC 4514.
      *
      * @return when true, the issuer DN is used instead of the issuer X500 principal
@@ -825,7 +829,7 @@ public class SignatureConfig {
 
     /**
      * @param signatureMarshalListener the event listener watching the xml structure
-     *                                 generation for the signature
+     * generation for the signature
      */
     public void setSignatureMarshalListener(SignatureMarshalListener signatureMarshalListener) {
         this.signatureMarshalListener = signatureMarshalListener;
@@ -848,12 +852,11 @@ public class SignatureConfig {
 
     /**
      * helper method for null/default value handling
-     *
-     * @param value        the value to be tested
+     * @param value the value to be tested
      * @param defaultValue the default value
      * @return if value is not null, return value otherwise defaultValue
      */
-    private static <T> T nvl(T value, T defaultValue) {
+    private static <T> T nvl(T value, T defaultValue)  {
         return value == null ? defaultValue : value;
     }
 
@@ -863,21 +866,14 @@ public class SignatureConfig {
      */
     public String getSignatureMethodUri() {
         switch (getDigestAlgo()) {
-            case sha1:
-                return XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA1;
-            case sha224:
-                return XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA224;
-            case sha256:
-                return XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA256;
-            case sha384:
-                return XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA384;
-            case sha512:
-                return XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA512;
-            case ripemd160:
-                return XMLSignature.ALGO_ID_SIGNATURE_RSA_RIPEMD160;
-            default:
-                throw new EncryptedDocumentException("Hash algorithm "
-                        + getDigestAlgo() + " not supported for signing.");
+        case sha1:   return XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA1;
+        case sha224: return XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA224;
+        case sha256: return XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA256;
+        case sha384: return XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA384;
+        case sha512: return XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA512;
+        case ripemd160: return XMLSignature.ALGO_ID_SIGNATURE_RSA_RIPEMD160;
+        default: throw new EncryptedDocumentException("Hash algorithm "
+            +getDigestAlgo()+" not supported for signing.");
         }
     }
 
@@ -897,21 +893,14 @@ public class SignatureConfig {
      */
     public static String getDigestMethodUri(HashAlgorithm digestAlgo) {
         switch (digestAlgo) {
-            case sha1:
-                return DigestMethod.SHA1;
-            case sha224:
-                return DigestMethod_SHA224;
-            case sha256:
-                return DigestMethod.SHA256;
-            case sha384:
-                return DigestMethod_SHA384;
-            case sha512:
-                return DigestMethod.SHA512;
-            case ripemd160:
-                return DigestMethod.RIPEMD160;
-            default:
-                throw new EncryptedDocumentException("Hash algorithm "
-                        + digestAlgo + " not supported for signing.");
+        case sha1:   return DigestMethod.SHA1;
+        case sha224: return DigestMethod_SHA224;
+        case sha256: return DigestMethod.SHA256;
+        case sha384: return DigestMethod_SHA384;
+        case sha512: return DigestMethod.SHA512;
+        case ripemd160: return DigestMethod.RIPEMD160;
+        default: throw new EncryptedDocumentException("Hash algorithm "
+            +digestAlgo+" not supported for signing.");
         }
     }
 
@@ -927,21 +916,14 @@ public class SignatureConfig {
             return null;
         }
         switch (digestMethodUri) {
-            case DigestMethod.SHA1:
-                return HashAlgorithm.sha1;
-            case DigestMethod_SHA224:
-                return HashAlgorithm.sha224;
-            case DigestMethod.SHA256:
-                return HashAlgorithm.sha256;
-            case DigestMethod_SHA384:
-                return HashAlgorithm.sha384;
-            case DigestMethod.SHA512:
-                return HashAlgorithm.sha512;
-            case DigestMethod.RIPEMD160:
-                return HashAlgorithm.ripemd160;
-            default:
-                throw new EncryptedDocumentException("Hash algorithm "
-                        + digestMethodUri + " not supported for signing.");
+            case DigestMethod.SHA1:   return HashAlgorithm.sha1;
+            case DigestMethod_SHA224: return HashAlgorithm.sha224;
+            case DigestMethod.SHA256: return HashAlgorithm.sha256;
+            case DigestMethod_SHA384: return HashAlgorithm.sha384;
+            case DigestMethod.SHA512: return HashAlgorithm.sha512;
+            case DigestMethod.RIPEMD160: return HashAlgorithm.ripemd160;
+            default: throw new EncryptedDocumentException("Hash algorithm "
+                    +digestMethodUri+" not supported for signing.");
         }
     }
 
@@ -951,6 +933,7 @@ public class SignatureConfig {
      * configuration is updated
      *
      * @param signatureMethodUri the method uri
+     *
      * @since POI 4.0.0
      */
     public void setSignatureMethodFromUri(final String signatureMethodUri) {
@@ -973,9 +956,8 @@ public class SignatureConfig {
             case XMLSignature.ALGO_ID_SIGNATURE_RSA_RIPEMD160:
                 setDigestAlgo(HashAlgorithm.ripemd160);
                 break;
-            default:
-                throw new EncryptedDocumentException("Hash algorithm "
-                        + signatureMethodUri + " not supported.");
+            default: throw new EncryptedDocumentException("Hash algorithm "
+                    +signatureMethodUri+" not supported.");
         }
     }
 
@@ -988,14 +970,14 @@ public class SignatureConfig {
      * <li>the JDK xmlsec provider</li>
      * </ol>
      *
-     * @return a list of possible XMLSEC provider class names
+     * @return an array of possible XMLSEC provider class names
      */
     public static String[] getProviderNames() {
         // need to check every time, as the system property might have been changed in the meantime
         String sysProp = System.getProperty("jsr105Provider");
-        return (sysProp == null || "".equals(sysProp))
-                ? new String[]{XMLSEC_SANTUARIO, XMLSEC_JDK}
-                : new String[]{sysProp, XMLSEC_SANTUARIO, XMLSEC_JDK};
+        return (sysProp == null || sysProp.isEmpty())
+            ? new String[]{XMLSEC_SANTUARIO, XMLSEC_JDK}
+            : new String[]{sysProp, XMLSEC_SANTUARIO, XMLSEC_JDK};
     }
 
 
@@ -1018,6 +1000,7 @@ public class SignatureConfig {
 
     /**
      * @return true, if the signature config is to be updated based on the successful validated document
+     *
      * @since POI 4.0.0
      */
     public boolean isUpdateConfigOnValidate() {
@@ -1026,10 +1009,11 @@ public class SignatureConfig {
 
     /**
      * The signature config can be updated if a document is succesful validated.
-     * This flag is used for activating this modifications.
+     * This flag is used for activating these modifications.
      * Defaults to {@code false}
      *
      * @param updateConfigOnValidate if true, update config on validate
+     *
      * @since POI 4.0.0
      */
     public void setUpdateConfigOnValidate(boolean updateConfigOnValidate) {
@@ -1038,6 +1022,7 @@ public class SignatureConfig {
 
     /**
      * @return true, if multiple signatures can be attached
+     *
      * @since POI 4.1.0
      */
     public boolean isAllowMultipleSignatures() {
@@ -1048,7 +1033,8 @@ public class SignatureConfig {
      * Activate multiple signatures
      *
      * @param allowMultipleSignatures if true, the signature will be added,
-     *                                otherwise all existing signatures will be replaced by the current
+     *          otherwise all existing signatures will be replaced by the current
+     *
      * @since POI 4.1.0
      */
     public void setAllowMultipleSignatures(boolean allowMultipleSignatures) {
@@ -1057,6 +1043,7 @@ public class SignatureConfig {
 
     /**
      * @return is secure validation enabled?
+     *
      * @since POI 5.2.0
      */
     public boolean isSecureValidation() {
@@ -1082,6 +1069,7 @@ public class SignatureConfig {
      * </ul>
      *
      * @see <a href="https://santuario.apache.org/faq.html#faq-4.SecureValidation">XmlSec SecureValidation</a>
+     *
      * @since POI 5.2.0
      */
     public void setSecureValidation(boolean secureValidation) {
@@ -1133,9 +1121,8 @@ public class SignatureConfig {
 
     /**
      * Add certificate into keystore (cache) for further certificate chain lookups
-     *
      * @param alias the alias, or null if alias is taken from common name attribute of certificate
-     * @param x509  the x509 certificate
+     * @param x509 the x509 certificate
      */
     public void addCachedCertificate(String alias, X509Certificate x509) throws KeyStoreException {
         String lAlias = alias;
@@ -1151,7 +1138,7 @@ public class SignatureConfig {
 
     public void addCachedCertificate(String alias, byte[] x509Bytes) throws KeyStoreException, CertificateException {
         CertificateFactory certFact = CertificateFactory.getInstance("X.509");
-        X509Certificate x509 = (X509Certificate) certFact.generateCertificate(new ByteArrayInputStream(x509Bytes));
+        X509Certificate x509 = (X509Certificate)certFact.generateCertificate(new ByteArrayInputStream(x509Bytes));
         addCachedCertificate(null, x509);
     }
 
@@ -1171,9 +1158,9 @@ public class SignatureConfig {
                     chain = new Certificate[]{cert};
                 }
                 Optional<X509Certificate> found = Stream.of(chain)
-                        .map(X509Certificate.class::cast)
-                        .filter(c -> principalName.equalsIgnoreCase(c.getSubjectX500Principal().getName()))
-                        .findFirst();
+                    .map(X509Certificate.class::cast)
+                    .filter(c -> principalName.equalsIgnoreCase(c.getSubjectX500Principal().getName()))
+                    .findFirst();
                 if (found.isPresent()) {
                     return found.get();
                 }
@@ -1191,7 +1178,7 @@ public class SignatureConfig {
             ks.load(null, null);
             return ks;
         } catch (IOException | GeneralSecurityException e) {
-            Log.e(TAG, "unable to create PKCS #12 keystore - XAdES certificate chain lookups disabled");
+            Log.e(TAG, "unable to create PKCS #12 keystore - XAdES certificate chain lookups disabled", e);
         }
         return null;
     }

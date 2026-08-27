@@ -39,7 +39,7 @@ public abstract class BaseTestDataFormat {
 
     protected static final String POUND_FMT = "\"\u00a3\"#,##0;[Red]\\-\"\u00a3\"#,##0";
 
-    private final ITestDataProvider _testDataProvider;
+    protected final ITestDataProvider _testDataProvider;
 
     protected BaseTestDataFormat(ITestDataProvider testDataProvider) {
         _testDataProvider = testDataProvider;
@@ -272,6 +272,25 @@ public abstract class BaseTestDataFormat {
             assertEquals("12", formatter.formatCellValue(sml));
             assertEquals("1'234", formatter.formatCellValue(med));
             assertEquals("12'345'678", formatter.formatCellValue(lge));
+        }
+    }
+
+    @Test
+    public void testFormatCellValueDecimal() throws IOException {
+        DataFormatter df = new DataFormatter();
+
+        try (Workbook wb = _testDataProvider.createWorkbook()) {
+            Cell cell = wb.createSheet("test").createRow(0).createCell(0);
+            assertEquals("", df.formatCellValue(cell));
+
+            cell.setCellValue(1.005);
+            assertEquals("1.005", df.formatCellValue(cell));
+
+            DataFormat format = wb.createDataFormat();
+            CellStyle cellStyle = wb.createCellStyle();
+            cellStyle.setDataFormat(format.getFormat("0.00"));
+            cell.setCellStyle(cellStyle);
+            assertEquals("1.01", df.formatCellValue(cell));
         }
     }
 }

@@ -43,7 +43,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.CellReference;
  */
 public abstract class BaseTestSheetShiftRows {
 
-    private final ITestDataProvider _testDataProvider;
+    protected final ITestDataProvider _testDataProvider;
 
     protected BaseTestSheetShiftRows(ITestDataProvider testDataProvider) {
         _testDataProvider = testDataProvider;

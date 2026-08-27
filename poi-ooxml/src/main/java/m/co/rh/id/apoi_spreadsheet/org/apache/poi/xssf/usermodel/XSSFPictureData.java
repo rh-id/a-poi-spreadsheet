@@ -15,6 +15,8 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel;
 
 import java.io.IOException;
@@ -27,6 +29,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackagePart;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.PictureData;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Workbook;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.IOUtils;
+
 
 /**
  * Raw picture data, normally attached to a SpreadsheetML Drawing.
@@ -48,7 +51,8 @@ public class XSSFPictureData extends POIXMLDocumentPart implements PictureData {
      * @return the max image size allowed for XSSF pictures
      */
     public static int getMaxImageSize() {
-        return MAX_IMAGE_SIZE;
+        final int ioMaxSize = IOUtils.getByteArrayMaxOverride();
+        return ioMaxSize < 0 ? MAX_IMAGE_SIZE : Math.min(MAX_IMAGE_SIZE, ioMaxSize);
     }
 
     /**
@@ -73,7 +77,7 @@ public class XSSFPictureData extends POIXMLDocumentPart implements PictureData {
     /**
      * Create a new XSSFPictureData node
      *
-     * @see m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFWorkbook#addPicture(byte[], int)
+     * @see org.apache.poi.xssf.usermodel.XSSFWorkbook#addPicture(byte[], int)
      */
     protected XSSFPictureData() {
         super();
@@ -103,6 +107,7 @@ public class XSSFPictureData extends POIXMLDocumentPart implements PictureData {
      *
      * @return the picture data.
      */
+    @Override
     public byte[] getData() {
         try (InputStream inputStream = getPackagePart().getInputStream()) {
             return IOUtils.toByteArrayWithMaxLength(inputStream, getMaxImageSize());
@@ -117,7 +122,7 @@ public class XSSFPictureData extends POIXMLDocumentPart implements PictureData {
     }
 
     @Override
-    public int getPictureType(){
+    public int getPictureType() {
         String contentType = getPackagePart().getContentType();
         for (int i = 0; i < RELATIONS.length; i++) {
             if(RELATIONS[i] == null) continue;
@@ -129,6 +134,7 @@ public class XSSFPictureData extends POIXMLDocumentPart implements PictureData {
         return 0;
     }
 
+    @Override
     public String getMimeType() {
         return getPackagePart().getContentType();
     }

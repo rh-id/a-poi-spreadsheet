@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.streaming;
 
@@ -35,6 +36,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Sheet;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.SheetUtil;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
 
+
 /**
  * Tracks best fit column width for rows of an {@link SXSSFSheet},
  * to be able to correctly calculate auto-sized column widths even
@@ -44,11 +46,10 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
  * the value is a pair of doubles. This data structure's memory footprint
  * is linear with the number of *tracked* columns and invariant with
  * the number of rows or columns in the sheet.
- *
  * @since 3.14beta1
- */
+*/
 @Internal
-        /*package*/ class AutoSizeColumnTracker {
+/*package*/ class AutoSizeColumnTracker {
     private final float defaultCharWidth;
     private final DataFormatter dataFormatter = new DataFormatter();
 
@@ -62,6 +63,8 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
     // Using a HashSet instead of a TreeSet because we don't care about order.
     private final Set<Integer> untrackedColumns = new HashSet<>();
     private boolean trackAllColumns;
+    // arbitraryExtraWidth is the extra width added to the best-fit column width (since POI 5.4.0)
+    private double arbitraryExtraWidth = 0.0d;
 
     /**
      * Tuple to store the column widths considering and not considering merged cells
@@ -71,22 +74,21 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
      * it's probably better to let the user defer how they want to auto-size to SXSSFSheet.autoSizeColumn,
      * rather than twice (via SXSSFSheet.trackColumn(int column, boolean useMergedCells) and again at
      * SXSFSheet.autoSizeColumn(int column, boolean useMergedCells))
-     *
      * @since 3.14beta1
      */
     private static class ColumnWidthPair {
         private double withSkipMergedCells;
         private double withUseMergedCells;
-
+        
         public ColumnWidthPair() {
             this(-1.0, -1.0);
         }
-
+        
         public ColumnWidthPair(final double columnWidthSkipMergedCells, final double columnWidthUseMergedCells) {
             withSkipMergedCells = columnWidthSkipMergedCells;
             withUseMergedCells = columnWidthUseMergedCells;
         }
-
+        
         /**
          * Gets the current best-fit column width for the provided settings
          *
@@ -96,19 +98,19 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
         public double getMaxColumnWidth(final boolean useMergedCells) {
             return useMergedCells ? withUseMergedCells : withSkipMergedCells;
         }
-
+        
         /**
          * Sets the best-fit column width to the maximum of the current width and the provided width
          *
          * @param unmergedWidth the best-fit column width calculated with useMergedCells=False
-         * @param mergedWidth   the best-fit column width calculated with useMergedCells=True
+         * @param mergedWidth the best-fit column width calculated with useMergedCells=True
          */
         public void setMaxColumnWidths(double unmergedWidth, double mergedWidth) {
             withUseMergedCells = Math.max(withUseMergedCells, mergedWidth);
             withSkipMergedCells = Math.max(withSkipMergedCells, unmergedWidth);
         }
     }
-
+    
     /**
      * AutoSizeColumnTracker constructor. Holds no reference to <code>sheet</code>
      *
@@ -118,6 +120,26 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
     public AutoSizeColumnTracker(final Sheet sheet) {
         // If sheet needs to be saved, use a java.lang.ref.WeakReference to avoid garbage collector gridlock.
         defaultCharWidth = SheetUtil.getDefaultCharWidthAsFloat(sheet.getWorkbook());
+    }
+
+    /**
+     * Set the extra width added to the best-fit column width (default 0.0).
+     *
+     * @param arbitraryExtraWidth the extra width added to the best-fit column width
+     * @since 5.4.0
+     */
+    public void setArbitraryExtraWidth(final double arbitraryExtraWidth) {
+        this.arbitraryExtraWidth = arbitraryExtraWidth;
+    }
+
+    /**
+     * Get the extra width added to the best-fit column width.
+     *
+     * @return the extra width added to the best-fit column width
+     * @since 5.4.0
+     */
+    public double getArbitraryExtraWidth() {
+        return arbitraryExtraWidth;
     }
 
     /**
@@ -132,7 +154,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
         SortedSet<Integer> sorted = new TreeSet<>(maxColumnWidths.keySet());
         return Collections.unmodifiableSortedSet(sorted);
     }
-
+    
     /**
      * Returns true if column is currently tracked for auto-sizing.
      *
@@ -144,7 +166,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
         return (trackAllColumns && !untrackedColumns.contains(column))
                 || maxColumnWidths.containsKey(column);
     }
-
+    
     /**
      * Returns true if all columns are implicitly tracked.
      *
@@ -154,22 +176,20 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
     public boolean isAllColumnsTracked() {
         return trackAllColumns;
     }
-
+    
     /**
      * Tracks all non-blank columns
      * Allows columns that have been explicitly untracked to be tracked
-     *
      * @since 3.14beta1
      */
     public void trackAllColumns() {
         trackAllColumns = true;
         untrackedColumns.clear();
     }
-
+    
     /**
      * Untrack all columns that were previously tracked for auto-sizing.
      * All best-fit column widths are forgotten.
-     *
      * @since 3.14beta1
      */
     public void untrackAllColumns() {
@@ -177,16 +197,17 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
         maxColumnWidths.clear();
         untrackedColumns.clear();
     }
-
+    
     /**
      * Marks multiple columns for inclusion in auto-size column tracking.
      * Note this has undefined behavior if columns are tracked after one or more rows are written to the sheet.
-     * Any column in <code>columns</code> that are already tracked are ignored by this call.
+     * Any column in <code>columns</code> that are already tracked are ignored by this call. 
      *
      * @param columns the indices of the columns to track
      * @since 3.14beta1
      */
-    public void trackColumns(Collection<Integer> columns) {
+    public void trackColumns(Collection<Integer> columns)
+    {
         for (final int column : columns) {
             trackColumn(column);
         }
@@ -209,7 +230,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
         }
         return false;
     }
-
+    
     /**
      * Implicitly track a column if it has not been explicitly untracked
      * If it has been explicitly untracked, this call does nothing and returns false.
@@ -225,7 +246,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
         }
         return false;
     }
-
+    
     /**
      * Removes columns that were previously marked for inclusion in auto-size column tracking.
      * When a column is untracked, the best-fit width is forgotten.
@@ -235,7 +256,8 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
      * @return true if one or more columns were untracked as a result of this call
      * @since 3.14beta1
      */
-    public boolean untrackColumns(Collection<Integer> columns) {
+    public boolean untrackColumns(Collection<Integer> columns)
+    {
         untrackedColumns.addAll(columns);
         boolean result = false;
         for (Integer col : columns) {
@@ -243,7 +265,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
         }
         return result;
     }
-
+    
     /**
      * Removes a column that was previously marked for inclusion in auto-size column tracking.
      * When a column is untracked, the best-fit width is forgotten.
@@ -261,7 +283,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
     /**
      * Get the best-fit width of a tracked column
      *
-     * @param column         the index of the column to get the current best-fit width of
+     * @param column the index of the column to get the current best-fit width of
      * @param useMergedCells true if merged cells should be considered when computing the best-fit width
      * @return best-fit column width, measured in number of characters
      * @throws IllegalStateException if column is not tracked and trackAllColumns is false
@@ -276,22 +298,24 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
                             "Column was explicitly untracked after trackAllColumns() was called.");
                     throw new IllegalStateException(
                             "Cannot get best fit column width on explicitly untracked column " + column + ". " +
-                                    "Either explicitly track the column or track all columns.", reason);
+                            "Either explicitly track the column or track all columns.", reason);
                 }
-            } else {
+            }
+            else {
                 final Throwable reason = new IllegalStateException(
                         "Column was never explicitly tracked and isAllColumnsTracked() is false " +
-                                "(trackAllColumns() was never called or untrackAllColumns() was called after trackAllColumns() was called).");
+                        "(trackAllColumns() was never called or untrackAllColumns() was called after trackAllColumns() was called).");
                 throw new IllegalStateException(
                         "Cannot get best fit column width on untracked column " + column + ". " +
-                                "Either explicitly track the column or track all columns.", reason);
+                        "Either explicitly track the column or track all columns.", reason);
             }
         }
         final double width = maxColumnWidths.get(column).getMaxColumnWidth(useMergedCells);
-        return Math.toIntExact(Math.round(256 * width));
+        return Math.toIntExact(Math.round(256*width));
     }
+    
 
-
+    
     /**
      * Calculate the best fit width for each tracked column in row
      *
@@ -301,7 +325,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
     public void updateColumnWidths(Row row) {
         // track new columns
         implicitlyTrackColumnsInRow(row);
-
+        
         // update the widths
         // for-loop over the shorter of the number of cells in the row and the number of tracked columns
         // these two for-loops should do the same thing
@@ -322,7 +346,8 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
                     updateColumnWidth(cell, pair);
                 }
             }
-        } else {
+        }
+        else {
             // loop over the cells in this row, because there are fewer cells in this row than tracked columns
             for (final Cell cell : row) {
                 final int column = cell.getColumnIndex();
@@ -340,7 +365,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
             }
         }
     }
-
+    
     /**
      * Helper for {@link #updateColumnWidths(Row)}.
      * Implicitly track the columns corresponding to the cells in row.
@@ -360,7 +385,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
             }
         }
     }
-
+    
     /**
      * Helper for {@link #updateColumnWidths(Row)}.
      *
@@ -369,8 +394,10 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
      * @since 3.14beta1
      */
     private void updateColumnWidth(final Cell cell, final ColumnWidthPair pair) {
-        final double unmergedWidth = SheetUtil.getCellWidth(cell, defaultCharWidth, dataFormatter, false);
-        final double mergedWidth = SheetUtil.getCellWidth(cell, defaultCharWidth, dataFormatter, true);
+        final double unmergedWidth =
+                SheetUtil.getCellWidth(cell, defaultCharWidth, dataFormatter, false);
+        final double mergedWidth =
+                SheetUtil.getCellWidth(cell, defaultCharWidth, dataFormatter, true);
         pair.setMaxColumnWidths(unmergedWidth, mergedWidth);
     }
 }

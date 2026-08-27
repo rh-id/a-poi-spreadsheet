@@ -15,6 +15,8 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula;
 
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.AreaEval;
@@ -25,6 +27,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ptg.AreaI;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ptg.AreaI.OffsetArea;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.CellReference;
 
+
 /**
  * Provides holding structure for temporary values in arrays during the evaluation process.
  * As such, Row/Column references do not actually correspond to data in the file.
@@ -32,7 +35,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.CellReference;
 
 public final class CacheAreaEval extends AreaEvalBase {
 
-    /* Value Containter */
+    /* Value container */
     private final ValueEval[] _values;
 
     public CacheAreaEval(AreaI ptg, ValueEval[] values) {

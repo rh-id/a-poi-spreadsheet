@@ -15,11 +15,14 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.common.usermodel;
+
+import java.util.HashMap;
 
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.filesystem.FileMagic;
 
-import java.util.HashMap;
 
 /**
  * General enum class to define a picture format/type
@@ -53,7 +56,7 @@ public enum PictureType {
     /** Microsoft Windows Media Photo image (.wdp) */
     WDP("image/vnd.ms-photo", ".wdp", 13),
     /** Scalable vector graphics (.svg) - supported by Office 2016 and higher */
-    SVG("image/svg+xml", ".svg", -1),
+    SVG("image/svg+xml", ".svg", 14),
     /** Unknown picture type - specific to escher bse record */
     UNKNOWN("", ".dat", -1),
     /** Picture type error - specific to escher bse record */

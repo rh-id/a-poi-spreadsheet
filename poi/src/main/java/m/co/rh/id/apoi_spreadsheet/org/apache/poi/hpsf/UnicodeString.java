@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.hpsf;
 
 import android.util.Log;
@@ -31,6 +32,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndianByteArrayInpu
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndianConsts;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.StringUtil;
 
+
 @Internal
 public class UnicodeString {
     private static final String TAG = "UnicodeString";
@@ -39,62 +41,62 @@ public class UnicodeString {
 
     public void read(LittleEndianByteArrayInputStream lei) {
         final int length = lei.readInt();
-        final int unicodeBytes = length * 2;
+        final int unicodeBytes = length*2;
         _value = IOUtils.safelyAllocate(unicodeBytes, CodePageString.getMaxRecordLength());
-
+        
         // If Length is zero, this field MUST be zero bytes in length. If Length is
         // nonzero, this field MUST be a null-terminated array of 16-bit Unicode characters, followed by
         // zero padding to a multiple of 4 bytes. The string represented by this field SHOULD NOT
         // contain embedded or additional trailing null characters.
-
+        
         if (length == 0) {
             return;
         }
 
         final int offset = lei.getReadIndex();
-
+        
         lei.readFully(_value);
 
-        if (_value[unicodeBytes - 2] != 0 || _value[unicodeBytes - 1] != 0) {
+        if (_value[unicodeBytes-2] != 0 || _value[unicodeBytes-1] != 0) {
             String msg = "UnicodeString started at offset #" + offset + " is not NULL-terminated";
             throw new IllegalPropertySetDataException(msg);
         }
-
+        
         TypedPropertyValue.skipPadding(lei);
     }
-
+    
     public byte[] getValue() {
         return _value;
     }
 
     public String toJavaString() {
-        if (_value.length == 0) {
+        if ( _value.length == 0 ) {
             return null;
         }
 
-        String result = StringUtil.getFromUnicodeLE(_value, 0, _value.length >> 1);
+        String result = StringUtil.getFromUnicodeLE( _value, 0, _value.length >> 1 );
 
-        final int terminator = result.indexOf('\0');
-        if (terminator == -1) {
+        final int terminator = result.indexOf( '\0' );
+        if ( terminator == -1 ) {
             Log.w(TAG, "String terminator (\\0) for UnicodeString property value not found. " +
                     "Continue without trimming and hope for the best.");
             return result;
         }
-
-        if (terminator != result.length() - 1) {
+        
+        if ( terminator != result.length() - 1 ) {
             Log.w(TAG, "String terminator (\\0) for UnicodeString property value occured before the end of " +
                     "string. Trimming and hope for the best.");
         }
-        return result.substring(0, terminator);
+        return result.substring( 0, terminator );
     }
 
-    public void setJavaValue(String string) throws UnsupportedEncodingException {
+    public void setJavaValue( String string ) throws UnsupportedEncodingException {
         _value = CodePageUtil.getBytesInCodePage(string + "\0", CodePageUtil.CP_UNICODE);
     }
 
-    public int write(OutputStream out) throws IOException {
-        LittleEndian.putUInt(_value.length / 2, out);
-        out.write(_value);
+    public int write( OutputStream out ) throws IOException {
+        LittleEndian.putUInt( _value.length / 2, out );
+        out.write( _value );
         return LittleEndianConsts.INT_SIZE + _value.length;
     }
 }

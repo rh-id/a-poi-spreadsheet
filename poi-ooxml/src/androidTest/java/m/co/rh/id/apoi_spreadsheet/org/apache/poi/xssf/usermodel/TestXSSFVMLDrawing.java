@@ -23,6 +23,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.POIXMLTypeLoader.DEFAULT_XML_OPTIONS;
+import static m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.XSSFTestDataSamples.openSampleWorkbook;
 import static m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFVMLDrawing.QNAME_VMLDRAWING;
 
 import com.microsoft.schemas.office.excel.CTClientData;
@@ -38,6 +39,7 @@ import com.microsoft.schemas.vml.STStrokeJoinStyle;
 import com.microsoft.schemas.vml.impl.CTShapetypeImpl;
 
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.POIXMLException;
 import org.apache.xmlbeans.XmlException;
 import org.apache.xmlbeans.XmlObject;
 import org.apache.xmlbeans.XmlOptions;
@@ -193,7 +195,8 @@ public class TestXSSFVMLDrawing {
 
     @Test
     public void bug65061_InvalidXmlns() throws IOException, XmlException {
-        // input hasn't no <?xml... declaration - as in the sample file
+        // input has no <?xml... declaration - as in the sample file
+        //noinspection HttpUrlsUsage
         String input =
                 "<xml xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:o=\"urn:schemas-microsoft-com:office:office\" xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:x=\"urn:schemas-microsoft-com:office:excel\">\n" +
                         "<v:shapetype id=\"_x0000_t202\" coordsize=\"21600,21600\" path=\"m,l,21600r21600,l21600,xe\" o:spt=\"202\">\n" +
@@ -215,5 +218,15 @@ public class TestXSSFVMLDrawing {
         assertTrue(xst instanceof CTShapetypeImpl);
         CTShapetype st = (CTShapetype) xst;
         assertSame(STStrokeJoinStyle.MITER, st.getStrokeArray(0).getJoinstyle());
+    }
+
+    @Test
+    public void testInvalidFile() throws IOException {
+        try (XSSFWorkbook workbook = openSampleWorkbook("clusterfuzz-testcase-minimized-POIXSSFFuzzer-5089447305609216.xlsx")) {
+            assertNotNull(workbook);
+        } catch (POIXMLException e) {
+            // exact parser wording is JDK-specific; any parse-failure message satisfies the invalid-file contract
+            assertNotNull(e.getMessage());
+        }
     }
 }

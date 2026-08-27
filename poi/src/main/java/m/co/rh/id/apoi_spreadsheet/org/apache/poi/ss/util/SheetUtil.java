@@ -14,16 +14,12 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util;
 
-import android.graphics.Matrix;
-import android.graphics.Rect;
-import android.graphics.RectF;
-
 import java.awt.font.TextAttribute;
-import java.text.AttributedCharacterIterator;
 import java.text.AttributedString;
 import java.util.List;
 import java.util.Locale;
@@ -44,6 +40,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.ExceptionUtil;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
 
 
+
 /**
  * Helper methods for when working with Usermodel sheets
  */
@@ -62,71 +59,45 @@ public class SheetUtil {
      */
     private static final double fontHeightMultiple = 2.0;
 
-    private static final float charHeight = 12F;
-
     /**
-     * Dummy formula evaluator that does nothing.
-     * YK: The only reason of having this class is that
-     * {@link m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.DataFormatter#formatCellValue(m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Cell)}
-     * returns formula string for formula cells. Dummy evaluator makes it to format the cached formula result.
-     * <p>
-     * See Bugzilla #50021
+     *  Dummy formula evaluator that does nothing.
+     *  YK: The only reason of having this class is that
+     *  {@link org.apache.poi.ss.usermodel.DataFormatter#formatCellValue(org.apache.poi.ss.usermodel.Cell)}
+     *  returns formula string for formula cells. Dummy evaluator makes it to format the cached formula result.
+     *
+     *  See Bugzilla #50021
      */
     private static final FormulaEvaluator dummyEvaluator = new FormulaEvaluator() {
         @Override
-        public void clearAllCachedResultValues() {
-        }
-
+        public void clearAllCachedResultValues(){}
         @Override
-        public void notifySetFormula(Cell cell) {
-        }
-
+        public void notifySetFormula(Cell cell) {}
         @Override
-        public void notifyDeleteCell(Cell cell) {
-        }
-
+        public void notifyDeleteCell(Cell cell) {}
         @Override
-        public void notifyUpdateCell(Cell cell) {
-        }
-
+        public void notifyUpdateCell(Cell cell) {}
         @Override
-        public CellValue evaluate(Cell cell) {
-            return null;
-        }
-
+        public CellValue evaluate(Cell cell) {return null;  }
         @Override
-        public Cell evaluateInCell(Cell cell) {
-            return null;
-        }
-
+        public Cell evaluateInCell(Cell cell) { return null; }
         @Override
-        public void setupReferencedWorkbooks(Map<String, FormulaEvaluator> workbooks) {
-        }
-
+        public void setupReferencedWorkbooks(Map<String, FormulaEvaluator> workbooks) {}
         @Override
-        public void setDebugEvaluationOutputForNextEval(boolean value) {
-        }
-
+        public void setDebugEvaluationOutputForNextEval(boolean value) {}
         @Override
-        public void setIgnoreMissingWorkbooks(boolean ignore) {
-        }
-
+        public void setIgnoreMissingWorkbooks(boolean ignore) {}
         @Override
-        public void evaluateAll() {
-        }
-
+        public void evaluateAll() {}
         @Override
-        public CellType evaluateFormulaCell(Cell cell) {
-            return cell.getCachedFormulaResultType();
-        }
+        public CellType evaluateFormulaCell(Cell cell) { return cell.getCachedFormulaResultType(); }
     };
 
     /**
      * A system property which can be enabled to not fail when the
-     * font-system is not available on the current machine
+     * font-system is not available on the current machine.
+     * Since POI 5.4.0, this flag is enabled by default.
      */
-    private static final boolean ignoreMissingFontSystem =
-            Boolean.parseBoolean(System.getProperty("org.apache.poi.ss.ignoreMissingFontSystem"));
+    private static boolean ignoreMissingFontSystem = initIgnoreMissingFontSystemFlag();
 
     /**
      * Which default char-width to use if the font-system is unavailable.
@@ -136,11 +107,11 @@ public class SheetUtil {
     /**
      * Compute width of a single cell
      *
-     * @param cell             the cell whose width is to be calculated
+     * @param cell the cell whose width is to be calculated
      * @param defaultCharWidth the width of a single character
-     * @param formatter        formatter used to prepare the text to be measured
-     * @param useMergedCells   whether to use merged cells
-     * @return the width in pixels or -1 if cell is empty
+     * @param formatter formatter used to prepare the text to be measured
+     * @param useMergedCells    whether to use merged cells
+     * @return  the width in pixels or -1 if cell is empty
      * @deprecated since POI 5.2.5, it is better to pass defaultCharWidth as a float
      */
     public static double getCellWidth(Cell cell, int defaultCharWidth, DataFormatter formatter, boolean useMergedCells) {
@@ -151,11 +122,11 @@ public class SheetUtil {
     /**
      * Compute width of a single cell
      *
-     * @param cell             the cell whose width is to be calculated
+     * @param cell the cell whose width is to be calculated
      * @param defaultCharWidth the width of a single character
-     * @param formatter        formatter used to prepare the text to be measured
-     * @param useMergedCells   whether to use merged cells
-     * @return the width in pixels or -1 if cell is empty
+     * @param formatter formatter used to prepare the text to be measured
+     * @param useMergedCells    whether to use merged cells
+     * @return  the width in pixels or -1 if cell is empty
      * @since POI 5.2.5
      */
     public static double getCellWidth(Cell cell, float defaultCharWidth, DataFormatter formatter, boolean useMergedCells) {
@@ -165,17 +136,17 @@ public class SheetUtil {
 
     /**
      * Compute width of a single cell
-     * <p>
+     *
      * This method receives the list of merged regions as querying it from the cell/sheet
      * is time-consuming and thus caching the list across cells speeds up certain operations
      * considerably.
      *
-     * @param cell             the cell whose width is to be calculated
+     * @param cell the cell whose width is to be calculated
      * @param defaultCharWidth the width of a single character
-     * @param formatter        formatter used to prepare the text to be measured
-     * @param useMergedCells   whether to use merged cells
-     * @param mergedRegions    The list of merged regions as received via cell.getSheet().getMergedRegions()
-     * @return the width in pixels or -1 if cell is empty
+     * @param formatter formatter used to prepare the text to be measured
+     * @param useMergedCells    whether to use merged cells
+     * @param mergedRegions The list of merged regions as received via cell.getSheet().getMergedRegions()
+     * @return  the width in pixels or -1 if cell is empty
      * @deprecated since POI 5.2.5, it is better to pass defaultCharWidth as a float
      */
     public static double getCellWidth(Cell cell, int defaultCharWidth, DataFormatter formatter, boolean useMergedCells,
@@ -185,17 +156,17 @@ public class SheetUtil {
 
     /**
      * Compute width of a single cell
-     * <p>
+     *
      * This method receives the list of merged regions as querying it from the cell/sheet
      * is time-consuming and thus caching the list across cells speeds up certain operations
      * considerably.
      *
-     * @param cell             the cell whose width is to be calculated
+     * @param cell the cell whose width is to be calculated
      * @param defaultCharWidth the width of a single character
-     * @param formatter        formatter used to prepare the text to be measured
-     * @param useMergedCells   whether to use merged cells
-     * @param mergedRegions    The list of merged regions as received via cell.getSheet().getMergedRegions()
-     * @return the width in pixels or -1 if cell is empty
+     * @param formatter formatter used to prepare the text to be measured
+     * @param useMergedCells    whether to use merged cells
+     * @param mergedRegions The list of merged regions as received via cell.getSheet().getMergedRegions()
+     * @return  the width in pixels or -1 if cell is empty
      * @since POI 5.2.5
      */
     public static double getCellWidth(Cell cell, float defaultCharWidth, DataFormatter formatter, boolean useMergedCells,
@@ -237,13 +208,13 @@ public class SheetUtil {
                     String txt = line + defaultChar;
 
                     AttributedString str = new AttributedString(txt);
-                    copyAttributes(font, str, 0, txt.length());
+                    WithJavaDesktop.modifyAttributedString(str, font, 0, txt.length());
 
                     /*if (rt.numFormattingRuns() > 0) {
                         // TODO: support rich text fragments
                     }*/
 
-                    width = getCellWidth(defaultCharWidth, colspan, style, width, str);
+                    width = WithJavaDesktop.getCellWidth(defaultCharWidth, colspan, style, width, str);
                 }
             }
         } else {
@@ -258,74 +229,66 @@ public class SheetUtil {
             } else if (cellType == CellType.BOOLEAN) {
                 sval = String.valueOf(cell.getBooleanCellValue()).toUpperCase(Locale.ROOT);
             }
-            if (sval != null) {
+            if(sval != null) {
                 String txt = sval + defaultChar;
                 AttributedString str = new AttributedString(txt);
-                copyAttributes(font, str, 0, txt.length());
+                WithJavaDesktop.modifyAttributedString(str, font, 0, txt.length());
 
-                width = getCellWidth(defaultCharWidth, colspan, style, width, str);
+                width = WithJavaDesktop.getCellWidth(defaultCharWidth, colspan, style, width, str);
             }
         }
         return width;
     }
 
-    /**
-     * Calculate the best-fit width for a cell
-     * If a merged cell spans multiple columns, evenly distribute the column width among those columns
-     *
-     * @param defaultCharWidth the width of a character using the default font in a workbook
-     * @param colspan          the number of columns that is spanned by the cell (1 if the cell is not part of a merged region)
-     * @param style            the cell style, which contains text rotation and indention information needed to compute the cell width
-     * @param minWidth         the minimum best-fit width. This algorithm will only return values greater than or equal to the minimum width.
-     * @param str              the text contained in the cell
-     * @return the best fit cell width
-     */
-    private static double getCellWidth(float defaultCharWidth, int colspan,
-                                       CellStyle style, double minWidth, AttributedString str) {
-        AttributedCharacterIterator iterator = str.getIterator();
-        float fontSize = 0;
-        int maxChar = iterator.getEndIndex();
-        Map<AttributedCharacterIterator.Attribute, Object> map = iterator.getAttributes();
-        Object sizeAttr = map.get(TextAttribute.SIZE);
-        float height = charHeight;
-        if (sizeAttr != null) {
-            float size = ((Number) sizeAttr).floatValue();
-            fontSize = size * maxChar;
-            height = size;
+    private static final class WithJavaDesktop {
+        /**
+         * Calculate the best-fit width for a cell
+         * If a merged cell spans multiple columns, evenly distribute the column width among those columns
+         *
+         * @param defaultCharWidth the width of a character using the default font in a workbook
+         * @param colspan the number of columns that is spanned by the cell (1 if the cell is not part of a merged region)
+         * @param style the cell style, which contains text rotation and indention information needed to compute the cell width
+         * @param minWidth the minimum best-fit width. This algorithm will only return values greater than or equal to the minimum width.
+         * @param str the text contained in the cell
+         * @return the best fit cell width
+         */
+        private static double getCellWidth(float defaultCharWidth, final int colspan,
+                final CellStyle style, final double minWidth, final AttributedString str) {
+            // FIXME: Font metrics not available on Android
+            return FAILOVER_FUNCTION.apply(defaultCharWidth, colspan, style, minWidth, str);
         }
-        final Rect bounds;
-        RectF rectF = new RectF(0F, 0F, fontSize, height);
-        if (style.getRotation() != 0) {
-            /*
-             * Transform the text using a scale so that its height is increased by a multiple of the leading,
-             * and then rotate the text before computing the bounds. The scale results in some whitespace around
-             * the unrotated top and bottom of the text that normally wouldn't be present if unscaled, but
-             * is added by the standard Excel autosize.
-             */
-            Matrix trans = new Matrix();
-            Matrix rotation = new Matrix();
-            Matrix scale = new Matrix();
-            scale.setScale(1F, (float) fontHeightMultiple);
-            rotation.setRotate(style.getRotation());
-            trans.setConcat(trans, rotation);
-            trans.setConcat(trans, scale);
 
-            trans.mapRect(rectF);
+        private static float getDefaultCharWidthAsFloat(AttributedString str) {
+            // FIXME: Font metrics not available on Android
+            return SheetUtil.DEFAULT_CHAR_WIDTH;
         }
-        bounds = new Rect((int) rectF.left, (int) rectF.top, (int) rectF.right, (int) rectF.bottom);
-        // frameWidth accounts for leading spaces which is excluded from bounds.getWidth()
-        final double frameWidth = bounds.left + bounds.width();
-        return Math.max(minWidth, ((frameWidth / colspan) / defaultCharWidth) + style.getIndention());
+        
+        /**
+         * Copy text attributes from the supplied Font to Java2D AttributedString
+         */
+        private static void modifyAttributedString(AttributedString str, Font font, final int startIdx, final int endIdx) {
+            str.addAttribute(TextAttribute.FAMILY, font.getFontName(), startIdx, endIdx);
+            str.addAttribute(TextAttribute.SIZE, (float) font.getFontHeightInPoints());
+            if (font.getBold()) str.addAttribute(TextAttribute.WEIGHT, TextAttribute.WEIGHT_BOLD, startIdx, endIdx);
+            if (font.getItalic() ) str.addAttribute(TextAttribute.POSTURE, TextAttribute.POSTURE_OBLIQUE, startIdx, endIdx);
+            if (font.getUnderline() == Font.U_SINGLE ) str.addAttribute(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON, startIdx, endIdx);
+        }
+
+        private static boolean canComputeColumnWidth(Font font, AttributedString str) {
+            // FIXME: Font metrics not available on Android
+            return false;
+        }
+        
     }
 
     /**
      * Compute width of a column and return the result.
      * Note that this fall can fail if you do not have the right fonts installed in your OS.
      *
-     * @param sheet          the sheet to calculate
-     * @param column         0-based index of the column
-     * @param useMergedCells whether to use merged cells
-     * @return the width in pixels or -1 if all cells are empty
+     * @param sheet the sheet to calculate
+     * @param column    0-based index of the column
+     * @param useMergedCells    whether to use merged cells
+     * @return  the width in pixels or -1 if all cells are empty
      */
     public static double getColumnWidth(Sheet sheet, int column, boolean useMergedCells) {
         return getColumnWidth(sheet, column, useMergedCells, sheet.getFirstRowNum(), sheet.getLastRowNum());
@@ -335,14 +298,14 @@ public class SheetUtil {
      * Compute width of a column based on a subset of the rows and return the result.
      * Note that this fall can fail if you do not have the right fonts installed in your OS.
      *
-     * @param sheet          the sheet to calculate
-     * @param column         0-based index of the column
-     * @param useMergedCells whether to use merged cells
-     * @param firstRow       0-based index of the first row to consider (inclusive)
-     * @param lastRow        0-based index of the last row to consider (inclusive)
-     * @return the width in pixels or -1 if cell is empty
+     * @param sheet the sheet to calculate
+     * @param column    0-based index of the column
+     * @param useMergedCells    whether to use merged cells
+     * @param firstRow  0-based index of the first row to consider (inclusive)
+     * @param lastRow   0-based index of the last row to consider (inclusive)
+     * @return  the width in pixels or -1 if cell is empty
      */
-    public static double getColumnWidth(Sheet sheet, int column, boolean useMergedCells, int firstRow, int lastRow) {
+    public static double getColumnWidth(Sheet sheet, int column, boolean useMergedCells, int firstRow, int lastRow){
         DataFormatter formatter = new DataFormatter();
         float defaultCharWidth = getDefaultCharWidthAsFloat(sheet.getWorkbook());
 
@@ -350,7 +313,7 @@ public class SheetUtil {
         double width = -1;
         for (int rowIdx = firstRow; rowIdx <= lastRow; ++rowIdx) {
             Row row = sheet.getRow(rowIdx);
-            if (row != null) {
+            if( row != null ) {
                 double cellWidth = getColumnWidthForRow(row, column, defaultCharWidth, formatter, useMergedCells, mergedRegions);
                 width = Math.max(width, cellWidth);
             }
@@ -381,49 +344,81 @@ public class SheetUtil {
      */
     @Internal
     public static float getDefaultCharWidthAsFloat(final Workbook wb) {
-        Font defaultFont = wb.getFontAt(0);
+        Font defaultFont = wb.getFontAt( 0);
 
         AttributedString str = new AttributedString(String.valueOf(defaultChar));
-        copyAttributes(defaultFont, str, 0, 1);
         try {
-            AttributedCharacterIterator iterator = str.getIterator();
-            return (iterator.getEndIndex()) *
-                    ((Number) iterator.getAttribute(TextAttribute.SIZE)).intValue();
+            WithJavaDesktop.modifyAttributedString(str, defaultFont, 0, 1);
+            return WithJavaDesktop.getDefaultCharWidthAsFloat(str);
         } catch (Throwable t) {
-            // ignore exception and return a default char width if
-            // the ignore-feature is enabled and the exception indicates that
-            // the underlying font system is not available
-            if (ignoreMissingFontSystem && (
-                    // the three types of exception usually indicate here that the font
-                    // system is not fully installed, i.e. system libraries missing or
-                    // some JDK classes cannot be loaded
-                    t instanceof UnsatisfiedLinkError ||
-                            t instanceof NoClassDefFoundError ||
-                            t instanceof InternalError ||
-                            // other fatal exceptions will always be rethrown
-                            !ExceptionUtil.isFatal(t))) {
+            if (shouldIgnoreMissingFontSystem(t)) {
                 return DEFAULT_CHAR_WIDTH;
             }
-
             throw t;
         }
+    }
+
+    /**
+     * A function with 5 inputs and a return value.
+     * @param <A> the type of the first input to the function
+     * @param <B> the type of the second input to the function
+     * @param <C> the type of the third input to the function
+     * @param <D> the type of the fourth input to the function
+     * @param <E> the type of the fifth input to the function
+     * @param <R> the return type of the function
+     * @since POI 5.4.1
+     */
+    @FunctionalInterface
+    public interface Function5Arity<A, B, C, D, E, R> {
+        R apply(A a, B b, C c, D d, E e);
+    }
+
+    private static final Function5Arity<Float, Integer, CellStyle, Double, AttributedString, Float> DEFAULT_FAILOVER_FUNCTION =
+            (defaultCharWidth, colspan, style, minWidth, string) -> defaultCharWidth;
+
+    private static Function5Arity<Float, Integer, CellStyle, Double, AttributedString, Float> FAILOVER_FUNCTION =
+            DEFAULT_FAILOVER_FUNCTION;
+
+    /**
+     * Define a function to be used as a failover when the font system is not available.
+     * This function will be called with the default character width, the colspan, the cell style,
+     * the minimum width and the attributed string of the cell.
+     * <p>
+     *     The default function will return the default character width.
+     * </p>
+     * @since POI 5.4.1
+     */
+    public static void setFailoverFunction(Function5Arity<Float, Integer, CellStyle, Double, AttributedString, Float> failoverFunction) {
+        FAILOVER_FUNCTION = failoverFunction == null ? DEFAULT_FAILOVER_FUNCTION : failoverFunction;
+    }
+
+    private static boolean shouldIgnoreMissingFontSystem(final Throwable t) {
+        return ignoreMissingFontSystem && (
+                // the three types of exception usually indicate here that the font
+                // system is not fully installed, i.e. system libraries missing or
+                // some JDK classes cannot be loaded
+                t instanceof UnsatisfiedLinkError ||
+                        t instanceof NoClassDefFoundError ||
+                        t instanceof InternalError ||
+                        // other fatal exceptions will always be rethrown
+                        !ExceptionUtil.isFatal(t));
     }
 
     /**
      * Compute width of a single cell in a row
      * Convenience method for {@link #getCellWidth}
      *
-     * @param row              the row that contains the cell of interest
-     * @param column           the column number of the cell whose width is to be calculated
+     * @param row the row that contains the cell of interest
+     * @param column the column number of the cell whose width is to be calculated
      * @param defaultCharWidth the width of a single character
-     * @param formatter        formatter used to prepare the text to be measured
-     * @param useMergedCells   whether to use merged cells
-     * @return the width in pixels or -1 if cell is empty
+     * @param formatter formatter used to prepare the text to be measured
+     * @param useMergedCells    whether to use merged cells
+     * @return  the width in pixels or -1 if cell is empty
      */
     private static double getColumnWidthForRow(
             Row row, int column, float defaultCharWidth, DataFormatter formatter, boolean useMergedCells,
             List<CellRangeAddress> mergedRegions) {
-        if (row == null) {
+        if( row == null ) {
             return -1;
         }
 
@@ -439,11 +434,11 @@ public class SheetUtil {
     /**
      * Check if the Fonts are installed correctly so that Java can compute the size of
      * columns.
-     * <p>
+     *
      * If a Cell uses a Font which is not available on the operating system then Java may
      * fail to return useful Font metrics and thus lead to an auto-computed size of 0.
-     * <p>
-     * This method allows to check if computing the sizes for a given Font will succeed or not.
+     *
+     *  This method allows to check if computing the sizes for a given Font will succeed or not.
      *
      * @param font The Font that is used in the Cell
      * @return true if computing the size for this Font will succeed, false otherwise
@@ -451,25 +446,16 @@ public class SheetUtil {
     public static boolean canComputeColumnWidth(Font font) {
         // not sure what is the best value sample-here, only "1" did not work on some platforms...
         AttributedString str = new AttributedString("1w");
-        copyAttributes(font, str, 0, "1w".length());
-
-        float size = (float) str.getIterator().getAttribute(TextAttribute.SIZE);
-        return (size > 0);
+        try {
+            return WithJavaDesktop.canComputeColumnWidth(font, str);
+        } catch (Throwable t) {
+            if (shouldIgnoreMissingFontSystem(t)) {
+                return false;
+            }
+            throw t;
+        }
     }
 
-    /**
-     * Copy text attributes from the supplied Font to Java2D AttributedString
-     */
-    private static void copyAttributes(Font font, AttributedString str, @SuppressWarnings("SameParameterValue") int startIdx, int endIdx) {
-        str.addAttribute(TextAttribute.FAMILY, font.getFontName(), startIdx, endIdx);
-        str.addAttribute(TextAttribute.SIZE, (float) font.getFontHeightInPoints());
-        if (font.getBold())
-            str.addAttribute(TextAttribute.WEIGHT, TextAttribute.WEIGHT_BOLD, startIdx, endIdx);
-        if (font.getItalic())
-            str.addAttribute(TextAttribute.POSTURE, TextAttribute.POSTURE_OBLIQUE, startIdx, endIdx);
-        if (font.getUnderline() == Font.U_SINGLE)
-            str.addAttribute(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON, startIdx, endIdx);
-    }
 
     /**
      * Return the cell, without taking account of merged regions.
@@ -496,14 +482,14 @@ public class SheetUtil {
 
     /**
      * Return the cell, taking account of merged regions. Allows you to find the
-     * cell who's contents are shown in a given position in the sheet.
+     *  cell who's contents are shown in a given position in the sheet.
      *
      * <p>If the cell at the given co-ordinates is a merged cell, this will
-     * return the primary (top-left) most cell of the merged region.
+     *  return the primary (top-left) most cell of the merged region.
      * <p>If the cell at the given co-ordinates is not in a merged region,
-     * then will return the cell itself.
+     *  then will return the cell itself.
      * <p>If there is no cell defined at the given co-ordinates, will return
-     * null.
+     *  null.
      *
      * @param sheet The workbook sheet to look at.
      * @param rowIx The 0-based index of the row.
@@ -529,5 +515,22 @@ public class SheetUtil {
         // If we get here, then the cell isn't defined, and doesn't
         //  live within any merged regions
         return null;
+    }
+
+    // Getters/Setters are available to allow in-depth testing
+    protected static boolean isIgnoreMissingFontSystem() {
+        return ignoreMissingFontSystem;
+    }
+
+    protected static void setIgnoreMissingFontSystem(boolean value) {
+        ignoreMissingFontSystem = value;
+    }
+
+    private static boolean initIgnoreMissingFontSystemFlag() {
+        final String flag = System.getProperty("org.apache.poi.ss.ignoreMissingFontSystem");
+        if (flag != null) {
+            return !flag.trim().equalsIgnoreCase("false");
+        }
+        return true;
     }
 }

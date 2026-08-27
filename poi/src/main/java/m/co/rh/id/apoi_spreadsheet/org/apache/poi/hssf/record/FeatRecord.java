@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record;
 
@@ -33,11 +34,14 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.CellRangeAddress;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.GenericRecordUtil;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndianOutput;
 
+
+
+
 /**
  * Title: Feat (Feature) Record
- * <p>
+ * <P>
  * This record specifies Shared Features data. It is normally paired
- * up with a {@link FeatHdrRecord}.
+ *  up with a {@link FeatHdrRecord}.
  */
 public final class FeatRecord extends StandardRecord {
     private static final String TAG = "FeatRecord";
@@ -48,24 +52,20 @@ public final class FeatRecord extends StandardRecord {
 
     private final FtrHeader futureHeader;
 
-    /**
-     * See SHAREDFEATURES_* on {@link FeatHdrRecord}
-     */
+    /** See SHAREDFEATURES_* on {@link FeatHdrRecord} */
     private int isf_sharedFeatureType;
     private byte reserved1; // Should always be zero
     private long reserved2; // Should always be zero
-    /**
-     * Only matters if type is ISFFEC2
-     */
+    /** Only matters if type is ISFFEC2 */
     private long cbFeatData;
     private int reserved3; // Should always be zero
     private CellRangeAddress[] cellRefs;
 
     /**
      * Contents depends on isf_sharedFeatureType :
-     * ISFPROTECTION -> FeatProtection
-     * ISFFEC2       -> FeatFormulaErr2
-     * ISFFACTOID    -> FeatSmartTag
+     *  ISFPROTECTION -> FeatProtection
+     *  ISFFEC2       -> FeatFormulaErr2
+     *  ISFFACTOID    -> FeatSmartTag
      */
     private SharedFeature sharedFeature;
 
@@ -83,7 +83,7 @@ public final class FeatRecord extends StandardRecord {
         cbFeatData = other.cbFeatData;
         reserved3 = other.reserved3;
         cellRefs = (other.cellRefs == null) ? null :
-                Stream.of(other.cellRefs).map(CellRangeAddress::copy).toArray(CellRangeAddress[]::new);
+            Stream.of(other.cellRefs).map(CellRangeAddress::copy).toArray(CellRangeAddress[]::new);
         sharedFeature = (other.sharedFeature == null) ? null : other.sharedFeature.copy();
     }
 
@@ -98,22 +98,22 @@ public final class FeatRecord extends StandardRecord {
         reserved3 = in.readShort();
 
         cellRefs = new CellRangeAddress[cref];
-        for (int i = 0; i < cellRefs.length; i++) {
+        for(int i=0; i<cellRefs.length; i++) {
             cellRefs[i] = new CellRangeAddress(in);
         }
 
-        switch (isf_sharedFeatureType) {
-            case FeatHdrRecord.SHAREDFEATURES_ISFPROTECTION:
-                sharedFeature = new FeatProtection(in);
-                break;
-            case FeatHdrRecord.SHAREDFEATURES_ISFFEC2:
-                sharedFeature = new FeatFormulaErr2(in);
-                break;
-            case FeatHdrRecord.SHAREDFEATURES_ISFFACTOID:
-                sharedFeature = new FeatSmartTag(in);
-                break;
-            default:
-                Log.e(TAG, String.format("Unknown Shared Feature %d found!", isf_sharedFeatureType));
+        switch(isf_sharedFeatureType) {
+        case FeatHdrRecord.SHAREDFEATURES_ISFPROTECTION:
+            sharedFeature = new FeatProtection(in);
+            break;
+        case FeatHdrRecord.SHAREDFEATURES_ISFFEC2:
+            sharedFeature = new FeatFormulaErr2(in);
+            break;
+        case FeatHdrRecord.SHAREDFEATURES_ISFFACTOID:
+            sharedFeature = new FeatSmartTag(in);
+            break;
+        default:
+            Log.e(TAG, String.format("Unknown Shared Feature %s found!", isf_sharedFeatureType));
         }
     }
 
@@ -126,9 +126,9 @@ public final class FeatRecord extends StandardRecord {
 
         out.writeShort(isf_sharedFeatureType);
         out.writeByte(reserved1);
-        out.writeInt((int) reserved2);
+        out.writeInt((int)reserved2);
         out.writeShort(cellRefs.length);
-        out.writeInt((int) cbFeatData);
+        out.writeInt((int)cbFeatData);
         out.writeShort(reserved3);
 
         for (CellRangeAddress cellRef : cellRefs) {
@@ -141,8 +141,8 @@ public final class FeatRecord extends StandardRecord {
     }
 
     protected int getDataSize() {
-        return 12 + 2 + 1 + 4 + 2 + 4 + 2 +
-                (cellRefs.length * CellRangeAddress.ENCODED_SIZE) +
+        return 12 + 2+1+4+2+4+2+
+            (cellRefs.length * CellRangeAddress.ENCODED_SIZE) +
                 (sharedFeature == null ? 0 : sharedFeature.getDataSize());
     }
 
@@ -153,7 +153,6 @@ public final class FeatRecord extends StandardRecord {
     public long getCbFeatData() {
         return cbFeatData;
     }
-
     public void setCbFeatData(long cbFeatData) {
         this.cbFeatData = cbFeatData;
     }
@@ -161,7 +160,6 @@ public final class FeatRecord extends StandardRecord {
     public CellRangeAddress[] getCellRefs() {
         return cellRefs;
     }
-
     public void setCellRefs(CellRangeAddress[] cellRefs) {
         this.cellRefs = cellRefs;
     }
@@ -169,21 +167,20 @@ public final class FeatRecord extends StandardRecord {
     public SharedFeature getSharedFeature() {
         return sharedFeature;
     }
-
     public void setSharedFeature(SharedFeature feature) {
         this.sharedFeature = feature;
 
-        if (feature instanceof FeatProtection) {
+        if(feature instanceof FeatProtection) {
             isf_sharedFeatureType = FeatHdrRecord.SHAREDFEATURES_ISFPROTECTION;
         }
-        if (feature instanceof FeatFormulaErr2) {
+        if(feature instanceof FeatFormulaErr2) {
             isf_sharedFeatureType = FeatHdrRecord.SHAREDFEATURES_ISFFEC2;
         }
-        if (feature instanceof FeatSmartTag) {
+        if(feature instanceof FeatSmartTag) {
             isf_sharedFeatureType = FeatHdrRecord.SHAREDFEATURES_ISFFACTOID;
         }
 
-        if (isf_sharedFeatureType == FeatHdrRecord.SHAREDFEATURES_ISFFEC2) {
+        if(isf_sharedFeatureType == FeatHdrRecord.SHAREDFEATURES_ISFFEC2) {
             cbFeatData = sharedFeature.getDataSize();
         } else {
             cbFeatData = 0;
@@ -203,14 +200,14 @@ public final class FeatRecord extends StandardRecord {
     @Override
     public Map<String, Supplier<?>> getGenericProperties() {
         return GenericRecordUtil.getGenericProperties(
-                "futureHeader", () -> futureHeader,
-                "isf_sharedFeatureType", this::getIsf_sharedFeatureType,
-                "reserved1", () -> reserved1,
-                "reserved2", () -> reserved2,
-                "cbFeatData", this::getCbFeatData,
-                "reserved3", () -> reserved3,
-                "cellRefs", this::getCellRefs,
-                "sharedFeature", this::getSharedFeature
+            "futureHeader", () -> futureHeader,
+            "isf_sharedFeatureType", this::getIsf_sharedFeatureType,
+            "reserved1", () -> reserved1,
+            "reserved2", () -> reserved2,
+            "cbFeatData", this::getCbFeatData,
+            "reserved3", () -> reserved3,
+            "cellRefs", this::getCellRefs,
+            "sharedFeature", this::getSharedFeature
         );
     }
 }

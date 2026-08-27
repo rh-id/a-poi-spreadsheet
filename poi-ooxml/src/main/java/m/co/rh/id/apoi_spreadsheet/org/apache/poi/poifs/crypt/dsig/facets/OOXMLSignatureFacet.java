@@ -14,8 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 /* ====================================================================
    This product contains an ASLv2 licensed version of the OOXML signer
    package from the eID Applet project
@@ -32,7 +32,6 @@ import android.util.Log;
 
 import com.microsoft.schemas.office.x2006.digsig.CTSignatureInfoV1;
 import com.microsoft.schemas.office.x2006.digsig.SignatureInfoV1Document;
-
 import org.openxmlformats.schemas.xpackage.x2006.digitalSignature.CTSignatureTime;
 import org.openxmlformats.schemas.xpackage.x2006.digitalSignature.SignatureTimeDocument;
 import org.w3c.dom.Document;
@@ -49,7 +48,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import javax.xml.crypto.URIReference;
 import javax.xml.crypto.XMLStructure;
 import javax.xml.crypto.dom.DOMStructure;
@@ -78,6 +76,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.dsig.SignatureInfo
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.dsig.services.RelationshipTransformService;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.dsig.services.RelationshipTransformService.RelationshipTransformParameterSpec;
 
+
 /**
  * Office OpenXML Signature Facet implementation.
  *
@@ -90,22 +89,22 @@ public class OOXMLSignatureFacet implements SignatureFacet {
 
     @Override
     public void preSign(
-            SignatureInfo signatureInfo
-            , Document document
-            , List<Reference> references
-            , List<XMLObject> objects)
-            throws XMLSignatureException {
+          SignatureInfo signatureInfo
+        , Document document
+        , List<Reference> references
+        , List<XMLObject> objects)
+    throws XMLSignatureException {
         Log.d(TAG, "pre sign");
         addManifestObject(signatureInfo, document, references, objects);
         addSignatureInfo(signatureInfo, document, references, objects);
     }
 
     protected void addManifestObject(
-            SignatureInfo signatureInfo
-            , Document document
-            , List<Reference> references
-            , List<XMLObject> objects)
-            throws XMLSignatureException {
+          SignatureInfo signatureInfo
+        , Document document
+        , List<Reference> references
+        , List<XMLObject> objects)
+    throws XMLSignatureException {
 
         final XMLSignatureFactory sigFac = signatureInfo.getSignatureFactory();
 
@@ -121,13 +120,13 @@ public class OOXMLSignatureFacet implements SignatureFacet {
         XMLObject xo = sigFac.newXMLObject(objectContent, ID_PACKAGE_OBJECT, null, null);
         objects.add(xo);
 
-        Reference reference = newReference(signatureInfo, "#" + ID_PACKAGE_OBJECT, null, XML_DIGSIG_NS + "Object");
+        Reference reference = newReference(signatureInfo, "#"+ID_PACKAGE_OBJECT, null, XML_DIGSIG_NS+"Object");
         references.add(reference);
     }
 
     @SuppressWarnings("resource")
     protected void addManifestReferences(SignatureInfo signatureInfo, List<Reference> manifestReferences)
-            throws XMLSignatureException {
+    throws XMLSignatureException {
         OPCPackage opcPackage = signatureInfo.getOpcPackage();
         List<PackagePart> relsEntryNames = opcPackage.getPartsByContentType(ContentTypes.RELATIONSHIPS_PART);
 
@@ -140,7 +139,7 @@ public class OOXMLSignatureFacet implements SignatureFacet {
                 prc = new PackageRelationshipCollection(opcPackage);
                 prc.parseRelationshipsPart(pp);
             } catch (InvalidFormatException e) {
-                throw new XMLSignatureException("Invalid relationship descriptor: " + pp.getPartName().getName(), e);
+                throw new XMLSignatureException("Invalid relationship descriptor: "+pp.getPartName().getName(), e);
             }
 
             RelationshipTransformParameterSpec parameterSpec = new RelationshipTransformParameterSpec();
@@ -185,7 +184,7 @@ public class OOXMLSignatureFacet implements SignatureFacet {
                 }
 
                 if (relationshipType.endsWith("customXml")
-                        && !(contentType.equals("inkml+xml") || contentType.equals("text/xml"))) {
+                    && !(contentType.equals("inkml+xml") || contentType.equals("text/xml"))) {
                     Log.d(TAG, String.format("skipping customXml with content type: %s", contentType));
                     continue;
                 }
@@ -200,7 +199,7 @@ public class OOXMLSignatureFacet implements SignatureFacet {
                 transforms.add(newTransform(signatureInfo, RelationshipTransformService.TRANSFORM_URI, parameterSpec));
                 transforms.add(newTransform(signatureInfo, CanonicalizationMethod.INCLUSIVE));
                 String uri = normalizePartName(pp.getPartName().getURI(), baseUri)
-                        + "?ContentType=application/vnd.openxmlformats-package.relationships+xml";
+                    + "?ContentType=application/vnd.openxmlformats-package.relationships+xml";
                 Reference reference = newReference(signatureInfo, uri, transforms, null);
                 manifestReferences.add(reference);
             }
@@ -240,50 +239,50 @@ public class OOXMLSignatureFacet implements SignatureFacet {
         ctTime.setValue(signatureConfig.formatExecutionTime());
         Log.d(TAG, String.format("execution time: %s", ctTime.getValue()));
 
-        Element n = (Element) document.importNode(ctTime.getDomNode(), true);
+        Element n = (Element)document.importNode(ctTime.getDomNode(),true);
         List<XMLStructure> signatureTimeContent = new ArrayList<>();
         signatureTimeContent.add(new DOMStructure(n));
         SignatureProperty signatureTimeSignatureProperty = sigFac
-                .newSignatureProperty(signatureTimeContent, "#" + signatureConfig.getPackageSignatureId(),
-                        "idSignatureTime");
+            .newSignatureProperty(signatureTimeContent, "#" + signatureConfig.getPackageSignatureId(),
+            "idSignatureTime");
         List<SignatureProperty> signaturePropertyContent = new ArrayList<>();
         signaturePropertyContent.add(signatureTimeSignatureProperty);
         SignatureProperties signatureProperties = sigFac
-                .newSignatureProperties(signaturePropertyContent, null);
+            .newSignatureProperties(signaturePropertyContent, null);
         objectContent.add(signatureProperties);
     }
 
     protected void addSignatureInfo(
-            SignatureInfo signatureInfo
-            , Document document
-            , List<Reference> references
-            , List<XMLObject> objects)
-            throws XMLSignatureException {
+          SignatureInfo signatureInfo
+        , Document document
+        , List<Reference> references
+        , List<XMLObject> objects)
+    throws XMLSignatureException {
         SignatureConfig signatureConfig = signatureInfo.getSignatureConfig();
         XMLSignatureFactory sigFac = signatureInfo.getSignatureFactory();
 
         List<XMLStructure> objectContent = new ArrayList<>();
 
         SignatureInfoV1Document sigV1 = createSignatureInfoV1(signatureInfo);
-        Element n = (Element) document.importNode(sigV1.getSignatureInfoV1().getDomNode(), true);
+        Element n = (Element)document.importNode(sigV1.getSignatureInfoV1().getDomNode(), true);
         // n.setAttributeNS(XML_NS, XMLConstants.XMLNS_ATTRIBUTE, MS_DIGSIG_NS);
 
         List<XMLStructure> signatureInfoContent = new ArrayList<>();
         signatureInfoContent.add(new DOMStructure(n));
         SignatureProperty signatureInfoSignatureProperty = sigFac
-                .newSignatureProperty(signatureInfoContent, "#" + signatureConfig.getPackageSignatureId(),
-                        "idOfficeV1Details");
+            .newSignatureProperty(signatureInfoContent, "#" + signatureConfig.getPackageSignatureId(),
+            "idOfficeV1Details");
 
         List<SignatureProperty> signaturePropertyContent = new ArrayList<>();
         signaturePropertyContent.add(signatureInfoSignatureProperty);
         SignatureProperties signatureProperties = sigFac
-                .newSignatureProperties(signaturePropertyContent, null);
+            .newSignatureProperties(signaturePropertyContent, null);
         objectContent.add(signatureProperties);
 
         String objectId = "idOfficeObject";
         objects.add(sigFac.newXMLObject(objectContent, objectId, null, null));
 
-        Reference reference = newReference(signatureInfo, "#" + objectId, null, XML_DIGSIG_NS + "Object");
+        Reference reference = newReference(signatureInfo, "#" + objectId, null, XML_DIGSIG_NS+"Object");
         references.add(reference);
 
         Base64.Encoder enc = Base64.getEncoder();
@@ -293,7 +292,7 @@ public class OOXMLSignatureFacet implements SignatureFacet {
             DOMStructure tn = new DOMStructure(document.createTextNode(enc.encodeToString(imageValid)));
             objects.add(sigFac.newXMLObject(Collections.singletonList(tn), objectId, null, null));
 
-            reference = newReference(signatureInfo, "#" + objectId, null, XML_DIGSIG_NS + "Object");
+            reference = newReference(signatureInfo, "#" + objectId, null, XML_DIGSIG_NS+"Object");
             references.add(reference);
         }
 
@@ -303,7 +302,7 @@ public class OOXMLSignatureFacet implements SignatureFacet {
             DOMStructure tn = new DOMStructure(document.createTextNode(enc.encodeToString(imageInvalid)));
             objects.add(sigFac.newXMLObject(Collections.singletonList(tn), objectId, null, null));
 
-            reference = newReference(signatureInfo, "#" + objectId, null, XML_DIGSIG_NS + "Object");
+            reference = newReference(signatureInfo, "#" + objectId, null, XML_DIGSIG_NS+"Object");
             references.add(reference);
         }
     }
@@ -339,8 +338,8 @@ public class OOXMLSignatureFacet implements SignatureFacet {
 
     protected static String getRelationshipReferenceURI(String zipEntryName) {
         return "/"
-                + zipEntryName
-                + "?ContentType=application/vnd.openxmlformats-package.relationships+xml";
+            + zipEntryName
+            + "?ContentType=application/vnd.openxmlformats-package.relationships+xml";
     }
 
     protected static String getResourceReferenceURI(String resourceName, String contentType) {

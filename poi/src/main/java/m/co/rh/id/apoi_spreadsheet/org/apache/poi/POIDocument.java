@@ -14,9 +14,11 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi;
+
 
 import static m.co.rh.id.apoi_spreadsheet.org.apache.poi.hpsf.PropertySetFactory.newDocumentSummaryInformation;
 
@@ -49,28 +51,21 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.filesystem.POIFSFileSyst
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.IOUtils;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
 
+
 /**
  * This holds the common functionality for all POI
- * Document classes.
+ *  Document classes.
  * Currently, this relates to Document Information Properties
  */
 public abstract class POIDocument implements Closeable {
-    /**
-     * Holds metadata on our document
-     */
+    /** Holds metadata on our document */
     private SummaryInformation sInf;
-    /**
-     * Holds further metadata on our document
-     */
+    /** Holds further metadata on our document */
     private DocumentSummaryInformation dsInf;
-    /**
-     * The directory that our document lives in
-     */
+    /** The directory that our document lives in */
     private DirectoryNode directory;
 
-    /**
-     * For our own logging use
-     */
+    /** For our own logging use */
     private static final String TAG = "POIDocument";
 
     /* Have the property streams been read yet? (Only done on-demand) */
@@ -92,16 +87,16 @@ public abstract class POIDocument implements Closeable {
      */
     protected POIDocument(POIFSFileSystem fs) {
         this(fs.getRoot());
-    }
+     }
 
     /**
      * Fetch the Document Summary Information of the document
      *
      * @return The Document Summary Information or null
-     * if it could not be read for this document.
+     *      if it could not be read for this document.
      */
     public DocumentSummaryInformation getDocumentSummaryInformation() {
-        if (!initialized) {
+        if(!initialized) {
             readProperties();
         }
         return dsInf;
@@ -111,10 +106,10 @@ public abstract class POIDocument implements Closeable {
      * Fetch the Summary Information of the document
      *
      * @return The Summary information for the document or null
-     * if it could not be read for this document.
+     *      if it could not be read for this document.
      */
     public SummaryInformation getSummaryInformation() {
-        if (!initialized) {
+        if(!initialized) {
             readProperties();
         }
         return sInf;
@@ -122,12 +117,12 @@ public abstract class POIDocument implements Closeable {
 
     /**
      * Will create whichever of SummaryInformation
-     * and DocumentSummaryInformation (HPSF) properties
-     * are not already part of your document.
+     *  and DocumentSummaryInformation (HPSF) properties
+     *  are not already part of your document.
      * This is normally useful when creating a new
-     * document from scratch.
+     *  document from scratch.
      * If the information properties are already there,
-     * then nothing will happen.
+     *  then nothing will happen.
      */
     public void createInformationProperties() {
         if (!initialized) {
@@ -143,9 +138,9 @@ public abstract class POIDocument implements Closeable {
 
     /**
      * Find, and create objects for, the standard
-     * Document Information Properties (HPSF).
+     *  Document Information Properties (HPSF).
      * If a given property set is missing or corrupt,
-     * it will remain null;
+     *  it will remain null;
      */
     @Internal
     public void readProperties() {
@@ -179,11 +174,11 @@ public abstract class POIDocument implements Closeable {
 
     @SuppressWarnings("unchecked")
     private <T> T readPropertySet(Class<T> clazz, String name, boolean warnIfNull) {
-        String localName = clazz.getName().substring(clazz.getName().lastIndexOf('.') + 1);
+        String localName = clazz.getName().substring(clazz.getName().lastIndexOf('.')+1);
         try {
             PropertySet ps = getPropertySet(name);
             if (clazz.isInstance(ps)) {
-                return (T) ps;
+                return (T)ps;
             } else if (ps != null) {
                 Log.w(TAG, String.format("%s property set came back with wrong class - %s", localName, ps.getClass().getName()));
             } else {
@@ -199,10 +194,11 @@ public abstract class POIDocument implements Closeable {
 
     /**
      * For a given named property entry, either return it or null if
-     * if it wasn't found
+     *  if it wasn't found
      *
-     * @param setName The property to read
-     * @return The value of the given property or null if it wasn't found.
+     *  @param setName The property to read
+     *  @return The value of the given property or null if it wasn't found.
+     *
      * @throws IOException If retrieving properties fails
      */
     @SuppressWarnings("WeakerAccess")
@@ -212,11 +208,12 @@ public abstract class POIDocument implements Closeable {
 
     /**
      * For a given named property entry, either return it or null if
-     * if it wasn't found
+     *  if it wasn't found
      *
-     * @param setName        The property to read
-     * @param encryptionInfo the encryption descriptor in case of cryptoAPI encryption
-     * @return The value of the given property or null if it wasn't found.
+     *  @param setName The property to read
+     *  @param encryptionInfo the encryption descriptor in case of cryptoAPI encryption
+     *  @return The value of the given property or null if it wasn't found.
+     *
      * @throws IOException If retrieving properties fails
      */
     @SuppressWarnings("WeakerAccess")
@@ -230,9 +227,9 @@ public abstract class POIDocument implements Closeable {
                 step = "getting encrypted";
                 String encryptedStream = getEncryptedPropertyStreamName();
                 if (!dirNode.hasEntryCaseInsensitive(encryptedStream)) {
-                    throw new EncryptedDocumentException("can't find encrypted property stream '" + encryptedStream + "'");
+                    throw new EncryptedDocumentException("can't find encrypted property stream '"+encryptedStream+"'");
                 }
-                CryptoAPIDecryptor dec = (CryptoAPIDecryptor) encryptionInfo.getDecryptor();
+                CryptoAPIDecryptor dec = (CryptoAPIDecryptor)encryptionInfo.getDecryptor();
                 encPoifs = dec.getSummaryEntries(dirNode, encryptedStream);
                 dirNode = encPoifs.getRoot();
             }
@@ -252,7 +249,7 @@ public abstract class POIDocument implements Closeable {
         } catch (IOException e) {
             throw e;
         } catch (Exception e) {
-            throw new IOException("Error " + step + " property set with name " + setName, e);
+            throw new IOException("Error "+step+" property set with name " + setName, e);
         } finally {
             IOUtils.closeQuietly(encPoifs);
         }
@@ -260,10 +257,10 @@ public abstract class POIDocument implements Closeable {
 
     /**
      * Writes out the updated standard Document Information Properties (HPSF)
-     * into the currently open POIFSFileSystem
+     *  into the currently open POIFSFileSystem
      *
      * @throws IOException if an error when writing to the open
-     *                     {@link POIFSFileSystem} occurs
+     *      {@link POIFSFileSystem} occurs
      */
     protected void writeProperties() throws IOException {
         validateInPlaceWritePossible();
@@ -272,23 +269,22 @@ public abstract class POIDocument implements Closeable {
 
     /**
      * Writes out the standard Document Information Properties (HPSF)
-     *
      * @param outFS the POIFSFileSystem to write the properties into
+     *
      * @throws IOException if an error when writing to the
-     *                     {@link POIFSFileSystem} occurs
+     *      {@link POIFSFileSystem} occurs
      */
     @Internal
     public void writeProperties(POIFSFileSystem outFS) throws IOException {
         writeProperties(outFS, null);
     }
-
     /**
      * Writes out the standard Document Information Properties (HPSF)
-     *
-     * @param outFS          the {@link POIFSFileSystem} to write the properties into
+     * @param outFS the {@link POIFSFileSystem} to write the properties into
      * @param writtenEntries a list of POIFS entries to add the property names too
+     *
      * @throws IOException if an error when writing to the
-     *                     {@link POIFSFileSystem} occurs
+     *      {@link POIFSFileSystem} occurs
      */
     protected void writeProperties(POIFSFileSystem outFS, List<String> writtenEntries) throws IOException {
         final EncryptionInfo ei = getEncryptionInfo();
@@ -323,7 +319,7 @@ public abstract class POIDocument implements Closeable {
     }
 
     private void writePropertySet(String name, PropertySet ps, POIFSFileSystem outFS, List<String> writtenEntries)
-            throws IOException {
+    throws IOException {
         if (ps == null) {
             return;
         }
@@ -336,11 +332,12 @@ public abstract class POIDocument implements Closeable {
     /**
      * Writes out a given PropertySet
      *
-     * @param name  the (POIFS Level) name of the property to write
-     * @param set   the PropertySet to write out
+     * @param name the (POIFS Level) name of the property to write
+     * @param set the PropertySet to write out
      * @param outFS the {@link POIFSFileSystem} to write the property into
+     *
      * @throws IOException if an error when writing to the
-     *                     {@link POIFSFileSystem} occurs
+     *      {@link POIFSFileSystem} occurs
      */
     private void writePropertySet(String name, PropertySet set, POIFSFileSystem outFS) throws IOException {
         try (UnsynchronizedByteArrayOutputStream bOut = UnsynchronizedByteArrayOutputStream.builder().get()) {
@@ -353,15 +350,15 @@ public abstract class POIDocument implements Closeable {
             }
 
             Log.i(TAG, String.format("Wrote property set %s of size %d", name, bOut.size()));
-        } catch (WritingNotSupportedException ignored) {
+        } catch(WritingNotSupportedException ignored) {
             Log.e(TAG, String.format("Couldn't write property set with name %s as not supported by HPSF yet", name));
         }
     }
 
     /**
      * Called during a {@link #write()} to ensure that the Document (and
-     * associated {@link POIFSFileSystem}) was opened in a way compatible
-     * with an in-place write.
+     *  associated {@link POIFSFileSystem}) was opened in a way compatible
+     *  with an in-place write.
      *
      * @throws IllegalStateException if the document was opened suitably
      */
@@ -373,24 +370,25 @@ public abstract class POIDocument implements Closeable {
             throw new IllegalStateException("This is not the root Document, cannot save embedded resource in-place");
         }
         if (directory.getFileSystem() == null ||
-                !directory.getFileSystem().isInPlaceWriteable()) {
+            !directory.getFileSystem().isInPlaceWriteable()) {
             throw new IllegalStateException("Opened read-only or via an InputStream, a Writeable File is required");
         }
     }
 
     /**
      * Writes the document out to the currently open {@link File}, via the
-     * writeable {@link POIFSFileSystem} it was opened from.
+     *  writeable {@link POIFSFileSystem} it was opened from.
      *
      * <p>This will fail (with an {@link IllegalStateException} if the
-     * document was opened read-only, opened from an {@link InputStream}
-     * instead of a File, or if this is not the root document. For those cases,
-     * you must use {@link #write(OutputStream)} or {@link #write(File)} to
-     * write to a brand new document.
+     *  document was opened read-only, opened from an {@link InputStream}
+     *   instead of a File, or if this is not the root document. For those cases,
+     *   you must use {@link #write(OutputStream)} or {@link #write(File)} to
+     *   write to a brand new document.
      *
-     * @throws IOException           thrown on errors writing to the file
-     * @throws IllegalStateException if this isn't from a writable File
      * @since POI 3.15 beta 3
+     *
+     * @throws IOException thrown on errors writing to the file
+     * @throws IllegalStateException if this isn't from a writable File
      */
     public abstract void write() throws IOException;
 
@@ -398,21 +396,23 @@ public abstract class POIDocument implements Closeable {
      * Writes the document out to the specified new {@link File}. If the file
      * exists, it will be replaced, otherwise a new one will be created
      *
-     * @param newFile The new File to write to.
-     * @throws IOException thrown on errors writing to the file
      * @since POI 3.15 beta 3
+     *
+     * @param newFile The new File to write to.
+     *
+     * @throws IOException thrown on errors writing to the file
      */
     public abstract void write(File newFile) throws IOException;
 
     /**
      * Writes the document out to the specified output stream. The
      * stream is not closed as part of this operation.
-     * <p>
+     *
      * Note - if the Document was opened from a {@link File} rather
-     * than an {@link InputStream}, you <b>must</b> write out using
-     * {@link #write()} or to a different File. Overwriting the currently
-     * open file via an OutputStream isn't possible.
-     * <p>
+     *  than an {@link InputStream}, you <b>must</b> write out using
+     *  {@link #write()} or to a different File. Overwriting the currently
+     *  open file via an OutputStream isn't possible.
+     *
      * If {@code stream} is a {@link FileOutputStream} on a networked drive
      * or has a high cost/latency associated with each written byte,
      * consider wrapping the OutputStream in a {@link BufferedOutputStream}
@@ -420,17 +420,18 @@ public abstract class POIDocument implements Closeable {
      * if possible.
      *
      * @param out The stream to write to.
+     *
      * @throws IOException thrown on errors writing to the stream
      */
     public abstract void write(OutputStream out) throws IOException;
 
     /**
      * Closes the underlying {@link POIFSFileSystem} from which
-     * the document was read, if any. Has no effect on documents
-     * opened from an InputStream, or newly created ones.<p>
-     * <p>
+     *  the document was read, if any. Has no effect on documents
+     *  opened from an InputStream, or newly created ones.<p>
+     *
      * Once {@code close()} has been called, no further operations
-     * should be called on the document.
+     *  should be called on the document.
      */
     @Override
     public void close() throws IOException {
@@ -480,11 +481,11 @@ public abstract class POIDocument implements Closeable {
     @Internal
     protected void replaceDirectory(DirectoryNode newDirectory) throws IOException {
         if (
-            // do not close if it is actually the same directory or
+                // do not close if it is actually the same directory or
                 newDirectory == directory ||
 
-                        // also for different directories, but same FileSystem
-                        (newDirectory != null && directory != null && newDirectory.getFileSystem() == directory.getFileSystem())) {
+                // also for different directories, but same FileSystem
+                (newDirectory != null && directory != null && newDirectory.getFileSystem() == directory.getFileSystem())) {
             return;
         }
 
@@ -505,6 +506,7 @@ public abstract class POIDocument implements Closeable {
 
     /**
      * @return the encryption info if the document is encrypted, otherwise {@code null}
+     *
      * @throws IOException If retrieving the encryption information fails
      */
     public EncryptionInfo getEncryptionInfo() throws IOException {

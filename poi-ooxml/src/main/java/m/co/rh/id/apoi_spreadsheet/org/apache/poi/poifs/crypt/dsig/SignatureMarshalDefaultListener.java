@@ -15,22 +15,14 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.dsig;
 
 import static m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.dsig.facets.SignatureFacet.MS_DIGSIG_NS;
 import static m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.dsig.facets.SignatureFacet.OO_DIGSIG_NS;
 import static m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.dsig.facets.SignatureFacet.XML_DIGSIG_NS;
 import static m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.dsig.facets.SignatureFacet.XML_NS;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Consumer;
-
-import javax.xml.XMLConstants;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -43,6 +35,17 @@ import org.w3c.dom.traversal.DocumentTraversal;
 import org.w3c.dom.traversal.NodeFilter;
 import org.w3c.dom.traversal.NodeIterator;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Consumer;
+import javax.xml.XMLConstants;
+
+
 /**
  * This listener class is used, to modify the to be digested xml document,
  * e.g. to register id attributes or set prefixes for registered namespaces
@@ -51,7 +54,8 @@ public class SignatureMarshalDefaultListener implements SignatureMarshalListener
     private static final String OBJECT_TAG = "Object";
     private static final Set<String> IGNORE_NS = new HashSet<>(Arrays.asList(null, XML_NS, XML_DIGSIG_NS));
 
-    private static final List<String> DIRECT_NS = Arrays.asList(OO_DIGSIG_NS, MS_DIGSIG_NS);
+    private static final List<String> DIRECT_NS = Collections.unmodifiableList(
+        Arrays.asList(OO_DIGSIG_NS, MS_DIGSIG_NS));
 
     @Override
     public void handleElement(SignatureInfo signatureInfo, Document doc, EventTarget target, EventListener parentListener) {

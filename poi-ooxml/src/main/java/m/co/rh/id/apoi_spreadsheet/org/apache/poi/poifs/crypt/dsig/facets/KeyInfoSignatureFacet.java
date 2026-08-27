@@ -14,8 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 /* ====================================================================
    This product contains an ASLv2 licensed version of the OOXML signer
    package from the eID Applet project
@@ -38,7 +38,6 @@ import java.security.KeyException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.xml.crypto.MarshalException;
 import javax.xml.crypto.XMLStructure;
 import javax.xml.crypto.dom.DOMStructure;
@@ -51,6 +50,7 @@ import javax.xml.crypto.dsig.keyinfo.X509Data;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.dsig.SignatureConfig;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.dsig.SignatureInfo;
 
+
 /**
  * Signature Facet implementation that adds ds:KeyInfo to the XML signature.
  */
@@ -60,7 +60,7 @@ public class KeyInfoSignatureFacet implements SignatureFacet {
 
     @Override
     public void postSign(SignatureInfo signatureInfo, Document document)
-            throws MarshalException {
+    throws MarshalException {
         Log.d(TAG, "postSign");
 
         NodeList nl = document.getElementsByTagNameNS(XML_DIGSIG_NS, "Object");
@@ -93,8 +93,8 @@ public class KeyInfoSignatureFacet implements SignatureFacet {
 
         if (signatureConfig.isIncludeIssuerSerial()) {
             x509DataObjects.add(keyInfoFactory.newX509IssuerSerial(
-                    signingCertificate.getIssuerX500Principal().toString(),
-                    signingCertificate.getSerialNumber()));
+                signingCertificate.getIssuerX500Principal().toString(),
+                signingCertificate.getSerialNumber()));
         }
 
         if (signatureConfig.isIncludeEntireCertificateChain()) {
@@ -108,7 +108,7 @@ public class KeyInfoSignatureFacet implements SignatureFacet {
             keyInfoContent.add(x509Data);
         }
         KeyInfo keyInfo = keyInfoFactory.newKeyInfo(keyInfoContent);
-        DOMKeyInfo domKeyInfo = (DOMKeyInfo) keyInfo;
+        DOMKeyInfo domKeyInfo = (DOMKeyInfo)keyInfo;
 
         Key key = new Key() {
             private static final long serialVersionUID = 1L;
@@ -128,8 +128,8 @@ public class KeyInfoSignatureFacet implements SignatureFacet {
 
         Element n = document.getDocumentElement();
         DOMSignContext domSignContext = (nextSibling == null)
-                ? new DOMSignContext(key, n)
-                : new DOMSignContext(key, n, nextSibling);
+            ? new DOMSignContext(key, n)
+            : new DOMSignContext(key, n, nextSibling);
         signatureConfig.getNamespacePrefixes().forEach(domSignContext::putNamespacePrefix);
 
         DOMStructure domStructure = new DOMStructure(n);

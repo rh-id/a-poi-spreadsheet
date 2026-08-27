@@ -14,17 +14,22 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.cryptoapi;
-
-import java.io.InputStream;
-import java.security.GeneralSecurityException;
-
-import javax.crypto.Cipher;
 
 import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.commons.io.output.ByteArrayOutputStream;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.security.GeneralSecurityException;
+import javax.crypto.Cipher;
+
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.EncryptedDocumentException;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
+
 
 /**
  * An OutputStream for the document entries within the encrypted stream
@@ -40,8 +45,22 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
         cipher = encryptor.initCipherForBlock(null, 0);
     }
 
+    /**
+     * Returns the encrypted data.
+     *
+     * @param maxSize
+     * @return the encrypted data
+     * @throws UncheckedIOException if an I/O error occurs
+     */
     public InputStream toInputStream(long maxSize) {
-        return new BoundedInputStream(toInputStream(), maxSize);
+        try {
+            return BoundedInputStream.builder()
+                .setInputStream(toInputStream())
+                .setMaxCount(maxSize)
+                .get();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     public void setSize(int count) {

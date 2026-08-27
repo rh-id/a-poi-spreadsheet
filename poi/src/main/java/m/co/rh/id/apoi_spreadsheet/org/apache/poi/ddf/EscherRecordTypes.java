@@ -15,13 +15,17 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ddf;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 
 public enum EscherRecordTypes {
     // records greater then 0xF000 belong to Microsoft Office Drawing format also known as Escher
@@ -108,8 +112,8 @@ public enum EscherRecordTypes {
         return typeID;
     }
 
-    private static final Map<Short, EscherRecordTypes> LOOKUP =
-        Stream.of(values()).collect(Collectors.toMap(EscherRecordTypes::getTypeId, Function.identity()));
+    private static final Map<Short, EscherRecordTypes> LOOKUP = Collections.unmodifiableMap(
+        Stream.of(values()).collect(Collectors.toMap(EscherRecordTypes::getTypeId, Function.identity())));
 
     public static EscherRecordTypes forTypeID(int typeID) {
         // Section 2.2.23: 0xF02A is treated as 0xF01D

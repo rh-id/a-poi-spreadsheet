@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.eventusermodel;
 
 import android.util.Log;
@@ -35,6 +36,9 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.Record;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.usermodel.HSSFDataFormat;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.usermodel.HSSFDataFormatter;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LocaleUtil;
+
+
+
 
 /**
  * A proxy HSSFListener that keeps track of the document formatting records, and
@@ -64,7 +68,7 @@ public class FormatTrackingHSSFListener implements HSSFListener {
      * the given locale for the formats.
      *
      * @param childListener the listener to be wrapped
-     * @param locale        the locale for the formats
+     * @param locale the locale for the formats
      */
     public FormatTrackingHSSFListener(
             HSSFListener childListener, Locale locale) {
@@ -114,11 +118,12 @@ public class FormatTrackingHSSFListener implements HSSFListener {
      * Formats the given numeric of date cells contents as a String, in as
      * close as we can to the way that Excel would do so. Uses the various
      * format records to manage this.
-     * <p>
+     *
      * TODO - move this to a central class in such a way that hssf.usermodel can
      * make use of it too
      *
      * @param cell the cell
+     *
      * @return the given numeric of date cells contents as a String
      */
     public String formatNumberDateCell(CellValueRecordInterface cell) {
@@ -147,6 +152,7 @@ public class FormatTrackingHSSFListener implements HSSFListener {
      * Returns the format string, eg $##.##, for the given number format index.
      *
      * @param formatIndex the format index
+     *
      * @return the format string
      */
     public String getFormatString(int formatIndex) {
@@ -154,7 +160,7 @@ public class FormatTrackingHSSFListener implements HSSFListener {
         if (formatIndex >= HSSFDataFormat.getNumberOfBuiltinBuiltinFormats()) {
             FormatRecord tfr = _customFormatRecords.get(Integer.valueOf(formatIndex));
             if (tfr == null) {
-                Log.e(TAG, String.format("Requested format at index %d, but it wasn't found", formatIndex));
+                Log.e(TAG, String.format("Requested format at index %s, but it wasn't found", formatIndex));
             } else {
                 format = tfr.getFormatString();
             }
@@ -168,6 +174,7 @@ public class FormatTrackingHSSFListener implements HSSFListener {
      * Returns the format string, eg $##.##, used by your cell
      *
      * @param cell the cell
+     *
      * @return the format string
      */
     public String getFormatString(CellValueRecordInterface cell) {
@@ -183,12 +190,13 @@ public class FormatTrackingHSSFListener implements HSSFListener {
      * Returns the index of the format string, used by your cell, or -1 if none found
      *
      * @param cell the cell
+     *
      * @return the index of the format string
      */
     public int getFormatIndex(CellValueRecordInterface cell) {
         ExtendedFormatRecord xfr = _xfRecords.get(cell.getXFIndex());
         if (xfr == null) {
-            Log.e(TAG, String.format("Cell %d,%d uses XF with index %d, but we don't have that", cell.getRow(), cell.getColumn(), cell.getXFIndex()));
+            Log.e(TAG, String.format("Cell %d,%d uses XF with index %s, but we don't have that", cell.getRow(), cell.getColumn(), cell.getXFIndex()));
             return -1;
         }
         return xfr.getFormatIndex();

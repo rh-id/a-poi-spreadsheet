@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record;
 
@@ -30,10 +31,11 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.GenericRecordUtil;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.IOUtils;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.RecordFormatException;
 
+
 /**
  * Biff2 - Biff 4 Label Record (0x0004 / 0x0204) - read only support for
- * strings stored directly in the cell, from the older file formats that
- * didn't use {@link LabelSSTRecord}
+ *  strings stored directly in the cell, from the older file formats that
+ *  didn't use {@link LabelSSTRecord}
  */
 public final class OldLabelRecord extends OldCellRecord {
     private static final String TAG = "OldLabelRecord";
@@ -41,20 +43,21 @@ public final class OldLabelRecord extends OldCellRecord {
     public static final short biff2_sid = 0x0004;
     public static final short biff345_sid = 0x0204;
 
-    private short field_4_string_len;
-    private final byte[] field_5_bytes;
+    private short          field_4_string_len;
+    private final byte[]         field_5_bytes;
     private CodepageRecord codepage;
 
     /**
      * @param in the RecordInputstream to read the record from
      */
-    public OldLabelRecord(RecordInputStream in) {
+    public OldLabelRecord(RecordInputStream in)
+    {
         super(in, in.getSid() == biff2_sid);
 
         if (isBiff2()) {
-            field_4_string_len = (short) in.readUByte();
+            field_4_string_len  = (short)in.readUByte();
         } else {
-            field_4_string_len = in.readShort();
+            field_4_string_len   = in.readShort();
         }
 
         // Can only decode properly later when you know the codepage
@@ -62,7 +65,7 @@ public final class OldLabelRecord extends OldCellRecord {
         in.read(field_5_bytes, 0, field_4_string_len);
 
         if (in.remaining() > 0) {
-            Log.i(TAG, String.format("LabelRecord data remains: %d : %s", in.remaining(), toHex(in.readRemainder())));
+            Log.i(TAG, String.format("LabelRecord data remains: %s : %s", in.remaining(), toHex(in.readRemainder())));
         }
     }
 
@@ -72,10 +75,10 @@ public final class OldLabelRecord extends OldCellRecord {
 
     /**
      * get the number of characters this string contains
-     *
      * @return number of characters
      */
-    public short getStringLength() {
+    public short getStringLength()
+    {
         return field_4_string_len;
     }
 
@@ -84,7 +87,8 @@ public final class OldLabelRecord extends OldCellRecord {
      *
      * @return the String of the cell
      */
-    public String getValue() {
+    public String getValue()
+    {
         return OldStringRecord.getString(field_5_bytes, codepage);
     }
 
@@ -92,10 +96,10 @@ public final class OldLabelRecord extends OldCellRecord {
      * Not supported
      *
      * @param offset not supported
-     * @param data   not supported
+     * @param data not supported
      * @return not supported
      */
-    public int serialize(int offset, byte[] data) {
+    public int serialize(int offset, byte [] data) {
         throw new RecordFormatException("Old Label Records are supported READ ONLY");
     }
 
@@ -111,9 +115,9 @@ public final class OldLabelRecord extends OldCellRecord {
     @Override
     public Map<String, Supplier<?>> getGenericProperties() {
         return GenericRecordUtil.getGenericProperties(
-                "base", super::getGenericProperties,
-                "stringLength", this::getStringLength,
-                "value", this::getValue
+            "base", super::getGenericProperties,
+            "stringLength", this::getStringLength,
+            "value", this::getValue
         );
     }
 }

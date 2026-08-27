@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel;
 
@@ -55,7 +56,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Spliterator;
-
 import javax.xml.namespace.QName;
 
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.POIXMLDocumentPart;
@@ -74,6 +74,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.ImageUtils;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Units;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.model.Comments;
+
 
 /**
  * Represents a SpreadsheetML drawing
@@ -103,9 +104,11 @@ public final class XSSFDrawing extends POIXMLDocumentPart implements Drawing<XSS
     /**
      * Construct a SpreadsheetML drawing from a package part
      *
-     * @param part the package part holding the drawing data, the content type
-     *             must be
-     *             <code>application/vnd.openxmlformats-officedocument.drawing+xml</code>
+     * @param part
+     *            the package part holding the drawing data, the content type
+     *            must be
+     *            <code>application/vnd.openxmlformats-officedocument.drawing+xml</code>
+     *
      * @since POI 3.14-Beta1
      */
     public XSSFDrawing(PackagePart part) throws IOException, XmlException {
@@ -150,7 +153,7 @@ public final class XSSFDrawing extends POIXMLDocumentPart implements Drawing<XSS
          * "http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing">
          */
         xmlOptions
-                .setSaveSyntheticDocumentElement(new QName(CTDrawing.type.getName().getNamespaceURI(), "wsDr", "xdr"));
+            .setSaveSyntheticDocumentElement(new QName(CTDrawing.type.getName().getNamespaceURI(), "wsDr", "xdr"));
 
         PackagePart part = getPackagePart();
         try (OutputStream out = part.getOutputStream()) {
@@ -166,8 +169,9 @@ public final class XSSFDrawing extends POIXMLDocumentPart implements Drawing<XSS
     /**
      * Constructs a textbox under the drawing.
      *
-     * @param anchor the client anchor describes how this group is attached to the
-     *               sheet.
+     * @param anchor
+     *            the client anchor describes how this group is attached to the
+     *            sheet.
      * @return the newly created textbox.
      */
     public XSSFTextBox createTextbox(XSSFClientAnchor anchor) {
@@ -185,12 +189,15 @@ public final class XSSFDrawing extends POIXMLDocumentPart implements Drawing<XSS
     /**
      * Creates a picture.
      *
-     * @param anchor       the client anchor describes how this picture is attached to
-     *                     the sheet.
-     * @param pictureIndex the index of the picture in the workbook collection of
-     *                     pictures,
-     *                     {@link XSSFWorkbook#getAllPictures()}
-     *                     .
+     * @param anchor
+     *            the client anchor describes how this picture is attached to
+     *            the sheet.
+     * @param pictureIndex
+     *            the index of the picture in the workbook collection of
+     *            pictures,
+     *            {@link XSSFWorkbook#getAllPictures()}
+     *            .
+     *
      * @return the newly created picture shape.
      */
     public XSSFPicture createPicture(XSSFClientAnchor anchor, int pictureIndex) {
@@ -219,8 +226,9 @@ public final class XSSFDrawing extends POIXMLDocumentPart implements Drawing<XSS
     /**
      * Creates a chart.
      *
-     * @param anchor the client anchor describes how this chart is attached to the
-     *               sheet.
+     * @param anchor
+     *            the client anchor describes how this chart is attached to the
+     *            sheet.
      * @return the newly created chart
      * @see XSSFDrawing#createChart(ClientAnchor)
      */
@@ -241,7 +249,7 @@ public final class XSSFDrawing extends POIXMLDocumentPart implements Drawing<XSS
         XSSFFactory factory = wb == null ? XSSFFactory.getInstance() : wb.getXssfFactory();
         OPCPackage pkg = getPackagePart().getPackage();
         int chartNumber = pkg.getPartsByContentType(XSSFRelation.CHART.getContentType())
-                .size() + 1;
+            .size() + 1;
 
         // some broken files have incorrectly named package parts,
         // so we need to avoid duplicates here by checking and increasing
@@ -260,8 +268,9 @@ public final class XSSFDrawing extends POIXMLDocumentPart implements Drawing<XSS
     /**
      * Creates a chart.
      *
-     * @param anchor the client anchor describes how this chart is attached to the
-     *               sheet.
+     * @param anchor
+     *            the client anchor describes how this chart is attached to the
+     *            sheet.
      * @return the newly created chart
      */
 
@@ -272,7 +281,8 @@ public final class XSSFDrawing extends POIXMLDocumentPart implements Drawing<XSS
     /**
      * Imports the chart from the <code>srcChart</code> into this drawing.
      *
-     * @param srcChart the source chart to be cloned into this drawing.
+     * @param srcChart
+     *            the source chart to be cloned into this drawing.
      * @return the newly created chart.
      * @since 4.0.0
      */
@@ -291,7 +301,7 @@ public final class XSSFDrawing extends POIXMLDocumentPart implements Drawing<XSS
      * Add the indexed picture to this drawing relations
      *
      * @param pictureIndex the index of the picture in the workbook collection of pictures,
-     *                     {@link XSSFWorkbook#getAllPictures()}           .
+     *            {@link XSSFWorkbook#getAllPictures()}           .
      */
     protected PackageRelationship addPictureReference(int pictureIndex) {
         XSSFPictureData data = getSheet().getWorkbook().getAllPictures().get(pictureIndex);
@@ -304,8 +314,9 @@ public final class XSSFDrawing extends POIXMLDocumentPart implements Drawing<XSS
      * Creates a simple shape. This includes such shapes as lines, rectangles,
      * and ovals.
      *
-     * @param anchor the client anchor describes how this group is attached to the
-     *               sheet.
+     * @param anchor
+     *            the client anchor describes how this group is attached to the
+     *            sheet.
      * @return the newly created shape.
      */
     public XSSFSimpleShape createSimpleShape(XSSFClientAnchor anchor) {
@@ -324,8 +335,9 @@ public final class XSSFDrawing extends POIXMLDocumentPart implements Drawing<XSS
      * Creates a simple shape. This includes such shapes as lines, rectangles,
      * and ovals.
      *
-     * @param anchor the client anchor describes how this group is attached to the
-     *               sheet.
+     * @param anchor
+     *            the client anchor describes how this group is attached to the
+     *            sheet.
      * @return the newly created shape.
      */
     public XSSFConnector createConnector(XSSFClientAnchor anchor) {
@@ -342,8 +354,9 @@ public final class XSSFDrawing extends POIXMLDocumentPart implements Drawing<XSS
      * Creates a simple shape. This includes such shapes as lines, rectangles,
      * and ovals.
      *
-     * @param anchor the client anchor describes how this group is attached to the
-     *               sheet.
+     * @param anchor
+     *            the client anchor describes how this group is attached to the
+     *            sheet.
      * @return the newly created shape.
      */
     public XSSFShapeGroup createGroup(XSSFClientAnchor anchor) {
@@ -364,8 +377,9 @@ public final class XSSFDrawing extends POIXMLDocumentPart implements Drawing<XSS
     /**
      * Creates a comment.
      *
-     * @param anchor the client anchor describes how this comment is attached to
-     *               the sheet.
+     * @param anchor
+     *            the client anchor describes how this comment is attached to
+     *            the sheet.
      * @return the newly created comment.
      */
     @Override
@@ -379,8 +393,9 @@ public final class XSSFDrawing extends POIXMLDocumentPart implements Drawing<XSS
     /**
      * Creates a new graphic frame.
      *
-     * @param anchor the client anchor describes how this frame is attached to the
-     *               sheet
+     * @param anchor
+     *            the client anchor describes how this frame is attached to the
+     *            sheet
      * @return the newly created graphic frame
      */
     private XSSFGraphicFrame createGraphicFrame(XSSFClientAnchor anchor) {
@@ -436,9 +451,9 @@ public final class XSSFDrawing extends POIXMLDocumentPart implements Drawing<XSS
         XSSFPictureData imgPD = sh.getWorkbook().getAllPictures().get(pictureIndex);
         PackagePartName imgPN = imgPD.getPackagePart().getPartName();
         PackageRelationship imgSheetPR = sheetPart.addRelationship(imgPN, TargetMode.INTERNAL,
-                PackageRelationshipTypes.IMAGE_PART);
+            PackageRelationshipTypes.IMAGE_PART);
         PackageRelationship imgDrawPR = getPackagePart().addRelationship(imgPN, TargetMode.INTERNAL,
-                PackageRelationshipTypes.IMAGE_PART);
+            PackageRelationshipTypes.IMAGE_PART);
 
         // add OLE part metadata to sheet
         CTWorksheet cwb = sh.getCTWorksheet();
@@ -524,17 +539,17 @@ public final class XSSFDrawing extends POIXMLDocumentPart implements Drawing<XSS
         anchor.setFrom(ctAnchor.getFrom());
         STEditAs.Enum editAs;
         switch (anchor.getAnchorType()) {
-            case DONT_MOVE_AND_RESIZE:
-                editAs = STEditAs.ABSOLUTE;
-                break;
-            case MOVE_AND_RESIZE:
-                editAs = STEditAs.TWO_CELL;
-                break;
-            case MOVE_DONT_RESIZE:
-                editAs = STEditAs.ONE_CELL;
-                break;
-            default:
-                editAs = STEditAs.ONE_CELL;
+        case DONT_MOVE_AND_RESIZE:
+            editAs = STEditAs.ABSOLUTE;
+            break;
+        case MOVE_AND_RESIZE:
+            editAs = STEditAs.TWO_CELL;
+            break;
+        case MOVE_DONT_RESIZE:
+            editAs = STEditAs.ONE_CELL;
+            break;
+        default:
+            editAs = STEditAs.ONE_CELL;
         }
         ctAnchor.setEditAs(editAs);
         return ctAnchor;
@@ -566,7 +581,7 @@ public final class XSSFDrawing extends POIXMLDocumentPart implements Drawing<XSS
 
     private long newShapeId() {
         return 1L + drawing.sizeOfAbsoluteAnchorArray() + drawing.sizeOfOneCellAnchorArray() + drawing
-                .sizeOfTwoCellAnchorArray();
+            .sizeOfTwoCellAnchorArray();
     }
 
     /**
@@ -610,7 +625,7 @@ public final class XSSFDrawing extends POIXMLDocumentPart implements Drawing<XSS
                         shape = new XSSFConnector(this, (CTConnector) obj);
                     } else if (obj instanceof CTShape) {
                         shape = hasOleLink(obj) ? new XSSFObjectData(this, (CTShape) obj)
-                                : new XSSFSimpleShape(this, (CTShape) obj);
+                            : new XSSFSimpleShape(this, (CTShape) obj);
                     } else if (obj instanceof CTGraphicalObjectFrame) {
                         shape = new XSSFGraphicFrame(this, (CTGraphicalObjectFrame) obj);
                     } else if (obj instanceof CTGroupShape) {

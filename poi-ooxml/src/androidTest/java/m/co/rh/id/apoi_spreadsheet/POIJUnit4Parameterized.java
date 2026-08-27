@@ -7,6 +7,8 @@ import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.Parameterized;
 import org.junit.runners.model.Statement;
 
+import java.util.TimeZone;
+
 import m.co.rh.id.apoi_spreadsheet.base.POISpreadsheetContext;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.ThreadLocalUtil;
 
@@ -17,6 +19,8 @@ public class POIJUnit4Parameterized extends Parameterized {
      */
     private static class ContextSetup {
         private ContextSetup() {
+            // deterministic date formatting/evaluation regardless of device timezone (matches JVM CI environment)
+            TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
             POISpreadsheetContext.getInstance().setAppContext(InstrumentationRegistry.getInstrumentation().getTargetContext());
         }
     }

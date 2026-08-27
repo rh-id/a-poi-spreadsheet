@@ -14,9 +14,11 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record;
+
 
 import java.util.Map;
 import java.util.function.Supplier;
@@ -33,6 +35,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.BitField;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.BitFieldFactory;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.GenericRecordUtil;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndianOutput;
+
 
 /**
  * Conditional Formatting Rules. This can hold old-style rules

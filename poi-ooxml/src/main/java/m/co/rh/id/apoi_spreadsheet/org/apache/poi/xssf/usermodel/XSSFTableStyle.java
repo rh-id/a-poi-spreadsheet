@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel;
 
@@ -38,6 +39,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.DifferentialStyle
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.TableStyle;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.TableStyleType;
 
+
 /**
  * {@link TableStyle} implementation for styles defined in the OOXML styles.xml.
  * Also used for built-in styles via dummy XML generated from presetTableStyles.xml.
@@ -50,7 +52,7 @@ public class XSSFTableStyle implements TableStyle {
     private final Map<TableStyleType, DifferentialStyleProvider> elementMap = new EnumMap<>(TableStyleType.class);
 
     /**
-     * @param index    style definition index or built-in ordinal depending on use
+     * @param index style definition index or built-in ordinal depending on use
      * @param colorMap indexed color map - default or custom
      * @see TableStyle#getIndex()
      */
@@ -63,7 +65,7 @@ public class XSSFTableStyle implements TableStyle {
         // CT* classes don't handle "mc:AlternateContent" elements, so get the Dxf instances manually
         try (XmlCursor cur = dxfs.newCursor()) {
             // sometimes there are namespaces sometimes not.
-            String xquery = "declare namespace x='" + XSSFRelation.NS_SPREADSHEETML + "' .//x:dxf | .//dxf";
+            String xquery = "declare namespace x='"+XSSFRelation.NS_SPREADSHEETML+"' .//x:dxf | .//dxf";
             cur.selectPath(xquery);
             while (cur.toNextSelection()) {
                 XmlObject obj = cur.getObject();

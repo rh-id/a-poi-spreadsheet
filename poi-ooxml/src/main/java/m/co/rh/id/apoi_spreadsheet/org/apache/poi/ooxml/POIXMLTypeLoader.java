@@ -15,7 +15,11 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml;
+
+import org.apache.xmlbeans.XmlOptions;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -23,7 +27,7 @@ import java.util.Map;
 
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackageNamespaces;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFRelation;
-import org.apache.xmlbeans.XmlOptions;
+
 
 public class POIXMLTypeLoader {
 
@@ -43,6 +47,9 @@ public class POIXMLTypeLoader {
         DEFAULT_XML_OPTIONS.setCharacterEncoding("UTF-8");
         DEFAULT_XML_OPTIONS.setDisallowDocTypeDeclaration(true);
         DEFAULT_XML_OPTIONS.setEntityExpansionLimit(1);
+        DEFAULT_XML_OPTIONS.setLoadStripProcinsts(true);
+        DEFAULT_XML_OPTIONS.setLoadStripComments(true);
+
         // JAXP is used for parsing
         // so only user code using XmlObject/XmlToken.Factory.parse
         // directly can bypass the entity check, which is probably unlikely (... and not within our responsibility :)) 
@@ -68,6 +75,8 @@ public class POIXMLTypeLoader {
         map.put(MS_EXCEL_URN, "x");
         map.put(MS_WORD_URN, "w10");
         map.put(MS_VML_URN, "v");
+        map.put("http://schemas.microsoft.com/office/word/2010/wordml", "w14");
+        map.put("http://schemas.microsoft.com/office/word/2012/wordml", "w15");
         map.put("http://schemas.microsoft.com/office/drawing/2012/chart", "c15");
         DEFAULT_XML_OPTIONS.setSaveSuggestedPrefixes(Collections.unmodifiableMap(map));
     }

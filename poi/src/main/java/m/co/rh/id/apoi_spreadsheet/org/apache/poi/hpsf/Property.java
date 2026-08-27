@@ -14,9 +14,12 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.hpsf;
+
+
 
 import android.util.Log;
 
@@ -41,13 +44,14 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndianByteArrayInpu
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndianConsts;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LocaleUtil;
 
+
 /**
  * A property in a {@link Section} of a {@link PropertySet}.<p>
- * <p>
+ *
  * The property's {@code ID} gives the property a meaning
  * in the context of its {@link Section}. Each {@link Section} spans
  * its own name space of property IDs.<p>
- * <p>
+ *
  * The property's {@code type} determines how its
  * {@code value} is interpreted. For example, if the type is
  * {@link Variant#VT_LPSTR} (byte string), the value consists of a
@@ -55,7 +59,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LocaleUtil;
  * immediately, including any null bytes that terminate the
  * string. The type {@link Variant#VT_I4} denotes a four-byte integer
  * value, {@link Variant#VT_FILETIME} some date and time (of a file).<p>
- * <p>
+ *
  * Please note that not all {@link Variant} types yet. This might change
  * over time but largely depends on your feedback so that the POI team knows
  * which variant types are really needed. So please feel free to submit error
@@ -75,19 +79,13 @@ public class Property {
 
     private static final String TAG = "Property";
 
-    /**
-     * The property's ID.
-     */
+    /** The property's ID. */
     private long id;
 
-    /**
-     * The property's type.
-     */
+    /** The property's type. */
     private long type;
 
-    /**
-     * The property's value.
-     */
+    /** The property's value. */
     private Object value;
 
 
@@ -109,10 +107,10 @@ public class Property {
     /**
      * Creates a property.
      *
-     * @param id    the property's ID.
-     * @param type  the property's type, see {@link Variant}.
+     * @param id the property's ID.
+     * @param type the property's type, see {@link Variant}.
      * @param value the property's value. Only certain types are allowed, see
-     *              {@link Variant}.
+     *        {@link Variant}.
      */
     public Property(final long id, final long type, final Object value) {
         this.id = id;
@@ -124,18 +122,18 @@ public class Property {
      * Creates a Property instance by reading its bytes
      * from the property set stream.
      *
-     * @param id       The property's ID.
-     * @param src      The bytes the property set stream consists of.
-     * @param offset   The property's type/value pair's offset in the
-     *                 section.
-     * @param length   The property's type/value pair's length in bytes.
+     * @param id The property's ID.
+     * @param src The bytes the property set stream consists of.
+     * @param offset The property's type/value pair's offset in the
+     * section.
+     * @param length The property's type/value pair's length in bytes.
      * @param codepage The section's and thus the property's
-     *                 codepage. It is needed only when reading string values.
+     * codepage. It is needed only when reading string values.
      * @throws UnsupportedEncodingException if the specified codepage is not
-     *                                      supported.
+     * supported.
      */
     public Property(final long id, final byte[] src, final long offset, final int length, final int codepage)
-            throws UnsupportedEncodingException {
+    throws UnsupportedEncodingException {
         this.id = id;
 
         /*
@@ -162,16 +160,16 @@ public class Property {
      * Creates a Property instance by reading its bytes
      * from the property set stream.
      *
-     * @param id       The property's ID.
-     * @param leis     The bytes the property set stream consists of.
-     * @param length   The property's type/value pair's length in bytes.
+     * @param id The property's ID.
+     * @param leis The bytes the property set stream consists of.
+     * @param length The property's type/value pair's length in bytes.
      * @param codepage The section's and thus the property's
-     *                 codepage. It is needed only when reading string values.
+     * codepage. It is needed only when reading string values.
      * @throws UnsupportedEncodingException if the specified codepage is not
-     *                                      supported.
+     * supported.
      */
     public Property(final long id, LittleEndianByteArrayInputStream leis, final int length, final int codepage)
-            throws UnsupportedEncodingException {
+    throws UnsupportedEncodingException {
         this.id = id;
 
         /*
@@ -248,17 +246,26 @@ public class Property {
     }
 
 
+
+
+
+
+
+
     /**
      * Returns the property's size in bytes. This is always a multiple of 4.
      *
      * @param property The integer property to check
+     *
      * @return the property's size in bytes
+     *
      * @throws WritingNotSupportedException if HPSF does not yet support the
-     *                                      property's variant type.
+     * property's variant type.
      */
-    protected int getSize(int property) throws WritingNotSupportedException {
+    protected int getSize(int property) throws WritingNotSupportedException
+    {
         int length = Variant.getVariantLength(type);
-        if (length >= 0 || type == Variant.VT_EMPTY) {
+        if (length >= 0  || type == Variant.VT_EMPTY) {
             /* Fixed length */
             return length;
         }
@@ -271,7 +278,7 @@ public class Property {
         if (type == Variant.VT_LPSTR || type == Variant.VT_LPWSTR) {
             UnsynchronizedByteArrayOutputStream bos = UnsynchronizedByteArrayOutputStream.builder().get();
             try {
-                length = write(bos, property) - 2 * LittleEndianConsts.INT_SIZE;
+                length = write(bos, property) - 2*LittleEndianConsts.INT_SIZE;
                 /* Pad to multiples of 4. */
                 length += (4 - (length & 0x3)) & 0x3;
                 return length;
@@ -284,9 +291,10 @@ public class Property {
     }
 
 
+
     /**
      * Compares two properties.<p>
-     * <p>
+     *
      * Please beware that a property with
      * ID == 0 is a special case: It does not have a type, and its value is the
      * section's dictionary. Another special case are strings: Two properties
@@ -314,7 +322,7 @@ public class Property {
         final Class<?> valueClass = value.getClass();
         final Class<?> pValueClass = pValue.getClass();
         if (!(valueClass.isAssignableFrom(pValueClass)) &&
-                !(pValueClass.isAssignableFrom(valueClass))) {
+            !(pValueClass.isAssignableFrom(valueClass))) {
             return false;
         }
 
@@ -325,7 +333,7 @@ public class Property {
             if (len != unpaddedLength(otherVal)) {
                 return false;
             }
-            for (int i = 0; i < len; i++) {
+            for (int i=0; i<len; i++) {
                 if (thisVal[i] != otherVal[i]) {
                     return false;
                 }
@@ -344,9 +352,9 @@ public class Property {
      * @return the truncated size with a maximum of 4 bytes shorter (3 bytes + trailing 0 of strings)
      */
     private static int unpaddedLength(byte[] buf) {
-        final int end = (buf.length - (buf.length + 3) % 4);
-        for (int i = buf.length; i > end; i--) {
-            if (buf[i - 1] != 0) {
+        final int end = (buf.length-(buf.length+3)%4);
+        for (int i = buf.length; i>end; i--) {
+            if (buf[i-1] != 0) {
                 return i;
             }
         }
@@ -356,13 +364,13 @@ public class Property {
 
     private boolean typesAreEqual(final long t1, final long t2) {
         return (t1 == t2 ||
-                (t1 == Variant.VT_LPSTR && t2 == Variant.VT_LPWSTR) ||
-                (t2 == Variant.VT_LPSTR && t1 == Variant.VT_LPWSTR));
+            (t1 == Variant.VT_LPSTR && t2 == Variant.VT_LPWSTR) ||
+            (t2 == Variant.VT_LPSTR && t1 == Variant.VT_LPWSTR));
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, type, value);
+        return Objects.hash(id,type,value);
 
     }
 
@@ -393,7 +401,7 @@ public class Property {
         final Object value = getValue();
         b.append(", value: ");
         if (value instanceof String) {
-            b.append((String) value);
+            b.append((String)value);
             b.append("\n");
             UnsynchronizedByteArrayOutputStream bos = UnsynchronizedByteArrayOutputStream.builder().get();
             try {
@@ -403,35 +411,35 @@ public class Property {
             }
 
             // skip length field
-            if (bos.size() > 2 * LittleEndianConsts.INT_SIZE) {
-                final String hex = HexDump.dump(bos.toByteArray(), -2L * LittleEndianConsts.INT_SIZE, 2 * LittleEndianConsts.INT_SIZE);
+            if(bos.size() > 2*LittleEndianConsts.INT_SIZE) {
+                final String hex = HexDump.dump(bos.toByteArray(), -2L*LittleEndianConsts.INT_SIZE, 2*LittleEndianConsts.INT_SIZE);
                 b.append(hex);
             }
         } else if (value instanceof byte[]) {
             b.append("\n");
-            byte[] bytes = (byte[]) value;
-            if (bytes.length > 0) {
+            byte[] bytes = (byte[])value;
+            if(bytes.length > 0) {
                 String hex = HexDump.dump(bytes, 0L, 0);
                 b.append(hex);
             }
         } else if (value instanceof Date) {
-            Date d = (Date) value;
+            Date d = (Date)value;
             long filetime = Filetime.dateToFileTime(d);
             if (Filetime.isUndefined(d)) {
                 b.append("<undefined>");
             } else if ((filetime >>> 32) == 0) {
                 // if the upper dword isn't set, we deal with time intervals
-                long l = filetime * 100;
+                long l = filetime*100;
                 TimeUnit tu = TimeUnit.NANOSECONDS;
-                final long hr = tu.toHours(l);
+                final long hr  = tu.toHours(l);
                 l -= TimeUnit.HOURS.toNanos(hr);
                 final long min = tu.toMinutes(l);
                 l -= TimeUnit.MINUTES.toNanos(min);
                 final long sec = tu.toSeconds(l);
                 l -= TimeUnit.SECONDS.toNanos(sec);
-                final long ms = tu.toMillis(l);
+                final long ms  = tu.toMillis(l);
 
-                String str = String.format(Locale.ROOT, "%02d:%02d:%02d.%03d", hr, min, sec, ms);
+                String str = String.format(Locale.ROOT, "%02d:%02d:%02d.%03d",hr,min,sec,ms);
                 b.append(str);
             } else {
                 // use ISO-8601 timestamp format
@@ -464,14 +472,14 @@ public class Property {
 
     private String decodeValueFromID() {
         try {
-            switch ((int) getID()) {
+            switch((int)getID()) {
                 case PropertyIDMap.PID_CODEPAGE:
-                    return CodePageUtil.codepageToEncoding(((Number) value).intValue());
+                    return CodePageUtil.codepageToEncoding(((Number)value).intValue());
                 case PropertyIDMap.PID_LOCALE:
-                    return LocaleUtil.getLocaleFromLCID(((Number) value).intValue());
+                    return LocaleUtil.getLocaleFromLCID(((Number)value).intValue());
             }
         } catch (Exception e) {
-            Log.w(TAG, String.format("Can't decode id %d", getID()), e);
+            Log.w(TAG, String.format("Can't decode id %s", getID()));
         }
         return null;
     }
@@ -479,15 +487,16 @@ public class Property {
     /**
      * Writes the property to an output stream.
      *
-     * @param out      The output stream to write to.
+     * @param out The output stream to write to.
      * @param codepage The codepage to use for writing non-wide strings
      * @return the number of bytes written to the stream
-     * @throws IOException                  if an I/O error occurs
+     *
+     * @throws IOException if an I/O error occurs
      * @throws WritingNotSupportedException if a variant type is to be
-     *                                      written that is not yet supported
+     * written that is not yet supported
      */
     public int write(final OutputStream out, final int codepage)
-            throws IOException, WritingNotSupportedException {
+    throws IOException, WritingNotSupportedException {
         int length = 0;
         long variantType = getType();
 
@@ -498,7 +507,7 @@ public class Property {
 
         if (variantType == Variant.VT_LPSTR && codepage != CodePageUtil.CP_UTF16) {
             String csStr = CodePageUtil.codepageToEncoding(codepage > 0 ? codepage : Property.DEFAULT_CODEPAGE);
-            if (!Charset.forName(csStr).newEncoder().canEncode((String) value)) {
+            if (!Charset.forName(csStr).newEncoder().canEncode((String)value)) {
                 variantType = Variant.VT_LPWSTR;
             }
         }

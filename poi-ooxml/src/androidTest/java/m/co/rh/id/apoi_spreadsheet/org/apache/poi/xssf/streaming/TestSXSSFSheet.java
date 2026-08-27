@@ -30,6 +30,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTRow;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import m.co.rh.id.apoi_spreadsheet.POIJUnit4ClassRunner;
@@ -66,6 +67,7 @@ public final class TestSXSSFSheet extends BaseTestXSheet {
     @Override
     @Test
     public void cloneSheet() {
+        //noinspection Convert2MethodRef
         RuntimeException ex = assertThrows(RuntimeException.class, () -> super.cloneSheet());
         assertEquals("Not Implemented", ex.getMessage());
     }
@@ -73,6 +75,7 @@ public final class TestSXSSFSheet extends BaseTestXSheet {
     @Override
     @Test
     public void cloneSheetMultipleTimes() {
+        //noinspection Convert2MethodRef
         RuntimeException ex = assertThrows(RuntimeException.class, () -> super.cloneSheetMultipleTimes());
         assertEquals("Not Implemented", ex.getMessage());
     }
@@ -83,6 +86,7 @@ public final class TestSXSSFSheet extends BaseTestXSheet {
     @Override
     @Test
     public void shiftMerged() {
+        //noinspection Convert2MethodRef
         RuntimeException ex = assertThrows(RuntimeException.class, () -> super.shiftMerged());
         assertEquals("Not Implemented", ex.getMessage());
     }
@@ -95,6 +99,7 @@ public final class TestSXSSFSheet extends BaseTestXSheet {
     @Override
     @Test
     public void bug35084() {
+        //noinspection Convert2MethodRef
         RuntimeException ex = assertThrows(RuntimeException.class, () -> super.bug35084());
         assertEquals("Not Implemented", ex.getMessage());
     }
@@ -252,4 +257,43 @@ public final class TestSXSSFSheet extends BaseTestXSheet {
             }
         }
     }
+
+    @Test
+    public void autosizeWithArbitraryExtraWidth() throws IOException {
+        final int extra = 100;
+        final String longText =
+                "This is a very long text that will exceed default column width for sure.";
+        int width0, width1 = 0;
+        try (SXSSFWorkbook workbook0 = new SXSSFWorkbook()) {
+            SXSSFSheet sheet = workbook0.createSheet();
+            sheet.trackColumnForAutoSizing(0);
+
+            SXSSFRow row = sheet.createRow(0);
+            row.createCell(0).setCellValue(longText);
+            sheet.autoSizeColumn(0);
+
+            try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+                workbook0.write(bos);
+            }
+            width0 = sheet.getColumnWidth(0);
+        }
+
+        try (SXSSFWorkbook workbook1 = new SXSSFWorkbook()) {
+            SXSSFSheet sheet = workbook1.createSheet();
+            sheet.setArbitraryExtraWidth(extra);
+            sheet.trackColumnForAutoSizing(0);
+
+            SXSSFRow row = sheet.createRow(0);
+            row.createCell(0).setCellValue(longText);
+            sheet.autoSizeColumn(0);
+
+            try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+                workbook1.write(bos);
+            }
+            width1 = sheet.getColumnWidth(0);
+        }
+
+        assertEquals(width0 + extra, width1);
+    }
+
 }

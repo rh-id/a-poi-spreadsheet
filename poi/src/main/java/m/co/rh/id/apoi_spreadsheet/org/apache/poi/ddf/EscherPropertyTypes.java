@@ -1,26 +1,13 @@
-/* ====================================================================
- Licensed to the Apache Software Foundation (ASF) under one or more
- contributor license agreements.  See the NOTICE file distributed with
- this work for additional information regarding copyright ownership.
- The ASF licenses this file to You under the Apache License, Version 2.0
- (the "License")), you may not use this file except in compliance with
- the License.  You may obtain a copy of the License at
-
- http://www.apache.org/licenses/LICENSE-2.0
-
- Unless required by applicable law or agreed to in writing, software
- distributed under the License is distributed on an "AS IS" BASIS,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- See the License for the specific language governing permissions and
- limitations under the License.
- ==================================================================== */
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ddf;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 
 /**
  * Provides a list of all known escher properties including the description and type.
@@ -365,8 +352,8 @@ public enum EscherPropertyTypes {
         return propNumber;
     }
 
-    private static final Map<Short, EscherPropertyTypes> LOOKUP =
-            Stream.of(values()).collect(Collectors.toMap(EscherPropertyTypes::getPropertyId, Function.identity()));
+    private static final Map<Short, EscherPropertyTypes> LOOKUP = Collections.unmodifiableMap(
+            Stream.of(values()).collect(Collectors.toMap(EscherPropertyTypes::getPropertyId, Function.identity())));
 
     public static EscherPropertyTypes forPropertyID(int propertyId) {
         EscherPropertyTypes rt = LOOKUP.get((short)(propertyId & 0x3FFF));

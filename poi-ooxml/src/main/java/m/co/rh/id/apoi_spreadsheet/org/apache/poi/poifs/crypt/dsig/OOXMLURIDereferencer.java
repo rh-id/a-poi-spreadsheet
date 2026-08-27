@@ -14,8 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 /* ====================================================================
    This product contains an ASLv2 licensed version of the OOXML signer
    package from the eID Applet project
@@ -34,7 +34,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-
 import javax.xml.crypto.Data;
 import javax.xml.crypto.OctetStreamData;
 import javax.xml.crypto.URIDereferencer;
@@ -46,6 +45,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.exceptions.InvalidFo
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackagePart;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackagePartName;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackagingURIHelper;
+
 
 /**
  * JSR105 URI dereferencer for Office Open XML documents.
@@ -75,7 +75,7 @@ public class OOXMLURIDereferencer implements URIDereferencer {
         try {
             uri = new URI(uriReference.getURI());
         } catch (URISyntaxException e) {
-            throw new URIReferenceException("could not URL decode the uri: " + uriReference.getURI(), e);
+            throw new URIReferenceException("could not URL decode the uri: "+uriReference.getURI(), e);
         }
 
         PackagePart part = findPart(uri);
@@ -109,7 +109,7 @@ public class OOXMLURIDereferencer implements URIDereferencer {
     }
 
     private PackagePart findPart(URI uri) {
-        Log.d(TAG, String.format("dereference: %S", uri));
+        Log.d(TAG, String.format("dereference: %s", uri));
 
         String path = uri.getPath();
         if (path == null || path.isEmpty()) {

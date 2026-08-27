@@ -15,30 +15,10 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.Spliterator;
-import java.util.function.Function;
-import java.util.function.Predicate;
-
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.util.HSSFColor;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.SimpleShape;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.VerticalAlignment;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Beta;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xddf.usermodel.XDDFColor;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xddf.usermodel.XDDFColorRgbBinary;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xddf.usermodel.XDDFFillProperties;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xddf.usermodel.XDDFSolidFillProperties;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xddf.usermodel.text.TextContainer;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xddf.usermodel.text.XDDFRunProperties;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xddf.usermodel.text.XDDFTextBody;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xddf.usermodel.text.XDDFTextParagraph;
 import org.openxmlformats.schemas.drawingml.x2006.main.CTNonVisualDrawingProps;
 import org.openxmlformats.schemas.drawingml.x2006.main.CTPoint2D;
 import org.openxmlformats.schemas.drawingml.x2006.main.CTPositiveSize2D;
@@ -66,6 +46,30 @@ import org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTShapeNonV
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTRElt;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTRPrElt;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.STUnderlineValues;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.Spliterator;
+import java.util.function.Function;
+import java.util.function.Predicate;
+
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.util.HSSFColor;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.SimpleShape;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.VerticalAlignment;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Beta;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xddf.usermodel.XDDFColor;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xddf.usermodel.XDDFColorRgbBinary;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xddf.usermodel.XDDFFillProperties;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xddf.usermodel.XDDFSolidFillProperties;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xddf.usermodel.text.TextContainer;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xddf.usermodel.text.XDDFRunProperties;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xddf.usermodel.text.XDDFTextBody;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xddf.usermodel.text.XDDFTextParagraph;
+
 
 /**
  * Represents a shape with a predefined geometry in a SpreadsheetML drawing.
@@ -199,7 +203,8 @@ public class XSSFSimpleShape extends XSSFShape implements Iterable<XSSFTextParag
             }
             XSSFTextParagraph p = _paragraphs.get(i);
 
-            if (p.isBullet() && p.getText().length() > 0) {
+            final String pText = p.getText();
+            if (p.isBullet() && !pText.isEmpty()) {
 
                 int level = Math.min(p.getLevel(), MAX_LEVELS - 1);
 
@@ -211,11 +216,11 @@ public class XSSFSimpleShape extends XSSFShape implements Iterable<XSSFTextParag
                         out.append('\t');
                     }
                     String character = p.getBulletCharacter();
-                    out.append(character.length() > 0 ? character + " " : "- ");
-                    out.append(p.getText());
+                    out.append(!character.isEmpty() ? character + " " : "- ");
+                    out.append(pText);
                 }
             } else {
-                out.append(p.getText());
+                out.append(pText);
 
                 // this paragraph is not a bullet, so reset the count array
                 for (int k = 0; k < MAX_LEVELS; k++) {
@@ -254,9 +259,10 @@ public class XSSFSimpleShape extends XSSFShape implements Iterable<XSSFTextParag
         for (int j = 0; j < level; j++) {
             out.append('\t');
         }
-        if (p.getText().length() > 0) {
+        final String pText = p.getText();
+        if (!pText.isEmpty()) {
             out.append(getBulletPrefix(scheme, levelCount.get(level)));
-            out.append(p.getText());
+            out.append(pText);
         }
         while (true) {
             XSSFTextParagraph nextp = (index + 1) == _paragraphs.size() ? null : _paragraphs.get(index + 1);
@@ -291,11 +297,12 @@ public class XSSFSimpleShape extends XSSFShape implements Iterable<XSSFTextParag
                 }
                 // check for empty text - only output a bullet if there is text,
                 // but it is still part of the group
-                if (nextp.getText().length() > 0) {
+                final String npText = nextp.getText();
+                if (!npText.isEmpty()) {
                     // increment the count for this level
                     levelCount.set(level, levelCount.get(level) + 1);
                     out.append(getBulletPrefix(nextScheme, levelCount.get(level)));
-                    out.append(nextp.getText());
+                    out.append(npText);
                 }
             } else {
                 // something doesn't match so stop

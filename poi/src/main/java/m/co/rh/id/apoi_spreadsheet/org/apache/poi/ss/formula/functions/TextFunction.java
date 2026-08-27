@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions;
 
@@ -32,6 +33,8 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.StringEval;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.StringValueEval;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.ValueEval;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.DataFormatter;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.DateUtil;
+
 
 public abstract class TextFunction implements Function {
     protected static final DataFormatter formatter = new DataFormatter();
@@ -69,7 +72,6 @@ public abstract class TextFunction implements Function {
         protected SingleArgTextFunc() {
             // no fields to initialise
         }
-
         @Override
         public ValueEval evaluate(int srcRowIndex, int srcColumnIndex, ValueEval arg0) {
             String arg;
@@ -80,7 +82,6 @@ public abstract class TextFunction implements Function {
             }
             return evaluate(arg);
         }
-
         protected abstract ValueEval evaluate(String arg);
     }
 
@@ -100,7 +101,7 @@ public abstract class TextFunction implements Function {
             } catch (EvaluationException e) {
                 return e.getErrorEval();
             }
-            return new StringEval(String.valueOf((char) arg));
+            return new StringEval(String.valueOf((char)arg));
         }
     };
 
@@ -110,12 +111,14 @@ public abstract class TextFunction implements Function {
             return new NumberEval(arg.length());
         }
     };
+
     public static final Function LOWER = new SingleArgTextFunc() {
         @Override
         protected ValueEval evaluate(String arg) {
             return new StringEval(arg.toLowerCase(Locale.ROOT));
         }
     };
+
     public static final Function UPPER = new SingleArgTextFunc() {
         @Override
         protected ValueEval evaluate(String arg) {
@@ -127,7 +130,7 @@ public abstract class TextFunction implements Function {
      * Implementation of the PROPER function:
      * Normalizes all words (separated by non-word characters) by
      * making the first letter upper and the rest lower case.
-     * <p>
+     *
      * This is nearly equivalent to toTitleCase if the Java language had it
      */
     public static final Function PROPER = new SingleArgTextFunc() {
@@ -135,14 +138,15 @@ public abstract class TextFunction implements Function {
         protected ValueEval evaluate(String text) {
             StringBuilder sb = new StringBuilder();
             boolean shouldMakeUppercase = true;
-            for (final char ch : text.toCharArray()) {
+            for(final char ch : text.toCharArray()) {
 
                 // Note: we are using String.toUpperCase() here on purpose as it handles certain things
                 // better than Character.toUpperCase(), e.g. German "scharfes s" is translated
                 // to "SS" (i.e. two characters), if uppercased properly!
                 if (shouldMakeUppercase) {
                     sb.append(String.valueOf(ch).toUpperCase(Locale.ROOT));
-                } else {
+                }
+                else {
                     sb.append(String.valueOf(ch).toLowerCase(Locale.ROOT));
                 }
                 shouldMakeUppercase = !Character.isLetter(ch);
@@ -154,8 +158,8 @@ public abstract class TextFunction implements Function {
     /**
      * An implementation of the TRIM function:
      * Removes leading and trailing spaces from value if evaluated operand
-     * value is string. Since POI 5.1.0, this also trims double spaces so that only 1
-     * is kept (https://bz.apache.org/bugzilla/show_bug.cgi?id=65230).
+     *  value is string. Since POI 5.1.0, this also trims double spaces so that only 1
+     *  is kept (https://bz.apache.org/bugzilla/show_bug.cgi?id=65230).
      * Author: Manda Wilson &lt; wilson at c bio dot msk cc dot org &gt;
      */
     public static final Function TRIM = new SingleArgTextFunc() {
@@ -168,7 +172,7 @@ public abstract class TextFunction implements Function {
     /**
      * An implementation of the CLEAN function:
      * In Excel, the Clean function removes all non-printable characters from a string.
-     * <p>
+     *
      * Author: Aniket Banerjee(banerjee@google.com)
      */
     public static final Function CLEAN = new SingleArgTextFunc() {
@@ -192,9 +196,9 @@ public abstract class TextFunction implements Function {
          * characters for which the TRIM and CLEAN functions were designed.
          *
          * @param c the character to test
-         * @return whether the character is printable
+         * @return  whether the character is printable
          */
-        private boolean isPrintable(char c) {
+        private boolean isPrintable(char c){
             return c >= 32;
         }
     };
@@ -206,14 +210,14 @@ public abstract class TextFunction implements Function {
      *
      * <b>Syntax</b>:<br> <b>MID</b>(<b>text</b>, <b>start_num</b>,
      * <b>num_chars</b>)<br>
-     * <p>
+     *
      * Author: Manda Wilson &lt; wilson at c bio dot msk cc dot org &gt;
      */
     public static final Function MID = new Fixed3ArgFunction() {
 
         @Override
         public ValueEval evaluate(int srcRowIndex, int srcColumnIndex, ValueEval arg0,
-                                  ValueEval arg1, ValueEval arg2) {
+                ValueEval arg1, ValueEval arg2) {
             String text;
             int startCharNum;
             int numChars;
@@ -259,7 +263,7 @@ public abstract class TextFunction implements Function {
 
         @Override
         public ValueEval evaluate(int srcRowIndex, int srcColumnIndex, ValueEval arg0,
-                                  ValueEval arg1) {
+                ValueEval arg1) {
             String arg;
             int index;
             try {
@@ -269,7 +273,7 @@ public abstract class TextFunction implements Function {
                 return e.getErrorEval();
             }
 
-            if (index < 0) {
+            if(index < 0) {
                 return ErrorEval.VALUE_INVALID;
             }
 
@@ -277,7 +281,7 @@ public abstract class TextFunction implements Function {
             if (_isLeft) {
                 result = arg.substring(0, Math.min(arg.length(), index));
             } else {
-                result = arg.substring(Math.max(0, arg.length() - index));
+                result = arg.substring(Math.max(0, arg.length()-index));
             }
             return new StringEval(result);
         }
@@ -291,9 +295,9 @@ public abstract class TextFunction implements Function {
         for (ValueEval arg : args) {
             try {
                 if (arg instanceof AreaEval) {
-                    AreaEval area = (AreaEval) arg;
-                    for (int rn = 0; rn < area.getHeight(); rn++) {
-                        for (int cn = 0; cn < area.getWidth(); cn++) {
+                    AreaEval area = (AreaEval)arg;
+                    for (int rn=0; rn<area.getHeight(); rn++) {
+                        for (int cn=0; cn<area.getWidth(); cn++) {
                             ValueEval ve = area.getRelativeValue(rn, cn);
                             sb.append(evaluateStringArg(ve, ec.getRowIndex(), ec.getColumnIndex()));
                         }
@@ -324,7 +328,7 @@ public abstract class TextFunction implements Function {
 
         @Override
         public ValueEval evaluate(int srcRowIndex, int srcColumnIndex, ValueEval arg0,
-                                  ValueEval arg1) {
+                ValueEval arg1) {
             String s0;
             String s1;
             try {
@@ -341,9 +345,9 @@ public abstract class TextFunction implements Function {
      * An implementation of the TEXT function<br>
      * TEXT returns a number value formatted with the given number formatting string.
      * This function is not a complete implementation of the Excel function, but
-     * handles most of the common cases. All work is passed down to
-     * {@link DataFormatter} to be done, as this works much the same as the
-     * display focused work that that does.
+     *  handles most of the common cases. All work is passed down to
+     *  {@link DataFormatter} to be done, as this works much the same as the
+     *  display focused work that that does.
      *
      * <b>Syntax</b>:<br> <b>TEXT</b>(<b>value</b>, <b>format_text</b>)<br>
      */
@@ -369,8 +373,13 @@ public abstract class TextFunction implements Function {
                     } else if (valueVe instanceof StringEval) {
                         evaluated = ((StringEval) valueVe).getStringValue();
                         valueDouble = OperandResolver.parseDouble(evaluated);
+                        if (valueDouble == null) {
+                            try {
+                                valueDouble = DateUtil.parseDateTime(evaluated);
+                            } catch (Exception ignored) {
+                            }
+                        }
                     }
-
                     if (valueDouble != null) {
                         String format = formatPatternValueEval2String(formatVe);
                         evaluated = formatter.formatRawCellContents(valueDouble, -1, format);
@@ -391,7 +400,7 @@ public abstract class TextFunction implements Function {
          * Using it instead of {@link OperandResolver#coerceValueToString(ValueEval)} in order to handle booleans differently.
          */
         private String formatPatternValueEval2String(ValueEval ve) {
-            String format = null;
+            final String format;
             if (!(ve instanceof BoolEval) && (ve instanceof StringValueEval)) {
                 StringValueEval sve = (StringValueEval) ve;
                 format = sve.getStringValue();
@@ -426,7 +435,7 @@ public abstract class TextFunction implements Function {
 
         @Override
         public ValueEval evaluate(int srcRowIndex, int srcColumnIndex, ValueEval arg0, ValueEval arg1,
-                                  ValueEval arg2) {
+                ValueEval arg2) {
             try {
                 String needle = TextFunction.evaluateStringArg(arg0, srcRowIndex, srcColumnIndex);
                 String haystack = TextFunction.evaluateStringArg(arg1, srcRowIndex, srcColumnIndex);
@@ -447,7 +456,7 @@ public abstract class TextFunction implements Function {
                 result = haystack.indexOf(needle, startIndex);
             } else {
                 result = haystack.toUpperCase(Locale.ROOT)
-                        .indexOf(needle.toUpperCase(Locale.ROOT), startIndex);
+                       .indexOf(needle.toUpperCase(Locale.ROOT), startIndex);
             }
             if (result == -1) {
                 return ErrorEval.VALUE_INVALID;
@@ -461,21 +470,22 @@ public abstract class TextFunction implements Function {
      *
      * <b>Syntax</b>:<br>
      * <b>FIND</b>(<b>find_text</b>, <b>within_text</b>, start_num)<p>
-     * <p>
+     *
      * FIND returns the character position of the first (case sensitive) occurrence of
      * {@code find_text} inside {@code within_text}.  The third parameter,
      * {@code start_num}, is optional (default=1) and specifies where to start searching
      * from.  Character positions are 1-based.<p>
-     * <p>
+     *
      * Author: Torstein Tauno Svendsen (torstei@officenet.no)
      */
     public static final Function FIND = new SearchFind(true);
+
     /**
      * Implementation of the FIND() function.<p>
      *
      * <b>Syntax</b>:<br>
      * <b>SEARCH</b>(<b>find_text</b>, <b>within_text</b>, start_num)<p>
-     * <p>
+     *
      * SEARCH is a case-insensitive version of FIND()
      */
     public static final Function SEARCH = new SearchFind(false);

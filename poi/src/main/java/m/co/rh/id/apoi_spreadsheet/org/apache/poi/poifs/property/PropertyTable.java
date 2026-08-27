@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.property;
 
@@ -35,6 +36,9 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.filesystem.POIFSStream;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.storage.HeaderBlock;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.IOUtils;
 
+
+
+
 /**
  * This class embodies the Property Table for a {@link POIFSFileSystem};
  * this is basically the directory for all of the documents in the
@@ -44,11 +48,12 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.IOUtils;
 public final class PropertyTable implements BATManaged {
     private static final String TAG = "PropertyTable";
 
-    private final HeaderBlock _header_block;
+    private final HeaderBlock    _header_block;
     private final List<Property> _properties = new ArrayList<>();
     private final POIFSBigBlockSize _bigBigBlockSize;
 
-    public PropertyTable(HeaderBlock headerBlock) {
+    public PropertyTable(HeaderBlock headerBlock)
+    {
         _header_block = headerBlock;
         _bigBigBlockSize = headerBlock.getBigBlockSize();
         addProperty(new RootProperty());
@@ -60,31 +65,35 @@ public final class PropertyTable implements BATManaged {
      * properties thoroughly
      *
      * @param headerBlock the header block of the file
-     * @param filesystem  the filesystem to read from
+     * @param filesystem the filesystem to read from
+     *
      * @throws IOException if anything goes wrong (which should be
-     *                     a result of the input being NFG)
+     *            a result of the input being NFG)
      */
     public PropertyTable(final HeaderBlock headerBlock, final POIFSFileSystem filesystem)
-            throws IOException {
+    throws IOException {
         this(
-                headerBlock,
-                new POIFSStream(filesystem, headerBlock.getPropertyStart())
+              headerBlock,
+              new POIFSStream(filesystem, headerBlock.getPropertyStart())
         );
     }
 
     /* only invoked locally and from the junit tests */
     PropertyTable(final HeaderBlock headerBlock, final Iterable<ByteBuffer> dataSource)
-            throws IOException {
+    throws IOException {
         _header_block = headerBlock;
         _bigBigBlockSize = headerBlock.getBigBlockSize();
 
         for (ByteBuffer bb : dataSource) {
             // Turn it into an array
-            byte[] data;
-            if (bb.hasArray() && bb.arrayOffset() == 0 &&
-                    bb.array().length == _bigBigBlockSize.getBigBlockSize()) {
-                data = bb.array();
-            } else {
+            byte[] data = null;
+            if (bb.hasArray() && bb.arrayOffset() == 0) {
+                final byte[] array = bb.array();
+                if (array.length == _bigBigBlockSize.getBigBlockSize()) {
+                    data = array;
+                }
+            }
+            if (data == null) {
                 data = IOUtils.safelyAllocate(_bigBigBlockSize.getBigBlockSize(), POIFSFileSystem.getMaxRecordLength());
 
                 int toRead = data.length;
@@ -92,7 +101,7 @@ public final class PropertyTable implements BATManaged {
                     // Looks to be a truncated block
                     // This isn't allowed, but some third party created files
                     //  sometimes do this, and we can normally read anyway
-                    Log.w(TAG, String.format("Short Property Block, %d bytes instead of the expected %d", bb.remaining(), _bigBigBlockSize.getBigBlockSize()));
+                    Log.w(TAG, String.format("Short Property Block, %s bytes instead of the expected %s", bb.remaining(), _bigBigBlockSize.getBigBlockSize()));
                     toRead = bb.remaining();
                 }
 
@@ -105,7 +114,7 @@ public final class PropertyTable implements BATManaged {
         Property property = _properties.get(0);
         if (property != null) {
             if (property instanceof DirectoryProperty) {
-                populatePropertyTree((DirectoryProperty) property);
+                populatePropertyTree((DirectoryProperty) property, 0);
             } else {
                 throw new IOException("Invalid format, cannot convert property " + property + " to DirectoryProperty");
             }
@@ -166,19 +175,20 @@ public final class PropertyTable implements BATManaged {
     }
 
 
+
     /**
      * Return the number of BigBlock's this instance uses
      *
      * @return count of BigBlock instances
      */
     public int countBlocks() {
-        long rawSize = _properties.size() * (long) POIFSConstants.PROPERTY_SIZE;
-        int blkSize = _bigBigBlockSize.getBigBlockSize();
-        int numBlocks = (int) (rawSize / blkSize);
-        if ((rawSize % blkSize) != 0) {
-            numBlocks++;
-        }
-        return numBlocks;
+       long rawSize = _properties.size() * (long)POIFSConstants.PROPERTY_SIZE;
+       int blkSize = _bigBigBlockSize.getBigBlockSize();
+       int numBlocks = (int)(rawSize / blkSize);
+       if ((rawSize % blkSize) != 0) {
+           numBlocks++;
+       }
+       return numBlocks;
     }
 
     /**
@@ -187,7 +197,7 @@ public final class PropertyTable implements BATManaged {
     public void preWrite() {
         List<Property> pList = new ArrayList<>();
         // give each property its index
-        int i = 0;
+        int i=0;
         for (Property p : _properties) {
             // only handle non-null properties
             if (p == null) continue;
@@ -203,21 +213,31 @@ public final class PropertyTable implements BATManaged {
      * Writes the properties out into the given low-level stream
      */
     public void write(POIFSStream stream) throws IOException {
-        OutputStream os = stream.getOutputStream();
-        for (Property property : _properties) {
-            if (property != null) {
-                property.writeData(os);
-            }
-        }
-        os.close();
+       OutputStream os = stream.getOutputStream();
+       for(Property property : _properties) {
+          if(property != null) {
+             property.writeData(os);
+          }
+       }
+       os.close();
 
-        // Update the start position if needed
-        if (getStartBlock() != stream.getStartBlock()) {
-            setStartBlock(stream.getStartBlock());
-        }
+       // Update the start position if needed
+       if(getStartBlock() != stream.getStartBlock()) {
+          setStartBlock(stream.getStartBlock());
+       }
+
+       // Update the number of property blocks in the header
+       _header_block.setPropertyCount(countBlocks());
     }
 
-    private void populatePropertyTree(DirectoryProperty root) throws IOException {
+    // Maximum depth of the property tree to prevent stackoverflow errors
+    private static final int MAX_PROPERTY_DEPTH = 1000;
+
+    private void populatePropertyTree(final DirectoryProperty root, final int depth) throws IOException {
+        if (depth > MAX_PROPERTY_DEPTH) {
+            throw new IOException("Property tree too deep, likely a corrupt file");
+        }
+
         int index = root.getChildIndex();
 
         if (!Property.isValidIndex(index)) {
@@ -236,7 +256,7 @@ public final class PropertyTable implements BATManaged {
 
             root.addChild(property);
             if (property.isDirectory()) {
-                populatePropertyTree((DirectoryProperty) property);
+                populatePropertyTree((DirectoryProperty) property, depth + 1);
             }
             index = property.getPreviousChildIndex();
             if (isValidIndex(index)) {
@@ -250,10 +270,10 @@ public final class PropertyTable implements BATManaged {
     }
 
     private boolean isValidIndex(int index) {
-        if (!Property.isValidIndex(index))
+        if (! Property.isValidIndex(index))
             return false;
         if (index < 0 || index >= _properties.size()) {
-            Log.w(TAG, String.format("Property index %d outside the valid range 0..%d", index, _properties.size()));
+            Log.w(TAG, String.format("Property index %s outside the valid range 0..%d", index, _properties.size()));
             return false;
         }
         return true;

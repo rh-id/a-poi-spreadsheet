@@ -15,19 +15,23 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc;
+
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.exceptions.InvalidOperationException;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.internal.ContentType;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.internal.marshallers.ZipPartMarshaller;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.NotImplemented;
+
 
 /**
  * Zip implementation of a PackagePart.
@@ -134,14 +138,12 @@ public class ZipPackagePart extends PackagePart {
     }
 
     @Override
-    @NotImplemented
     public void close() {
-        throw new InvalidOperationException("Method not implemented !");
+        // do nothing
     }
 
     @Override
-    @NotImplemented
     public void flush() {
-        throw new InvalidOperationException("Method not implemented !");
+        // do nothing
     }
 }

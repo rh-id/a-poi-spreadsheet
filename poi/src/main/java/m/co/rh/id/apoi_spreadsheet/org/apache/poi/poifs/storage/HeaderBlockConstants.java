@@ -15,10 +15,13 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.storage;
 
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.common.POIFSConstants;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndianConsts;
+
 
 /**
  * Constants used in reading/writing the Header block
@@ -39,6 +42,7 @@ public interface HeaderBlockConstants
     // useful offsets
     int  _signature_offset        = 0;
     int  _bat_count_offset        = 0x2C;
+    int  _property_count_offset   = 0x28;
     int  _property_start_offset   = 0x30;
     int  _sbat_start_offset       = 0x3C;
     int  _sbat_block_count_offset = 0x40;

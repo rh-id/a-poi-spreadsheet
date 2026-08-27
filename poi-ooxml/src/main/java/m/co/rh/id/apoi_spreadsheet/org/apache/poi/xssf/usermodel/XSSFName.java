@@ -14,17 +14,20 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel;
 
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.SpreadsheetVersion;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ptg.Ptg;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTDefinedName;
 
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.SpreadsheetVersion;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.FormulaParser;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.FormulaType;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ptg.Ptg;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Name;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.AreaReference;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.CellReference;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTDefinedName;
+
 
 /**
  * Represents a defined named range in a SpreadsheetML workbook.
@@ -112,7 +115,7 @@ public final class XSSFName implements Name {
      *
      * @param name - the xml bean that holds data represenring this defined name.
      * @param workbook - the workbook object associated with the name
-     * @see m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFWorkbook#createName()
+     * @see org.apache.poi.xssf.usermodel.XSSFWorkbook#createName()
      */
     protected XSSFName(CTDefinedName name, XSSFWorkbook workbook) {
         _workbook = workbook;
@@ -390,7 +393,7 @@ public final class XSSFName implements Name {
      */
     private static void validateName(String name) {
 
-        if (name.length() == 0) {
+        if (name.isEmpty()) {
             throw new IllegalArgumentException("Name cannot be blank");
         }
         if (name.length() > 255) {

@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.format;
 
 import android.util.Log;
@@ -38,6 +39,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LocaleUtil;
+
 
 /**
  * This class implements printing out a value using a number format.
@@ -92,7 +94,7 @@ public class CellNumberFormatter extends CellFormatter {
             if (value instanceof Number) {
                 Number num = (Number) value;
                 cf = (num.doubleValue() % 1.0 == 0) ? new CellNumberFormatter(locale, "#") :
-                        new CellNumberFormatter(locale, "#.#");
+                    new CellNumberFormatter(locale, "#.#");
             } else {
                 cf = CellTextFormatter.SIMPLE_TEXT;
             }
@@ -243,7 +245,7 @@ public class CellNumberFormatter extends CellFormatter {
             int totalWidth = integerPartWidth + fractionPartWidth;
 
             // need to handle empty width specially as %00.0f fails during formatting
-            if (totalWidth == 0) {
+            if(totalWidth == 0) {
                 printfFmt = "";
             } else {
                 printfFmt = "%0" + totalWidth + '.' + precision + "f";
@@ -357,7 +359,7 @@ public class CellNumberFormatter extends CellFormatter {
         int precision = 0;
         if (idx != -1) {
             // skip over the decimal point itself
-            ListIterator<Special> it = specials.listIterator(idx + 1);
+            ListIterator<Special> it = specials.listIterator(idx+1);
             while (it.hasNext()) {
                 Special s = it.next();
                 if (!isDigitFmt(s)) {
@@ -370,7 +372,7 @@ public class CellNumberFormatter extends CellFormatter {
     }
 
     private static boolean interpretIntegerCommas
-            (StringBuffer sb, List<Special> specials, Special decimalPoint, int integerEnd, int fractionalEnd, double[] scale) {
+        (StringBuffer sb, List<Special> specials, Special decimalPoint, int integerEnd, int fractionalEnd, double[] scale) {
         // In the integer part, commas at the end are scaling commas; other commas mean to show thousand-grouping commas
         ListIterator<Special> it = specials.listIterator(integerEnd);
 
@@ -497,55 +499,56 @@ public class CellNumberFormatter extends CellFormatter {
                 int lenBefore = output.length();
                 int modPos = s.pos + adjust;
                 switch (nextChange.getOp()) {
-                    case CellNumberStringMod.AFTER:
-                        // ignore adding a comma after a deleted char (which was a '#')
-                        if (nextChange.getToAdd().equals(groupingSeparator) && deletedChars.get(s.pos)) {
-                            break;
-                        }
-                        output.insert(modPos + 1, nextChange.getToAdd());
+                case CellNumberStringMod.AFTER:
+                    // ignore adding a comma after a deleted char (which was a '#')
+                    if (nextChange.getToAdd().equals(groupingSeparator) && deletedChars.get(s.pos)) {
                         break;
-                    case CellNumberStringMod.BEFORE:
-                        output.insert(modPos, nextChange.getToAdd());
-                        break;
+                    }
+                    output.insert(modPos + 1, nextChange.getToAdd());
+                    break;
+                case CellNumberStringMod.BEFORE:
+                    output.insert(modPos, nextChange.getToAdd());
+                    break;
 
-                    case CellNumberStringMod.REPLACE:
-                        // delete starting pos in original coordinates
-                        int delPos = s.pos;
-                        if (!nextChange.isStartInclusive()) {
-                            delPos++;
-                            modPos++;
+                case CellNumberStringMod.REPLACE:
+                    // delete starting pos in original coordinates
+                    int delPos = s.pos;
+                    if (!nextChange.isStartInclusive()) {
+                        delPos++;
+                        modPos++;
+                    }
+
+                    // Skip over anything already deleted
+                    while (deletedChars.get(delPos)) {
+                        delPos++;
+                        modPos++;
+                    }
+
+                    // delete end point in original
+                    int delEndPos = nextChange.getEnd().pos;
+                    if (nextChange.isEndInclusive()) {
+                        delEndPos++;
+                    }
+
+                    // delete end point in current
+                    int modEndPos = delEndPos + adjust;
+
+                    if (modPos < modEndPos) {
+                        if (nextChange.getToAdd() != null && nextChange.getToAdd().length() == 0) {
+                            output.delete(modPos, modEndPos);
                         }
-
-                        // Skip over anything already deleted
-                        while (deletedChars.get(delPos)) {
-                            delPos++;
-                            modPos++;
-                        }
-
-                        // delete end point in original
-                        int delEndPos = nextChange.getEnd().pos;
-                        if (nextChange.isEndInclusive()) {
-                            delEndPos++;
-                        }
-
-                        // delete end point in current
-                        int modEndPos = delEndPos + adjust;
-
-                        if (modPos < modEndPos) {
-                            if (nextChange.getToAdd() != null && nextChange.getToAdd().length() == 0) {
-                                output.delete(modPos, modEndPos);
-                            } else {
-                                char fillCh = nextChange.getToAdd().charAt(0);
-                                for (int i = modPos; i < modEndPos; i++) {
-                                    output.setCharAt(i, fillCh);
-                                }
+                        else {
+                            char fillCh = nextChange.getToAdd().charAt(0);
+                            for (int i = modPos; i < modEndPos; i++) {
+                                output.setCharAt(i, fillCh);
                             }
-                            deletedChars.set(delPos, delEndPos);
                         }
-                        break;
+                        deletedChars.set(delPos, delEndPos);
+                    }
+                    break;
 
-                    default:
-                        throw new IllegalStateException("Unknown op: " + nextChange.getOp());
+                default:
+                    throw new IllegalStateException("Unknown op: " + nextChange.getOp());
                 }
                 adjust += output.length() - lenBefore;
 
@@ -569,40 +572,40 @@ public class CellNumberFormatter extends CellFormatter {
         writeFractional(result, output);
 
         /*
-         * Exponent sign handling is complex.
-         *
-         * In DecimalFormat, you never put the sign in the format, and the sign only
-         * comes out of the format if it is negative.
-         *
-         * In Excel, you always say whether to always show the sign ("e+") or only
-         * show negative signs ("e-").
-         *
-         * Also in Excel, where you put the sign in the format is NOT where it comes
-         * out in the result.  In the format, the sign goes with the "e"; in the
-         * output it goes with the exponent value.  That is, if you say "#e-|#" you
-         * get "1e|-5", not "1e-|5". This makes sense I suppose, but it complicates
-         * things.
-         *
-         * Finally, everything else in this formatting code assumes that the base of
-         * the result is the original format, and that starting from that situation,
-         * the indexes of the original special characters can be used to place the new
-         * characters.  As just described, this is not true for the exponent's sign.
-         * <p>
-         * So here is how we handle it:
-         *
-         * (1) When parsing the format, remove the sign from after the 'e' and put it
-         * before the first digit of the exponent (where it will be shown).
-         *
-         * (2) Determine the result's sign.
-         *
-         * (3) If it's missing, put the sign into the output to keep the result
-         * lined up with the output. (In the result, "after the 'e'" and "before the
-         * first digit" are the same because the result has no extra chars to be in
-         * the way.)
-         *
-         * (4) In the output, remove the sign if it should not be shown ("e-" was used
-         * and the sign is negative) or set it to the correct value.
-         */
+        * Exponent sign handling is complex.
+        *
+        * In DecimalFormat, you never put the sign in the format, and the sign only
+        * comes out of the format if it is negative.
+        *
+        * In Excel, you always say whether to always show the sign ("e+") or only
+        * show negative signs ("e-").
+        *
+        * Also in Excel, where you put the sign in the format is NOT where it comes
+        * out in the result.  In the format, the sign goes with the "e"; in the
+        * output it goes with the exponent value.  That is, if you say "#e-|#" you
+        * get "1e|-5", not "1e-|5". This makes sense I suppose, but it complicates
+        * things.
+        *
+        * Finally, everything else in this formatting code assumes that the base of
+        * the result is the original format, and that starting from that situation,
+        * the indexes of the original special characters can be used to place the new
+        * characters.  As just described, this is not true for the exponent's sign.
+        * <p>
+        * So here is how we handle it:
+        *
+        * (1) When parsing the format, remove the sign from after the 'e' and put it
+        * before the first digit of the exponent (where it will be shown).
+        *
+        * (2) Determine the result's sign.
+        *
+        * (3) If it's missing, put the sign into the output to keep the result
+        * lined up with the output. (In the result, "after the 'e'" and "before the
+        * first digit" are the same because the result has no extra chars to be in
+        * the way.)
+        *
+        * (4) In the output, remove the sign if it should not be shown ("e-" was used
+        * and the sign is negative) or set it to the correct value.
+        */
 
         // (2) Determine the result's sign.
         int ePos = fractionPos.getEndIndex();
@@ -635,7 +638,7 @@ public class CellNumberFormatter extends CellFormatter {
 
     @SuppressWarnings("unchecked")
     private void writeFraction(double value, StringBuffer result,
-                               double fractional, StringBuffer output, Set<CellNumberStringMod> mods) {
+            double fractional, StringBuffer output, Set<CellNumberStringMod> mods) {
 
         // Figure out if we are to suppress either the integer or fractional part.
         // With # the suppressed part is removed; with ? it is replaced with spaces.
@@ -663,15 +666,15 @@ public class CellNumberFormatter extends CellFormatter {
                 boolean intNoZero = !hasChar('0', integerSpecials);
                 boolean intOnlyHash = integerSpecials.isEmpty() || (integerSpecials.size() == 1 && hasChar('#', integerSpecials));
 
-                boolean removeBecauseZero = fractional == 0 && (intOnlyHash || numNoZero);
+                boolean removeBecauseZero     = fractional == 0 && (intOnlyHash || numNoZero);
                 boolean removeBecauseFraction = fractional != 0 && intNoZero;
 
                 if (value == 0 && (removeBecauseZero || removeBecauseFraction)) {
                     Special start = lastSpecial(integerSpecials);
                     boolean hasPlaceHolder = hasChar('?', integerSpecials, numeratorSpecials);
                     CellNumberStringMod sm = hasPlaceHolder
-                            ? replaceMod(start, true, numerator, false, ' ')
-                            : deleteMod(start, true, numerator, false);
+                        ? replaceMod(start, true, numerator, false, ' ')
+                        : deleteMod(start, true, numerator, false);
                     mods.add(sm);
                 } else {
                     // Not removing the integer part -- print it out
@@ -706,15 +709,15 @@ public class CellNumberFormatter extends CellFormatter {
 
     private String localiseFormat(String format) {
         DecimalFormatSymbols dfs = getDecimalFormatSymbols();
-        if (format.contains(",") && dfs.getGroupingSeparator() != ',') {
-            if (format.contains(".") && dfs.getDecimalSeparator() != '.') {
+        if(format.contains(",") && dfs.getGroupingSeparator() != ',') {
+            if(format.contains(".") && dfs.getDecimalSeparator() != '.') {
                 format = replaceLast(format, "\\.", "[DECIMAL_SEPARATOR]");
                 format = format.replace(',', dfs.getGroupingSeparator())
                         .replace("[DECIMAL_SEPARATOR]", Character.toString(dfs.getDecimalSeparator()));
             } else {
                 format = format.replace(',', dfs.getGroupingSeparator());
             }
-        } else if (format.contains(".") && dfs.getDecimalSeparator() != '.') {
+        } else if(format.contains(".") && dfs.getDecimalSeparator() != '.') {
             format = format.replace('.', dfs.getDecimalSeparator());
         }
         return format;
@@ -753,8 +756,8 @@ public class CellNumberFormatter extends CellFormatter {
     }
 
     private void writeInteger(StringBuffer result, StringBuffer output,
-                              List<Special> numSpecials, Set<CellNumberStringMod> mods,
-                              boolean showGroupingSeparator) {
+            List<Special> numSpecials, Set<CellNumberStringMod> mods,
+            boolean showGroupingSeparator) {
 
         DecimalFormatSymbols dfs = getDecimalFormatSymbols();
         String decimalSeparator = Character.toString(dfs.getDecimalSeparator());
@@ -861,7 +864,7 @@ public class CellNumberFormatter extends CellFormatter {
         SIMPLE_NUMBER.formatValue(toAppendTo, value);
     }
 
-    private static Special lastSpecial(List<Special> s) {
+    private static Special lastSpecial(List<Special> s)  {
         return s.get(s.size() - 1);
     }
 }

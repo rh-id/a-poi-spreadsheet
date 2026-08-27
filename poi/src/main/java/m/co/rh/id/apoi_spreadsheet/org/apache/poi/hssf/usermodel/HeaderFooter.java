@@ -15,12 +15,15 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.usermodel;
 
 
 /**
  * Common class for {@link HSSFHeader} and {@link HSSFFooter}.
  */
+// supertype HeaderFooter qualified: simple name denotes this class
 public abstract class HeaderFooter implements m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.HeaderFooter {
 
     protected HeaderFooter() {
@@ -282,7 +285,7 @@ public abstract class HeaderFooter implements m.co.rh.id.apoi_spreadsheet.org.ap
         int pos;
 
         // Check we really got something to work on
-        if (pText == null || pText.length() == 0) {
+        if (pText == null || pText.isEmpty()) {
             return pText;
         }
 

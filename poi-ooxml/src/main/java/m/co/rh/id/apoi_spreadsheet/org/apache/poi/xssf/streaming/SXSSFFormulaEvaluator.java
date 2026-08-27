@@ -14,9 +14,12 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.streaming;
+
+
 
 import android.util.Log;
 
@@ -31,9 +34,11 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Sheet;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.BaseXSSFFormulaEvaluator;
 
 
+
+
 /**
  * Streaming-specific Formula Evaluator, which is able to
- * lookup cells within the current Window.
+ *  lookup cells within the current Window.
  */
 public final class SXSSFFormulaEvaluator extends BaseXSSFFormulaEvaluator {
     private static final String TAG = "SXSSFFormulaEvaluator";
@@ -43,11 +48,9 @@ public final class SXSSFFormulaEvaluator extends BaseXSSFFormulaEvaluator {
     public SXSSFFormulaEvaluator(SXSSFWorkbook workbook) {
         this(workbook, null, null);
     }
-
     private SXSSFFormulaEvaluator(SXSSFWorkbook workbook, IStabilityClassifier stabilityClassifier, UDFFinder udfFinder) {
         this(workbook, new WorkbookEvaluator(SXSSFEvaluationWorkbook.create(workbook), stabilityClassifier, udfFinder));
     }
-
     private SXSSFFormulaEvaluator(SXSSFWorkbook workbook, WorkbookEvaluator bookEvaluator) {
         super(bookEvaluator);
         this.wb = workbook;
@@ -55,24 +58,21 @@ public final class SXSSFFormulaEvaluator extends BaseXSSFFormulaEvaluator {
 
     /**
      * @param stabilityClassifier used to optimise caching performance. Pass <code>null</code>
-     *                            for the (conservative) assumption that any cell may have its definition changed after
-     *                            evaluation begins.
-     * @param udfFinder           pass <code>null</code> for default (AnalysisToolPak only)
+     * for the (conservative) assumption that any cell may have its definition changed after
+     * evaluation begins.
+     * @param udfFinder pass <code>null</code> for default (AnalysisToolPak only)
      */
     public static SXSSFFormulaEvaluator create(SXSSFWorkbook workbook, IStabilityClassifier stabilityClassifier, UDFFinder udfFinder) {
         return new SXSSFFormulaEvaluator(workbook, stabilityClassifier, udfFinder);
     }
-
     public void notifySetFormula(Cell cell) {
-        _bookEvaluator.notifyUpdateCell(new SXSSFEvaluationCell((SXSSFCell) cell));
+        _bookEvaluator.notifyUpdateCell(new SXSSFEvaluationCell((SXSSFCell)cell));
     }
-
     public void notifyDeleteCell(Cell cell) {
-        _bookEvaluator.notifyDeleteCell(new SXSSFEvaluationCell((SXSSFCell) cell));
+        _bookEvaluator.notifyDeleteCell(new SXSSFEvaluationCell((SXSSFCell)cell));
     }
-
     public void notifyUpdateCell(Cell cell) {
-        _bookEvaluator.notifyUpdateCell(new SXSSFEvaluationCell((SXSSFCell) cell));
+        _bookEvaluator.notifyUpdateCell(new SXSSFEvaluationCell((SXSSFCell)cell));
     }
 
 
@@ -81,12 +81,12 @@ public final class SXSSFFormulaEvaluator extends BaseXSSFFormulaEvaluator {
      */
     @Override
     protected EvaluationCell toEvaluationCell(Cell cell) {
-        if (!(cell instanceof SXSSFCell)) {
+        if (!(cell instanceof SXSSFCell)){
             throw new IllegalArgumentException("Unexpected type of cell: " + cell.getClass() + "." +
                     " Only SXSSFCells can be evaluated.");
         }
 
-        return new SXSSFEvaluationCell((SXSSFCell) cell);
+        return new SXSSFEvaluationCell((SXSSFCell)cell);
     }
 
     @Override
@@ -96,16 +96,16 @@ public final class SXSSFFormulaEvaluator extends BaseXSSFFormulaEvaluator {
 
     /**
      * For active worksheets only, will loop over rows and
-     * cells, evaluating formula cells there.
+     *  cells, evaluating formula cells there.
      * If formula cells are outside the window for that sheet,
-     * it can either skip them silently, or give an exception
+     *  it can either skip them silently, or give an exception
      */
     public static void evaluateAllFormulaCells(SXSSFWorkbook wb, boolean skipOutOfWindow) {
         SXSSFFormulaEvaluator eval = new SXSSFFormulaEvaluator(wb);
 
         // Check they're all available
         for (Sheet sheet : wb) {
-            if (((SXSSFSheet) sheet).areAllRowsFlushed()) {
+            if (((SXSSFSheet)sheet).areAllRowsFlushed()) {
                 throw new SheetsFlushedException();
             }
         }
@@ -121,7 +121,7 @@ public final class SXSSFFormulaEvaluator extends BaseXSSFFormulaEvaluator {
                         throw new RowFlushedException(0, lastFlushedRowNum);
                     }
 
-                    Log.i(TAG, String.format("Rows up to %d have already been flushed, skipping", lastFlushedRowNum));
+                    Log.i(TAG, String.format("Rows up to %s have already been flushed, skipping", lastFlushedRowNum));
                 }
             }
 
@@ -139,9 +139,9 @@ public final class SXSSFFormulaEvaluator extends BaseXSSFFormulaEvaluator {
     /**
      * Loops over rows and cells, evaluating formula cells there.
      * If any sheets are inactive, or any cells outside of the window,
-     * will give an Exception.
+     *  will give an Exception.
      * For SXSSF, you generally don't want to use this method, instead
-     * evaluate your formulas as you go before they leave the window.
+     *  evaluate your formulas as you go before they leave the window.
      */
     public void evaluateAll() {
         // Have the evaluation done, with exceptions
@@ -153,7 +153,6 @@ public final class SXSSFFormulaEvaluator extends BaseXSSFFormulaEvaluator {
             super("One or more sheets have been flushed, cannot evaluate all cells");
         }
     }
-
     public static class RowFlushedException extends IllegalStateException {
         protected RowFlushedException(int rowNum, int lastFlushedRowNum) {
             super("Row " + rowNum + " has been flushed (rows up to " + lastFlushedRowNum + " have been flushed), cannot evaluate all cells");

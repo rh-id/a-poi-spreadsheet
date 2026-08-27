@@ -14,8 +14,11 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.extractor;
+
+import org.apache.xmlbeans.XmlException;
 
 import java.io.IOException;
 import java.util.*;
@@ -38,7 +41,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFShape;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFSheet;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFSimpleShape;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.apache.xmlbeans.XmlException;
+
 
 /**
  * Helper class to extract text from an OOXML Excel file
@@ -192,7 +195,7 @@ public class XSSFExcelExtractor
                     for (XSSFShape shape : drawing.getShapes()){
                         if (shape instanceof XSSFSimpleShape){
                             String boxText = ((XSSFSimpleShape)shape).getText();
-                            if (boxText.length() > 0){
+                            if (!boxText.isEmpty()){
                                 text.append(boxText);
                                 text.append('\n');
                             }

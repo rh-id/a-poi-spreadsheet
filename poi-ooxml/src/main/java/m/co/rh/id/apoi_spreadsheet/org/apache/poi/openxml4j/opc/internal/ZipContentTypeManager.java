@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.internal;
 
@@ -32,6 +33,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.exceptions.InvalidFo
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.OPCPackage;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.StreamHelper;
 
+
 /**
  * Zip implementation of the ContentTypeManager.
  *
@@ -44,9 +46,11 @@ public class ZipContentTypeManager extends ContentTypeManager {
     /**
      * Delegate constructor to the super constructor.
      *
-     * @param in The input stream to parse to fill internal content type
-     *           collections.
-     * @throws InvalidFormatException If the content types part content is not valid.
+     * @param in
+     *            The input stream to parse to fill internal content type
+     *            collections.
+     * @throws InvalidFormatException
+     *             If the content types part content is not valid.
      */
     public ZipContentTypeManager(InputStream in, OPCPackage pkg)
             throws InvalidFormatException {
@@ -61,6 +65,8 @@ public class ZipContentTypeManager extends ContentTypeManager {
 
         ZipArchiveEntry partEntry = new ZipArchiveEntry(CONTENT_TYPES_PART_NAME);
         try {
+            ZipHelper.adjustEntryTime(partEntry);
+
             // Referenced in ZIP
             zos.putArchiveEntry(partEntry);
             try {

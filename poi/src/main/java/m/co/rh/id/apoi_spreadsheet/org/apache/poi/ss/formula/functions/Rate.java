@@ -14,15 +14,21 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions;
+
+
+
+import android.util.Log;
 
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.ErrorEval;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.EvaluationException;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.NumberEval;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.OperandResolver;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.ValueEval;
+
 
 /**
  * Implements the Excel Rate function
@@ -65,7 +71,7 @@ public class Rate implements Function {
 
             checkValue(rate);
         } catch (EvaluationException e) {
-            android.util.Log.e(TAG, "Can't evaluate rate function", e);
+            Log.e(TAG, "Can't evaluate rate function", e);
             return e.getErrorEval();
         }
 
@@ -73,35 +79,36 @@ public class Rate implements Function {
     }
 
     private static double _g_div_gp(double r, double n, double p, double x, double y, double w) {
-        double t1 = Math.pow(r + 1, n);
-        double t2 = Math.pow(r + 1, n - 1);
-        return (y + t1 * x + p * (t1 - 1) * (r * w + 1) / r) /
-                (n * t2 * x - p * (t1 - 1) * (r * w + 1) / (Math.pow(r, 2) + n * p * t2 * (r * w + 1) / r +
-                        p * (t1 - 1) * w / r));
+        double t1 = Math.pow(r+1, n);
+        double t2 = Math.pow(r+1, n-1);
+        return (y + t1*x + p*(t1 - 1)*(r*w + 1)/r) /
+                (n*t2*x - p*(t1 - 1)*(r*w + 1)/(Math.pow(r, 2) + n*p*t2*(r*w + 1)/r +
+                        p*(t1 - 1)*w/r));
     }
 
     /**
      * Compute the rate of interest per period.
-     * <p>
+     *
      * The implementation was ported from the NumPy library,
      * see https://github.com/numpy/numpy-financial/blob/d02edfb65dcdf23bd571c2cded7fcd4a0528c6af/numpy_financial/_financial.py#L602
      *
-     * @param nper  Number of compounding periods
-     * @param pmt   Payment
-     * @param pv    Present Value
-     * @param fv    Future value
-     * @param type  When payments are due ('begin' (1) or 'end' (0))
+     *
+     * @param nper Number of compounding periods
+     * @param pmt Payment
+     * @param pv Present Value
+     * @param fv Future value
+     * @param type When payments are due ('begin' (1) or 'end' (0))
      * @param guess Starting guess for solving the rate of interest
      * @return rate of interest per period or NaN if the solution didn't converge
      */
-    static double calculateRate(double nper, double pmt, double pv, double fv, double type, double guess) {
+    static double calculateRate(double nper, double pmt, double pv, double fv, double type, double guess){
         double tol = 1e-8;
         double maxiter = 100;
 
         double rn = guess;
         int iter = 0;
         boolean close = false;
-        while (iter < maxiter && !close) {
+        while (iter < maxiter && !close){
             double rnp1 = rn - _g_div_gp(rn, nper, pmt, pv, fv, type);
             double diff = Math.abs(rnp1 - rn);
             close = diff < tol;
@@ -109,7 +116,7 @@ public class Rate implements Function {
             rn = rnp1;
 
         }
-        if (!close)
+        if(!close)
             return Double.NaN;
         else {
             return rn;

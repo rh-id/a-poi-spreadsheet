@@ -15,22 +15,12 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel;
 
 import static m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.POIXMLTypeLoader.DEFAULT_XML_OPTIONS;
 import static m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFRelation.NS_SPREADSHEETML;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.xml.namespace.QName;
 
 import com.microsoft.schemas.office.excel.CTClientData;
 import com.microsoft.schemas.office.excel.STObjectType;
@@ -46,17 +36,30 @@ import com.microsoft.schemas.vml.CTShape;
 import com.microsoft.schemas.vml.CTShapetype;
 import com.microsoft.schemas.vml.STExt;
 import com.microsoft.schemas.vml.STStrokeJoinStyle;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.POIXMLDocumentPart;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackagePart;
 import org.apache.poi.schemas.vmldrawing.XmlDocument;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.ReplacingInputStream;
 import org.apache.xmlbeans.XmlCursor;
 import org.apache.xmlbeans.XmlException;
 import org.apache.xmlbeans.XmlObject;
 import org.apache.xmlbeans.XmlOptions;
 import org.apache.xmlbeans.impl.values.XmlValueOutOfRangeException;
 import org.openxmlformats.schemas.officeDocument.x2006.sharedTypes.STTrueFalse;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import javax.xml.namespace.QName;
+
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.POIXMLDocumentPart;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackagePart;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.ReplacingInputStream;
+
 
 /**
  * Represents a SpreadsheetML VML drawing.
@@ -150,6 +153,11 @@ public final class XSSFVMLDrawing extends POIXMLDocumentPart {
             new ReplacingInputStream(is, "<br>", "<br/>"),
             " xmlns=\""+NS_SPREADSHEETML+"\"", "")
             , xopt);
+
+        // ignore empty XML content in the stream which indicates severely broken parts in the workbook-file
+        if (root.getXml() == null) {
+            return;
+        }
 
         try (XmlCursor cur = root.getXml().newCursor()) {
             for (boolean found = cur.toFirstChild(); found; found = cur.toNextSibling()) {

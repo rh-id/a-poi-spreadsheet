@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.usermodel;
 
@@ -87,6 +88,8 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.SheetUtil;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Beta;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Removal;
+
+
 
 /**
  * High level representation of a worksheet.
@@ -175,8 +178,8 @@ public final class HSSFSheet implements Sheet {
     /**
      * check whether the data of sheet can be serialized
      */
-    protected void preSerialize() {
-        if (_patriarch != null) {
+    protected void preSerialize(){
+        if (_patriarch != null){
             _patriarch.preSerialize();
         }
     }
@@ -206,7 +209,7 @@ public final class HSSFSheet implements Sheet {
         Iterator<CellValueRecordInterface> iter = sheet.getCellValueIterator();
         long timestart = currentTimeMillis();
 
-        Log.d(TAG, String.format("Time at start of cell creating in HSSF sheet = %d", timestart));
+        Log.d(TAG, String.format("Time at start of cell creating in HSSF sheet = %s", timestart));
         HSSFRow lastrow = null;
 
         // Add every cell to its row
@@ -234,16 +237,11 @@ public final class HSSFSheet implements Sheet {
                     hrow = createRowFromRecord(rowRec);
                 }
             }
-            if (cval instanceof Record) {
-                Log.v(TAG, "record id = " + Integer.toHexString(((Record) cval).getSid()));
-            } else {
-                Log.v(TAG, "record = " + cval);
-            }
-            hrow.createCellFromRecord(cval);
-            Log.v(TAG, String.format("record took %dms", (currentTimeMillis() - cellstart)));
+            hrow.createCellFromRecord( cval );
+            Log.v(TAG, String.format("record took %sms", currentTimeMillis() - cellstart));
 
         }
-        Log.d(TAG, String.format("total sheet cell creation took %dms", (currentTimeMillis() - timestart)));
+        Log.d(TAG, String.format("total sheet cell creation took %sms", currentTimeMillis() - timestart));
     }
 
     /**
@@ -315,7 +313,7 @@ public final class HSSFSheet implements Sheet {
             _sheet.removeRow(hrow.getRowRecord());
 
             // if there are no more rows, then reset first/last
-            if (_rows.isEmpty()) {
+            if(_rows.isEmpty()) {
                 _firstrow = -1;
                 _lastrow = -1;
             }
@@ -498,22 +496,22 @@ public final class HSSFSheet implements Sheet {
 
     /**
      * Set the width (in units of 1/256th of a character width)<p>
-     * <p>
+     *
      * The maximum column width for an individual cell is 255 characters.
      * This value represents the number of characters that can be displayed
      * in a cell that is formatted with the standard font (first font in the workbook).<p>
-     * <p>
+     *
      * Character width is defined as the maximum digit width
      * of the numbers <code>0, 1, 2, ... 9</code> as rendered
      * using the default font (first font in the workbook).<p>
-     * <p>
+     *
      * Unless you are using a very special font, the default character is '0' (zero),
      * this is true for Arial (default font in HSSF) and Calibri (default font in XSSF)<p>
-     * <p>
+     *
      * Please note, that the width set by this method includes 4 pixels of margin padding (two on each side),
      * plus 1 pixel padding for the gridlines (Section 3.3.1.12 of the OOXML spec).
      * This results is a slightly less value of visible characters than passed to this method (approx. 1/2 of a character).<p>
-     * <p>
+     *
      * To compute the actual number of visible characters,
      * Excel uses the following formula (Section 3.3.1.12 of the OOXML spec):<p>
      *
@@ -551,12 +549,12 @@ public final class HSSFSheet implements Sheet {
     }
 
     @Override
-    public float getColumnWidthInPixels(int column) {
+    public float getColumnWidthInPixels(int column){
         int cw = getColumnWidth(column);
-        int def = getDefaultColumnWidth() * 256;
+        int def = getDefaultColumnWidth()*256;
         float px = (cw == def ? PX_DEFAULT : PX_MODIFIED);
 
-        return cw / px;
+        return cw/px;
     }
 
     /**
@@ -641,7 +639,7 @@ public final class HSSFSheet implements Sheet {
         }
 
         ExtendedFormatRecord xf = _book.getExFormatAt(styleIndex);
-        return new HSSFCellStyle(styleIndex, xf, _book);
+        return new HSSFCellStyle(styleIndex, xf, _workbook);
     }
 
     /**
@@ -668,8 +666,8 @@ public final class HSSFSheet implements Sheet {
      * @param region to merge
      * @return index of this region
      * @throws IllegalArgumentException if region contains fewer than 2 cells
-     * @throws IllegalStateException    if region intersects with a multi-cell array formula
-     * @throws IllegalStateException    if region intersects with an existing region on this sheet
+     * @throws IllegalStateException if region intersects with a multi-cell array formula
+     * @throws IllegalStateException if region intersects with an existing region on this sheet
      */
     @Override
     public int addMergedRegion(CellRangeAddress region) {
@@ -681,7 +679,7 @@ public final class HSSFSheet implements Sheet {
      * Skips validation. It is possible to create overlapping merged regions
      * or create a merged region that intersects a multi-cell array formula
      * with this formula, which may result in a corrupt workbook.
-     * <p>
+     *
      * To check for merged regions overlapping array formulas or other merged regions
      * after addMergedRegionUnsafe has been called, call {@link #validateMergedRegions()}, which runs in O(n^2) time.
      *
@@ -710,12 +708,12 @@ public final class HSSFSheet implements Sheet {
     /**
      * adds a merged region of cells (hence those cells form one)
      *
-     * @param region   (rowfrom/colfrom-rowto/colto) to merge
+     * @param region (rowfrom/colfrom-rowto/colto) to merge
      * @param validate whether to validate merged region
      * @return index of this region
      * @throws IllegalArgumentException if region contains fewer than 2 cells
-     * @throws IllegalStateException    if region intersects with an existing merged region
-     *                                  or multi-cell array formula on this sheet
+     * @throws IllegalStateException if region intersects with an existing merged region
+     * or multi-cell array formula on this sheet
      */
     private int addMergedRegion(CellRangeAddress region, boolean validate) {
         if (region.getNumberOfCells() < 2) {
@@ -795,13 +793,13 @@ public final class HSSFSheet implements Sheet {
     private void checkForIntersectingMergedRegions() {
         final List<CellRangeAddress> regions = getMergedRegions();
         final int size = regions.size();
-        for (int i = 0; i < size; i++) {
+        for (int i=0; i < size; i++) {
             final CellRangeAddress region = regions.get(i);
-            for (final CellRangeAddress other : regions.subList(i + 1, regions.size())) {
+            for (final CellRangeAddress other : regions.subList(i+1, regions.size())) {
                 if (region.intersects(other)) {
                     String msg = "The range " + region.formatAsString() +
-                            " intersects with another merged region " +
-                            other.formatAsString() + " in this sheet";
+                                " intersects with another merged region " +
+                                other.formatAsString() + " in this sheet";
                     throw new IllegalStateException(msg);
                 }
             }
@@ -811,11 +809,11 @@ public final class HSSFSheet implements Sheet {
     /**
      * Control if Excel should be asked to recalculate all formulas on this sheet
      * when the workbook is opened.<p>
-     * <p>
+     *
      * Calculating the formula values with {@link FormulaEvaluator} is the
      * recommended solution, but this may be used for certain cases where
      * evaluation in POI is not possible.<p>
-     * <p>
+     *
      * It is recommended to force recalcuation of formulas on workbook level using
      * {@link Workbook#setForceFormulaRecalculation(boolean)}
      * to ensure that all cross-worksheet formuals and external dependencies are updated.
@@ -944,7 +942,7 @@ public final class HSSFSheet implements Sheet {
     public List<CellRangeAddress> getMergedRegions() {
         List<CellRangeAddress> addresses = new ArrayList<>();
         int count = _sheet.getNumMergedRegions();
-        for (int i = 0; i < count; i++) {
+        for (int i=0; i < count; i++) {
             addresses.add(_sheet.getMergedRegionAt(i));
         }
         return addresses;
@@ -952,26 +950,27 @@ public final class HSSFSheet implements Sheet {
 
     /**
      * @return an iterator of the PHYSICAL rows.  Meaning the 3rd element may not
-     * be the third row if say for instance the second row is undefined.
-     * Call getRowNum() on each row if you care which one it is.
+     *         be the third row if say for instance the second row is undefined.
+     *         Call getRowNum() on each row if you care which one it is.
      */
     @Override
     public Iterator<Row> rowIterator() {
         @SuppressWarnings("unchecked") // can this clumsy generic syntax be improved?
-        Iterator<Row> result = (Iterator<Row>) (Iterator<? extends Row>) _rows.values().iterator();
+                Iterator<Row> result = (Iterator<Row>) (Iterator<? extends Row>) _rows.values().iterator();
         return result;
     }
 
     /**
      * @return a spliterator of the PHYSICAL rows.  Meaning the 3rd element may not
-     * be the third row if say for instance the second row is undefined.
-     * Call getRowNum() on each row if you care which one it is.
+     *         be the third row if say for instance the second row is undefined.
+     *         Call getRowNum() on each row if you care which one it is.
+     *
      * @since POI 5.2.0
      */
     @Override
     @SuppressWarnings("unchecked") // can this clumsy generic syntax be improved?
     public Spliterator<Row> spliterator() {
-        return (Spliterator<Row>) (Spliterator<? extends Row>) _rows.values().spliterator();
+        return (Spliterator<Row>)(Spliterator<? extends Row>) _rows.values().spliterator();
     }
 
     /**
@@ -1216,7 +1215,7 @@ public final class HSSFSheet implements Sheet {
      * Turns on or off the printing of gridlines.
      *
      * @param show boolean to turn on or off the printing of
-     *             gridlines
+     *                          gridlines
      */
     @Override
     public void setPrintGridlines(boolean show) {
@@ -1237,7 +1236,7 @@ public final class HSSFSheet implements Sheet {
      * Turns on or off the printing of row and column headings.
      *
      * @param show boolean to turn on or off the printing of
-     *             row and column headings
+     *                          row and column headings
      */
     @Override
     public void setPrintRowAndColumnHeadings(boolean show) {
@@ -1337,7 +1336,7 @@ public final class HSSFSheet implements Sheet {
      * Sets the size of the margin in inches.
      *
      * @param margin which margin to set
-     * @param size   the size of the margin
+     * @param size the size of the margin
      * @see Sheet#LeftMargin
      * @see Sheet#RightMargin
      * @see Sheet#TopMargin
@@ -1352,7 +1351,7 @@ public final class HSSFSheet implements Sheet {
     public void setMargin(short margin, double size) {
         final PageMargin pageMargin = PageMargin.getByShortValue(margin);
         if (pageMargin == null) {
-            throw new IllegalArgumentException("Unknown margin constant:  " + margin);
+            throw new IllegalArgumentException( "Unknown margin constant:  " + margin );
         }
         setMargin(pageMargin, size);
     }
@@ -1361,7 +1360,7 @@ public final class HSSFSheet implements Sheet {
      * Sets the size of the margin in inches.
      *
      * @param margin which margin to set
-     * @param size   the size of the margin
+     * @param size the size of the margin
      * @since POI 5.2.3
      */
     @Override
@@ -1452,7 +1451,7 @@ public final class HSSFSheet implements Sheet {
     /**
      * Window zoom magnification for current view representing percent values.
      * Valid values range from 10 to 400. Horizontal &amp; Vertical scale together.
-     * <p>
+     *
      * For example:
      * <pre>
      * 10 - 10%
@@ -1507,7 +1506,6 @@ public final class HSSFSheet implements Sheet {
 
         showInPane((short) topRow, (short) leftCol);
     }
-
     /**
      * Sets desktop window pane display area, when the
      * file is first opened in a viewer.
@@ -1524,9 +1522,9 @@ public final class HSSFSheet implements Sheet {
      * Shifts, grows, or shrinks the merged regions due to a row shift
      *
      * @param startRow the start-index of the rows to shift, zero-based
-     * @param endRow   the end-index of the rows to shift, zero-based
-     * @param n        how far to shift, negative to shift up
-     * @param isRow    unused, kept for backwards compatibility
+     * @param endRow the end-index of the rows to shift, zero-based
+     * @param n how far to shift, negative to shift up
+     * @param isRow unused, kept for backwards compatibility
      * @deprecated POI 3.15 beta 2. Use {@link HSSFRowShifter#shiftMergedRegions(int, int, int)}.
      */
     @Deprecated
@@ -1539,9 +1537,9 @@ public final class HSSFSheet implements Sheet {
      * Shifts rows between startRow and endRow n number of rows.
      * If you use a negative number, it will shift rows up.
      * Code ensures that rows don't wrap around.<p>
-     * <p>
+     *
      * Calls {@code shiftRows(startRow, endRow, n, false, false);}<p>
-     * <p>
+     *
      * Additionally shifts merged regions that are completely defined in these
      * rows (ie. merged 2 cells on a row to be shifted).
      *
@@ -1558,11 +1556,11 @@ public final class HSSFSheet implements Sheet {
      * Shifts rows between startRow and endRow n number of rows.
      * If you use a negative number, it will shift rows up.
      * Code ensures that rows don't wrap around<p>
-     * <p>
+     *
      * Additionally shifts merged regions that are completely defined in these
      * rows (ie. merged 2 cells on a row to be shifted). All merged regions that are
      * completely overlaid by shifting will be deleted.<p>
-     * <p>
+     *
      * TODO Might want to add bounds checking here
      *
      * @param startRow               the row to start shifting
@@ -1591,10 +1589,10 @@ public final class HSSFSheet implements Sheet {
      * Shifts rows between startRow and endRow n number of rows.
      * If you use a negative number, it will shift rows up.
      * Code ensures that rows don't wrap around<p>
-     * <p>
+     *
      * Additionally shifts merged regions that are completely defined in these
      * rows (ie. merged 2 cells on a row to be shifted).<p>
-     * <p>
+     *
      * TODO Might want to add bounds checking here
      *
      * @param startRow               the row to start shifting
@@ -1795,14 +1793,13 @@ public final class HSSFSheet implements Sheet {
      * For n &lt; 0, it will shift columns left.
      * Additionally adjusts formulas.
      * Probably should also process other features (hyperlinks, comments...) in the way analog to shiftRows method
-     *
-     * @param startColumn the column to start shifting
-     * @param endColumn   the column to end shifting
-     * @param n           the number of columns to shift
+     * @param startColumn   the column to start shifting
+     * @param endColumn     the column to end shifting
+     * @param n             the number of columns to shift
      */
     @Beta
     @Override
-    public void shiftColumns(int startColumn, int endColumn, int n) {
+    public void shiftColumns(int startColumn, int endColumn, int n){
         HSSFColumnShifter columnShifter = new HSSFColumnShifter(this);
         columnShifter.shiftColumns(startColumn, endColumn, n);
 
@@ -1833,7 +1830,7 @@ public final class HSSFSheet implements Sheet {
 
     /**
      * Creates a split (freezepane). Any existing freezepane or split pane is overwritten.<p>
-     * <p>
+     *
      * If both colSplit and rowSplit are zero then the existing freeze pane is removed
      *
      * @param colSplit       Horizontal position of split.
@@ -1854,7 +1851,7 @@ public final class HSSFSheet implements Sheet {
 
     /**
      * Creates a split (freezepane). Any existing freezepane or split pane is overwritten.<p>
-     * <p>
+     *
      * If both colSplit and rowSplit are zero then the existing freeze pane is removed
      *
      * @param colSplit Horizontal position of split.
@@ -1867,13 +1864,12 @@ public final class HSSFSheet implements Sheet {
 
     /**
      * Creates a split pane. Any existing freezepane or split pane is overwritten.
-     *
      * @param xSplitPos      Horizontal position of split (in 1/20th of a point).
      * @param ySplitPos      Vertical position of split (in 1/20th of a point).
-     * @param topRow         Top row visible in bottom pane
-     * @param leftmostColumn Left column visible in right pane.
-     * @param activePane     Active pane.  One of: PANE_LOWER_RIGHT,
-     *                       PANE_UPPER_RIGHT, PANE_LOWER_LEFT, PANE_UPPER_LEFT
+     * @param topRow        Top row visible in bottom pane
+     * @param leftmostColumn   Left column visible in right pane.
+     * @param activePane    Active pane.  One of: PANE_LOWER_RIGHT,
+     *                      PANE_UPPER_RIGHT, PANE_LOWER_LEFT, PANE_UPPER_LEFT
      * @see #PANE_LOWER_LEFT
      * @see #PANE_LOWER_RIGHT
      * @see #PANE_UPPER_LEFT
@@ -1889,12 +1885,11 @@ public final class HSSFSheet implements Sheet {
 
     /**
      * Creates a split pane. Any existing freezepane or split pane is overwritten.
-     *
      * @param xSplitPos      Horizontal position of split (in 1/20th of a point).
      * @param ySplitPos      Vertical position of split (in 1/20th of a point).
-     * @param topRow         Top row visible in bottom pane
-     * @param leftmostColumn Left column visible in right pane.
-     * @param activePane     Active pane.
+     * @param topRow        Top row visible in bottom pane
+     * @param leftmostColumn   Left column visible in right pane.
+     * @param activePane    Active pane.
      * @see PaneType
      * @since POI 5.2.3
      */
@@ -1992,7 +1987,7 @@ public final class HSSFSheet implements Sheet {
     /**
      * Sets a page break at the indicated row
      * Breaks occur above the specified row and left of the specified column inclusive.<p>
-     * <p>
+     *
      * For example, <code>sheet.setColumnBreak(2);</code> breaks the sheet into two parts
      * with columns A,B,C in the first and D,E,... in the second. Similar, <code>sheet.setRowBreak(2);</code>
      * breaks the sheet into two parts with first three rows (rownum=1...3) in the first part
@@ -2044,7 +2039,7 @@ public final class HSSFSheet implements Sheet {
     /**
      * Sets a page break at the indicated column.
      * Breaks occur above the specified row and left of the specified column inclusive.<p>
-     * <p>
+     *
      * For example, <code>sheet.setColumnBreak(2);</code> breaks the sheet into two parts
      * with columns A,B,C in the first and D,E,... in the second. Similar, {@code sheet.setRowBreak(2);}
      * breaks the sheet into two parts with first three rows (rownum=1...3) in the first part
@@ -2097,8 +2092,7 @@ public final class HSSFSheet implements Sheet {
      */
     protected void validateColumn(int column) {
         int maxcol = SpreadsheetVersion.EXCEL97.getLastColumnIndex();
-        if (column > maxcol)
-            throw new IllegalArgumentException("Maximum column number is " + maxcol);
+        if (column > maxcol) throw new IllegalArgumentException("Maximum column number is " + maxcol);
         if (column < 0) throw new IllegalArgumentException("Minimum column number is 0");
     }
 
@@ -2161,7 +2155,7 @@ public final class HSSFSheet implements Sheet {
      * Creates the top-level drawing patriarch.
      * <p>This may then be used to add graphics or charts.</p>
      * <p>Note that this will normally have the effect of removing
-     * any existing drawings on this sheet.</p>
+     *  any existing drawings on this sheet.</p>
      *
      * @return The new patriarch.
      */
@@ -2268,7 +2262,7 @@ public final class HSSFSheet implements Sheet {
 
     /**
      * Adjusts the column width to fit the contents.<p>
-     * <p>
+     *
      * This process can be relatively slow on large sheets, so this should
      * normally only be called once per column, at the end of your
      * processing.
@@ -2282,11 +2276,11 @@ public final class HSSFSheet implements Sheet {
 
     /**
      * Adjusts the column width to fit the contents.<p>
-     * <p>
+     *
      * This process can be relatively slow on large sheets, so this should
      * normally only be called once per column, at the end of your
      * processing.<p>
-     * <p>
+     *
      * You can specify whether the content of merged cells should be considered or ignored.
      * Default is to ignore merged cells.
      *
@@ -2320,7 +2314,7 @@ public final class HSSFSheet implements Sheet {
     /**
      * Get a Hyperlink in this sheet anchored at row, column
      *
-     * @param row    The index of the row of the hyperlink, zero-based
+     * @param row The index of the row of the hyperlink, zero-based
      * @param column the index of the column of the hyperlink, zero-based
      * @return hyperlink if there is a hyperlink anchored at row, column; otherwise returns null
      */
@@ -2382,7 +2376,7 @@ public final class HSSFSheet implements Sheet {
      * @param link the underlying HyperlinkRecord to remove from this sheet
      */
     protected void removeHyperlink(HyperlinkRecord link) {
-        for (Iterator<RecordBase> it = _sheet.getRecords().iterator(); it.hasNext(); ) {
+        for (Iterator<RecordBase> it = _sheet.getRecords().iterator(); it.hasNext();) {
             RecordBase rec = it.next();
             if (rec instanceof HyperlinkRecord) {
                 HyperlinkRecord recLink = (HyperlinkRecord) rec;
@@ -2496,7 +2490,7 @@ public final class HSSFSheet implements Sheet {
         int firstRow = range.getFirstRow();
 
         // if row was not given when constructing the range...
-        if (firstRow == -1) {
+        if(firstRow == -1) {
             firstRow = 0;
         }
 
@@ -2552,7 +2546,6 @@ public final class HSSFSheet implements Sheet {
 
     /**
      * Returns all cell comments on this sheet.
-     *
      * @return A map of each Comment in the sheet, keyed on the cell address where
      * the comment is located.
      */
@@ -2567,7 +2560,6 @@ public final class HSSFSheet implements Sheet {
         findCellCommentLocations(patriarch, locations);
         return locations;
     }
-
     /**
      * Finds all cell comments in this sheet and adds them to the specified locations map
      *
@@ -2744,8 +2736,8 @@ public final class HSSFSheet implements Sheet {
 
     /**
      * Returns the column outline level. Increased as you
-     * put it into more groups (outlines), reduced as
-     * you take it out of them.
+     *  put it into more groups (outlines), reduced as
+     *  you take it out of them.
      */
     @Override
     public int getColumnOutlineLevel(int columnIndex) {

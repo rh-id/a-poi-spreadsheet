@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions;
 
@@ -36,11 +37,12 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.NumberComparer;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LocaleUtil;
 
+
 /**
  * This class performs a D* calculation. It takes an {@link IDStarAlgorithm} object and
  * uses it for calculating the result value. Iterating a database and checking the
  * entries against the set of conditions is done here.
- * <p>
+ *
  * TODO:
  * - functions as conditions
  */
@@ -50,53 +52,29 @@ public final class DStarRunner implements Function3Arg {
      * Enum for convenience to identify and source implementations of the D* functions
      */
     public enum DStarAlgorithmEnum {
-        /**
-         * @see DGet
-         */
+        /** @see DGet */
         DGET(DGet::new),
-        /**
-         * @see DMin
-         */
+        /** @see DMin */
         DMIN(DMin::new),
-        /**
-         * @see DMax
-         */
+        /** @see DMax */
         DMAX(DMax::new),
-        /**
-         * @see DSum
-         */
+        /** @see DSum */
         DSUM(DSum::new),
-        /**
-         * @see DCount
-         */
+        /** @see DCount */
         DCOUNT(DCount::new),
-        /**
-         * @see DCountA
-         */
+        /** @see DCountA */
         DCOUNTA(DCountA::new),
-        /**
-         * @see DAverage
-         */
+        /** @see DAverage */
         DAVERAGE(DAverage::new),
-        /**
-         * @see DStdev
-         */
+        /** @see DStdev */
         DSTDEV(DStdev::new),
-        /**
-         * @see DStdevp
-         */
+        /** @see DStdevp */
         DSTDEVP(DStdevp::new),
-        /**
-         * @see DVar
-         */
+        /** @see DVar */
         DVAR(DVar::new),
-        /**
-         * @see DVarp
-         */
+        /** @see DVarp */
         DVARP(DVarp::new),
-        /**
-         * @see DProduct
-         */
+        /** @see DProduct */
         DPRODUCT(DProduct::new),
         ;
 
@@ -113,7 +91,6 @@ public final class DStarRunner implements Function3Arg {
             return implSupplier.get();
         }
     }
-
     private final DStarAlgorithmEnum algoType;
 
     /**
@@ -124,21 +101,22 @@ public final class DStarRunner implements Function3Arg {
     }
 
     public ValueEval evaluate(ValueEval[] args, int srcRowIndex, int srcColumnIndex) {
-        if (args.length == 3) {
+        if(args.length == 3) {
             return evaluate(srcRowIndex, srcColumnIndex, args[0], args[1], args[2]);
-        } else {
+        }
+        else {
             return ErrorEval.VALUE_INVALID;
         }
     }
 
     public ValueEval evaluate(int srcRowIndex, int srcColumnIndex,
-                              ValueEval database, ValueEval filterColumn, ValueEval conditionDatabase) {
+            ValueEval database, ValueEval filterColumn, ValueEval conditionDatabase) {
         // Input processing and error checks.
-        if (!(database instanceof AreaEval) || !(conditionDatabase instanceof AreaEval)) {
+        if(!(database instanceof AreaEval) || !(conditionDatabase instanceof AreaEval)) {
             return ErrorEval.VALUE_INVALID;
         }
-        AreaEval db = (AreaEval) database;
-        AreaEval cdb = (AreaEval) conditionDatabase;
+        AreaEval db = (AreaEval)database;
+        AreaEval cdb = (AreaEval)conditionDatabase;
 
         // Create an algorithm runner.
         final IDStarAlgorithm algorithm = algoType.newInstance();
@@ -148,11 +126,11 @@ public final class DStarRunner implements Function3Arg {
             filterColumn = OperandResolver.getSingleValue(filterColumn, srcRowIndex, srcColumnIndex);
             if (filterColumn instanceof NumericValueEval) {
                 //fc is zero based while Excel uses 1 based column numbering
-                fc = (int) Math.round(((NumericValueEval) filterColumn).getNumberValue()) - 1;
+                fc = (int) Math.round(((NumericValueEval)filterColumn).getNumberValue()) - 1;
             } else {
                 fc = getColumnForName(filterColumn, db);
             }
-            if (fc == -1 && !algorithm.allowEmptyMatchField()) {
+            if(fc == -1 && !algorithm.allowEmptyMatchField()) {
                 // column not found
                 return ErrorEval.VALUE_INVALID;
             }
@@ -169,11 +147,12 @@ public final class DStarRunner implements Function3Arg {
 
         // Iterate over all DB entries.
         final int height = db.getHeight();
-        for (int row = 1; row < height; ++row) {
+        for(int row = 1; row < height; ++row) {
             boolean matches;
             try {
                 matches = fulfillsConditions(db, row, cdb);
-            } catch (EvaluationException e) {
+            }
+            catch (EvaluationException e) {
                 return ErrorEval.VALUE_INVALID;
             }
             // Filter each entry.
@@ -184,7 +163,7 @@ public final class DStarRunner implements Function3Arg {
                 }
                 // Pass the match to the algorithm and conditionally abort the search.
                 boolean shouldContinue = algorithm.processMatch(currentValueEval);
-                if (!shouldContinue) {
+                if(! shouldContinue) {
                     break;
                 }
             }
@@ -199,24 +178,28 @@ public final class DStarRunner implements Function3Arg {
         largerEqualThan,
         smallerThan,
         smallerEqualThan,
-        equal
+        equal,
+        notEqual
     }
 
     /**
+     *
+     *
      * @param nameValueEval Must not be a RefEval or AreaEval. Thus make sure resolveReference() is called on the value first!
-     * @param db            Database
+     * @param db Database
      * @return Corresponding column number.
      * @throws EvaluationException If it's not possible to turn all headings into strings.
      */
     private static int getColumnForName(ValueEval nameValueEval, AreaEval db)
             throws EvaluationException {
         if (nameValueEval instanceof NumericValueEval) {
-            int columnNo = OperandResolver.coerceValueToInt(nameValueEval) - 1;
+            int columnNo =  OperandResolver.coerceValueToInt(nameValueEval) - 1;
             if (columnNo < 0 || columnNo >= db.getWidth()) {
                 return -1;
             }
             return columnNo;
-        } else {
+        }
+        else {
             String name = OperandResolver.coerceValueToString(nameValueEval);
             return getColumnForString(db, name);
         }
@@ -226,23 +209,23 @@ public final class DStarRunner implements Function3Arg {
      * For a given database returns the column number for a column heading.
      * Comparison is case-insensitive.
      *
-     * @param db   Database.
+     * @param db Database.
      * @param name Column heading.
      * @return Corresponding column number.
      */
     private static int getColumnForString(AreaEval db, String name) {
         int resultColumn = -1;
         final int width = db.getWidth();
-        for (int column = 0; column < width; ++column) {
+        for(int column = 0; column < width; ++column) {
             ValueEval columnNameValueEval = resolveReference(db, 0, column);
-            if (columnNameValueEval instanceof BlankEval) {
+            if(columnNameValueEval instanceof BlankEval) {
                 continue;
             }
-            if (columnNameValueEval instanceof ErrorEval) {
+            if(columnNameValueEval instanceof ErrorEval) {
                 continue;
             }
             String columnName = OperandResolver.coerceValueToString(columnNameValueEval);
-            if (name.equalsIgnoreCase(columnName)) {
+            if(name.equalsIgnoreCase(columnName)) {
                 resultColumn = column;
                 break;
             }
@@ -253,12 +236,12 @@ public final class DStarRunner implements Function3Arg {
     /**
      * Checks a row in a database against a condition database.
      *
-     * @param db  Database.
+     * @param db Database.
      * @param row The row in the database to check.
      * @param cdb The condition database to use for checking.
      * @return Whether the row matches the conditions.
      * @throws EvaluationException If references could not be resolved or comparison
-     *                             operators and operands didn't match.
+     * operators and operands didn't match.
      */
     private static boolean fulfillsConditions(AreaEval db, int row, AreaEval cdb)
             throws EvaluationException {
@@ -266,10 +249,10 @@ public final class DStarRunner implements Function3Arg {
         // Each row is made up of cells where each cell is a condition,
         // all have to match, so they are ANDed.
         final int height = cdb.getHeight();
-        for (int conditionRow = 1; conditionRow < height; ++conditionRow) {
+        for(int conditionRow = 1; conditionRow < height; ++conditionRow) {
             boolean matches = true;
             final int width = cdb.getWidth();
-            for (int column = 0; column < width; ++column) { // columns are ANDed
+            for(int column = 0; column < width; ++column) { // columns are ANDed
                 // Whether the condition column matches a database column, if not it's a
                 // special column that accepts formulas.
                 boolean columnCondition = true;
@@ -279,12 +262,12 @@ public final class DStarRunner implements Function3Arg {
                 condition = resolveReference(cdb, conditionRow, column);
 
                 // If the condition is empty it matches.
-                if (condition instanceof BlankEval)
+                if(condition instanceof BlankEval)
                     continue;
                 // The column in the DB to apply the condition to.
                 ValueEval targetHeader = resolveReference(cdb, 0, column);
 
-                if (!(targetHeader instanceof StringValueEval)) {
+                if(!(targetHeader instanceof StringValueEval)) {
                     throw new EvaluationException(ErrorEval.VALUE_INVALID);
                 }
 
@@ -292,16 +275,16 @@ public final class DStarRunner implements Function3Arg {
                     // No column found, it's again a special column that accepts formulas.
                     columnCondition = false;
 
-                if (columnCondition) { // normal column condition
+                if(columnCondition) { // normal column condition
                     // Should not throw, checked above.
                     ValueEval value = resolveReference(db, row, getColumnForName(targetHeader, db));
-                    if (!testNormalCondition(value, condition)) {
+                    if(!testNormalCondition(value, condition)) {
                         matches = false;
                         break;
                     }
                 } else { // It's a special formula condition.
                     // TODO: Check whether the condition cell contains a formula and return #VALUE! if it doesn't.
-                    if (OperandResolver.coerceValueToString(condition).isEmpty()) {
+                    if(OperandResolver.coerceValueToString(condition).isEmpty()) {
                         throw new EvaluationException(ErrorEval.VALUE_INVALID);
                     }
                     throw new NotImplementedException(
@@ -316,61 +299,57 @@ public final class DStarRunner implements Function3Arg {
     }
 
     /**
-     * Test a value against a simple (< > <= >= = starts-with) condition string.
+     * Test a value against a simple (< > <= >= = <> starts-with) condition string.
      *
-     * @param value     The value to check.
+     * @param value The value to check.
      * @param condition The condition to check for.
      * @return Whether the condition holds.
      * @throws EvaluationException If comparison operator and operands don't match.
      */
     private static boolean testNormalCondition(ValueEval value, ValueEval condition)
             throws EvaluationException {
-        if (condition instanceof StringEval) {
-            String conditionString = ((StringEval) condition).getStringValue();
+        if(condition instanceof StringEval) {
+            String conditionString = ((StringEval)condition).getStringValue();
 
-            if (conditionString.startsWith("<")) { // It's a </<= condition.
+            if(conditionString.startsWith("<")) { // It's a </<=/<> condition.
                 String number = conditionString.substring(1);
-                if (number.startsWith("=")) {
+                if(number.startsWith("=")) {
                     number = number.substring(1);
                     return testNumericCondition(value, operator.smallerEqualThan, number);
+                } else if (number.startsWith(">")) {
+                    number = number.substring(1);
+                    boolean itsANumber = isNumber(number);
+                    if (itsANumber) {
+                        return testNumericCondition(value, operator.notEqual, number);
+                    } else {
+                        return testStringCondition(value, operator.notEqual, number);
+                    }
                 } else {
                     return testNumericCondition(value, operator.smallerThan, number);
                 }
-            } else if (conditionString.startsWith(">")) { // It's a >/>= condition.
+            } else if(conditionString.startsWith(">")) { // It's a >/>= condition.
                 String number = conditionString.substring(1);
-                if (number.startsWith("=")) {
+                if(number.startsWith("=")) {
                     number = number.substring(1);
                     return testNumericCondition(value, operator.largerEqualThan, number);
                 } else {
                     return testNumericCondition(value, operator.largerThan, number);
                 }
-            } else if (conditionString.startsWith("=")) { // It's a = condition.
+            } else if(conditionString.startsWith("=")) { // It's a = condition.
                 String stringOrNumber = conditionString.substring(1);
 
-                if (stringOrNumber.isEmpty()) {
+                if(stringOrNumber.isEmpty()) {
                     return value instanceof BlankEval;
                 }
                 // Distinguish between string and number.
-                boolean itsANumber;
-                try {
-                    Integer.parseInt(stringOrNumber);
-                    itsANumber = true;
-                } catch (NumberFormatException e) { // It's not an int.
-                    try {
-                        Double.parseDouble(stringOrNumber);
-                        itsANumber = true;
-                    } catch (NumberFormatException e2) { // It's a string.
-                        itsANumber = false;
-                    }
-                }
-                if (itsANumber) {
+                boolean itsANumber = isNumber(stringOrNumber);
+                if(itsANumber) {
                     return testNumericCondition(value, operator.equal, stringOrNumber);
                 } else { // It's a string.
-                    String valueString = value instanceof BlankEval ? "" : OperandResolver.coerceValueToString(value);
-                    return stringOrNumber.equalsIgnoreCase(valueString);
+                    return testStringCondition(value, operator.equal, stringOrNumber);
                 }
             } else { // It's a text starts-with condition.
-                if (conditionString.isEmpty()) {
+                if(conditionString.isEmpty()) {
                     return value instanceof StringEval;
                 } else {
                     String valueString = value instanceof BlankEval ? "" : OperandResolver.coerceValueToString(value);
@@ -384,13 +363,13 @@ public final class DStarRunner implements Function3Arg {
                     }
                 }
             }
-        } else if (condition instanceof NumericValueEval) {
+        } else if(condition instanceof NumericValueEval) {
             double conditionNumber = ((NumericValueEval) condition).getNumberValue();
             Double valueNumber = getNumberFromValueEval(value);
             return valueNumber != null && conditionNumber == valueNumber;
-        } else if (condition instanceof ErrorEval) {
-            if (value instanceof ErrorEval) {
-                return ((ErrorEval) condition).getErrorCode() == ((ErrorEval) value).getErrorCode();
+        } else if(condition instanceof ErrorEval) {
+            if(value instanceof ErrorEval) {
+                return ((ErrorEval)condition).getErrorCode() == ((ErrorEval)value).getErrorCode();
             } else {
                 return false;
             }
@@ -401,9 +380,8 @@ public final class DStarRunner implements Function3Arg {
 
     /**
      * Test whether a value matches a numeric condition.
-     *
      * @param valueEval Value to check.
-     * @param op        Comparator to use.
+     * @param op Comparator to use.
      * @param condition Value to check against.
      * @return whether the condition holds.
      * @throws EvaluationException If it's impossible to turn the condition into a number.
@@ -412,9 +390,9 @@ public final class DStarRunner implements Function3Arg {
             ValueEval valueEval, operator op, String condition)
             throws EvaluationException {
         // Construct double from ValueEval.
-        if (!(valueEval instanceof NumericValueEval))
+        if(!(valueEval instanceof NumericValueEval))
             return false;
-        double value = ((NumericValueEval) valueEval).getNumberValue();
+        double value = ((NumericValueEval)valueEval).getNumberValue();
 
         // Construct double from condition.
         double conditionValue;
@@ -429,32 +407,56 @@ public final class DStarRunner implements Function3Arg {
         }
 
         int result = NumberComparer.compare(value, conditionValue);
-        switch (op) {
-            case largerThan:
-                return result > 0;
-            case largerEqualThan:
-                return result >= 0;
-            case smallerThan:
-                return result < 0;
-            case smallerEqualThan:
-                return result <= 0;
-            case equal:
-                return result == 0;
+        switch(op) {
+        case largerThan:
+            return result > 0;
+        case largerEqualThan:
+            return result >= 0;
+        case smallerThan:
+            return result < 0;
+        case smallerEqualThan:
+            return result <= 0;
+        case equal:
+            return result == 0;
+        case notEqual:
+            return result != 0;
+        }
+        return false; // Can not be reached.
+    }
+
+    /**
+     * Test whether a value matches a text condition.
+     * @param valueEval Value to check.
+     * @param op Comparator to use.
+     * @param condition Value to check against.
+     * @return whether the condition holds.
+     */
+    private static boolean testStringCondition(
+        ValueEval valueEval, operator op, String condition) {
+
+        String valueString = valueEval instanceof BlankEval ? "" : OperandResolver.coerceValueToString(valueEval);
+        switch(op) {
+        case equal:
+            return valueString.equalsIgnoreCase(condition);
+        case notEqual:
+            return !valueString.equalsIgnoreCase(condition);
         }
         return false; // Can not be reached.
     }
 
     private static Double getNumberFromValueEval(ValueEval value) {
-        if (value instanceof NumericValueEval) {
-            return ((NumericValueEval) value).getNumberValue();
-        } else if (value instanceof StringValueEval) {
-            String stringValue = ((StringValueEval) value).getStringValue();
+        if(value instanceof NumericValueEval) {
+            return ((NumericValueEval)value).getNumberValue();
+        }
+        else if(value instanceof StringValueEval) {
+            String stringValue = ((StringValueEval)value).getStringValue();
             try {
                 return Double.parseDouble(stringValue);
             } catch (NumberFormatException e2) {
                 return null;
             }
-        } else {
+        }
+        else {
             return null;
         }
     }
@@ -462,16 +464,39 @@ public final class DStarRunner implements Function3Arg {
     /**
      * Resolve a ValueEval that's in an AreaEval.
      *
-     * @param db    AreaEval from which the cell to resolve is retrieved.
+     * @param db AreaEval from which the cell to resolve is retrieved.
      * @param dbRow Relative row in the AreaEval.
      * @param dbCol Relative column in the AreaEval.
      * @return A ValueEval that is a NumberEval, StringEval, BoolEval, BlankEval or ErrorEval.
      */
     private static ValueEval resolveReference(AreaEval db, int dbRow, int dbCol) {
         try {
-            return OperandResolver.getSingleValue(db.getValue(dbRow, dbCol), db.getFirstRow() + dbRow, db.getFirstColumn() + dbCol);
+            return OperandResolver.getSingleValue(db.getValue(dbRow, dbCol), db.getFirstRow()+dbRow, db.getFirstColumn()+dbCol);
         } catch (EvaluationException e) {
             return e.getErrorEval();
         }
+    }
+
+    /**
+     * Determines whether a given string represents a valid number.
+     *
+     * @param value The string to be checked if it represents a number.
+     * @return {@code true} if the string can be parsed as either an integer or
+     *         a double; {@code false} otherwise.
+     */
+    private static boolean isNumber(String value) {
+        boolean itsANumber;
+        try {
+            Integer.parseInt(value);
+            itsANumber = true;
+        } catch (NumberFormatException e) { // It's not an int.
+            try {
+                Double.parseDouble(value);
+                itsANumber = true;
+            } catch (NumberFormatException e2) { // It's a string.
+                itsANumber = false;
+            }
+        }
+        return itsANumber;
     }
 }

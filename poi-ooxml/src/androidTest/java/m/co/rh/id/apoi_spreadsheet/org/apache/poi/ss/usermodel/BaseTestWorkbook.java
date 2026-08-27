@@ -541,6 +541,7 @@ public abstract class BaseTestWorkbook {
     /**
      * Tests that all the unicode capable string fields can be set, written and then read back
      */
+    @SuppressWarnings("UnnecessaryUnicodeEscape")
     @Test
     public void unicodeInAll() throws IOException {
         try (Workbook wb1 = _testDataProvider.createWorkbook()) {
@@ -854,7 +855,7 @@ public abstract class BaseTestWorkbook {
             wb.removeSheetAt(0);
             wb.removeSheetAt(2);
 
-            // ensure that sheets are moved up and removed sheets are not found any more
+            // ensure that sheets are moved up and removed sheets are not found anymore
             assertEquals(-1, wb.getSheetIndex(sheet1));
             assertEquals(0, wb.getSheetIndex(sheet2));
             assertEquals(1, wb.getSheetIndex(sheet3));
@@ -939,6 +940,22 @@ public abstract class BaseTestWorkbook {
             assertThrows(IllegalArgumentException.class,
                     () -> workbook.createSheet("MyVeryLongSheetName_9999999999999998")
             );
+        }
+    }
+
+    @Test
+    public void testSheetNameDifferOnlyLowercaseUppercase() throws IOException {
+        try (Workbook wb = _testDataProvider.createWorkbook()) {
+            wb.createSheet("abc");
+            assertEquals(1, wb.getNumberOfSheets());
+
+            assertThrows(IllegalArgumentException.class,
+                    () -> wb.createSheet("ABC"));
+            assertEquals(1, wb.getNumberOfSheets());
+
+            Sheet sheet = wb.getSheet("abc");
+            assertNotNull(sheet);
+            assertEquals("abc", sheet.getSheetName());
         }
     }
 }

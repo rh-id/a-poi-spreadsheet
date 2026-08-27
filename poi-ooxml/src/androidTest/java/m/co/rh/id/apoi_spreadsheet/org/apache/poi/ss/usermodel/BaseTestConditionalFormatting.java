@@ -538,7 +538,8 @@ public abstract class BaseTestConditionalFormatting {
 
             // Sanity check data
             assertEquals("Values", s.getRow(0).getCell(0).toString());
-            assertEquals("10.0", s.getRow(2).getCell(0).toString());
+            // junit 4.13 removed the no-delta double assertEquals overload; use explicit delta
+            assertEquals(10.0, s.getRow(2).getCell(0).getNumericCellValue(), 0);
 
             // Check we found all the conditional formatting rules we should have
             SheetConditionalFormatting sheetCF = s.getSheetConditionalFormatting();

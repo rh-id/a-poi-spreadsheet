@@ -14,8 +14,11 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.hpsf;
+
+
 
 import android.util.Log;
 
@@ -24,6 +27,9 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndian;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndianByteArrayInputStream;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndianConsts;
+
+
+
 
 @Internal
 public class ClipboardData {
@@ -50,12 +56,12 @@ public class ClipboardData {
         return MAX_RECORD_LENGTH;
     }
 
-    public void read(LittleEndianByteArrayInputStream lei) {
+    public void read( LittleEndianByteArrayInputStream lei ) {
         int offset = lei.getReadIndex();
         long size = lei.readInt();
 
-        if (size < 4) {
-            Log.w(TAG, String.format("ClipboardData at offset %d size less than 4 bytes (doesn't even have format " +
+        if ( size < 4 ) {
+            Log.w(TAG, String.format("ClipboardData at offset %s size less than 4 bytes (doesn't even have format " +
                     "field!). Setting to format == 0 and hope for the best", offset));
             _format = 0;
             _value = new byte[0];
@@ -72,14 +78,14 @@ public class ClipboardData {
     }
 
     public byte[] toByteArray() {
-        byte[] result = new byte[LittleEndianConsts.INT_SIZE * 2 + _value.length];
+        byte[] result = new byte[LittleEndianConsts.INT_SIZE*2+_value.length];
         LittleEndian.putInt(result, 0, LittleEndianConsts.INT_SIZE + _value.length);
         LittleEndian.putInt(result, 4, _format);
         System.arraycopy(_value, 0, result, 8, _value.length);
         return result;
     }
 
-    public void setValue(byte[] value) {
+    public void setValue( byte[] value ) {
         _value = value.clone();
     }
 }

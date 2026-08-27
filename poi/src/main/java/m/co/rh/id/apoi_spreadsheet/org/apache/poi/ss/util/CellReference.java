@@ -15,6 +15,8 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util;
 
 import static m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.StringUtil.endsWithIgnoreCase;
@@ -31,6 +33,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.SpreadsheetVersion;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.SheetNameFormatter;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Cell;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.GenericRecordUtil;
+
 
 /**
  * <p>Common conversion functions between Excel style A1, C27 style
@@ -116,22 +119,22 @@ public class CellReference implements GenericRecord {
         _sheetName = parts.sheetName;
 
         String colRef = parts.colRef;
-        _isColAbs = (colRef.length() > 0) && colRef.charAt(0) == '$';
+        _isColAbs = (!colRef.isEmpty()) && colRef.charAt(0) == '$';
         if (_isColAbs) {
             colRef = colRef.substring(1);
         }
-        if (colRef.length() == 0) {
+        if (colRef.isEmpty()) {
             _colIndex = -1;
         } else {
             _colIndex = convertColStringToIndex(colRef);
         }
 
         String rowRef=parts.rowRef;
-        _isRowAbs = (rowRef.length() > 0) && rowRef.charAt(0) == '$';
+        _isRowAbs = (!rowRef.isEmpty()) && rowRef.charAt(0) == '$';
         if (_isRowAbs) {
             rowRef = rowRef.substring(1);
         }
-        if (rowRef.length() == 0) {
+        if (rowRef.isEmpty()) {
             _rowIndex = -1;
         } else {
             // throws NumberFormatException if rowRef is not convertible to an int
@@ -451,7 +454,7 @@ public class CellReference implements GenericRecord {
     }
 
     /**
-     * Takes in a 0-based base-10 column and returns a ALPHA-26
+     * Takes in a 0-based base-10 column and returns an ALPHA-26
      *  representation.
      * eg {@code convertNumToColString(3)} returns {@code "D"}
      */

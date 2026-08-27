@@ -13,17 +13,16 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-
-   2012 - Alfresco Software, Ltd.
-   Alfresco Software has modified source of this file
-   The details of changes as svn diff can be found in svn at location root/projects/3rd-party/src
 ==================================================================== */
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel;
 
 import java.util.List;
 
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ConditionalFormattingEvaluator;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.EvaluationConditionalFormatRule;
+
 
 /**
  * Object to hold a number format index and string, for various formatting evaluations

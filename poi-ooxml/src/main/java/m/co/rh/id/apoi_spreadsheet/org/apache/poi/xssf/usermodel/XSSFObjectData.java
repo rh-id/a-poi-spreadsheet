@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel;
 
@@ -36,7 +37,6 @@ import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTOleObject;
 
 import java.io.IOException;
 import java.io.InputStream;
-
 import javax.xml.namespace.QName;
 
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.POIXMLDocumentPart;
@@ -48,6 +48,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.filesystem.FileMagic;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.ObjectData;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.IOUtils;
+
 
 /**
  * Represents binary object (i.e. OLE) data stored in the file.  Eg. A GIF, JPEG etc...
@@ -72,7 +73,7 @@ public class XSSFObjectData extends XSSFSimpleShape implements ObjectData {
     protected static CTShape prototype() {
         final String drawNS = "http://schemas.microsoft.com/office/drawing/2010/main";
 
-        if (prototype == null) {
+        if(prototype == null) {
             CTShape shape = CTShape.Factory.newInstance();
 
             CTShapeNonVisual nv = shape.addNewNvSpPr();
@@ -110,6 +111,8 @@ public class XSSFObjectData extends XSSFSimpleShape implements ObjectData {
         }
         return prototype;
     }
+
+
 
 
     @Override
@@ -180,7 +183,7 @@ public class XSSFObjectData extends XSSFSimpleShape implements ObjectData {
     }
 
     protected XSSFSheet getSheet() {
-        return (XSSFSheet) getDrawing().getParent();
+        return (XSSFSheet)getDrawing().getParent();
     }
 
     @Override
@@ -188,7 +191,7 @@ public class XSSFObjectData extends XSSFSimpleShape implements ObjectData {
         try (XmlCursor cur = getOleObject().newCursor()) {
             if (cur.toChild(XSSFRelation.NS_SPREADSHEETML, "objectPr")) {
                 String blipId = cur.getAttributeText(new QName(PackageRelationshipTypes.CORE_PROPERTIES_ECMA376_NS, "id"));
-                return (XSSFPictureData) getSheet().getRelationById(blipId);
+                return (XSSFPictureData)getSheet().getRelationById(blipId);
             }
             return null;
         }

@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.extractor;
 
@@ -51,6 +52,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Workbook;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Beta;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.IOUtils;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LocaleUtil;
+
 
 /**
  * This extractor class tries to identify various embedded documents within Excel files
@@ -89,7 +91,7 @@ public class EmbeddedExtractor implements Iterable<EmbeddedExtractor> {
     @Override
     public Iterator<EmbeddedExtractor> iterator() {
         EmbeddedExtractor[] ee = {
-                new Ole10Extractor(), new PdfExtractor(), new BiffExtractor(), new OOXMLExtractor(), new FsExtractor()
+            new Ole10Extractor(), new PdfExtractor(), new BiffExtractor(), new OOXMLExtractor(), new FsExtractor()
         };
         return Arrays.asList(ee).iterator();
     }
@@ -114,7 +116,7 @@ public class EmbeddedExtractor implements Iterable<EmbeddedExtractor> {
 
     public List<EmbeddedData> extractAll(Sheet sheet) throws IOException {
         Drawing<?> patriarch = sheet.getDrawingPatriarch();
-        if (null == patriarch) {
+        if (null == patriarch){
             return Collections.emptyList();
         }
         List<EmbeddedData> embeddings = new ArrayList<>();
@@ -126,10 +128,10 @@ public class EmbeddedExtractor implements Iterable<EmbeddedExtractor> {
         for (Shape shape : parent) {
             EmbeddedData data = null;
             if (shape instanceof ObjectData) {
-                ObjectData od = (ObjectData) shape;
+                ObjectData od = (ObjectData)shape;
                 try {
                     if (od.hasDirectoryEntry()) {
-                        data = extractOne((DirectoryNode) od.getDirectory());
+                        data = extractOne((DirectoryNode)od.getDirectory());
                     } else {
                         data = new EmbeddedData(od.getFileName(), od.getObjectData(), od.getContentType());
                     }
@@ -137,9 +139,9 @@ public class EmbeddedExtractor implements Iterable<EmbeddedExtractor> {
                     Log.w(TAG, "Entry not found / readable - ignoring OLE embedding", e);
                 }
             } else if (shape instanceof Picture) {
-                data = extractOne((Picture) shape);
+                data = extractOne((Picture)shape);
             } else if (shape instanceof ShapeContainer) {
-                extractAll((ShapeContainer<?>) shape, embeddings);
+                extractAll((ShapeContainer<?>)shape, embeddings);
             }
 
             if (data == null) {
@@ -178,9 +180,9 @@ public class EmbeddedExtractor implements Iterable<EmbeddedExtractor> {
     }
 
     protected EmbeddedData extract(DirectoryNode dn) throws IOException {
-        assert (canExtract(dn));
+        assert(canExtract(dn));
         try (UnsynchronizedByteArrayOutputStream bos = UnsynchronizedByteArrayOutputStream.builder().setBufferSize(20000).get();
-             POIFSFileSystem dest = new POIFSFileSystem()) {
+            POIFSFileSystem dest = new POIFSFileSystem()) {
             copyNodes(dn, dest.getRoot());
             // start with a reasonable big size
             dest.writeFilesystem(bos);
@@ -220,8 +222,8 @@ public class EmbeddedExtractor implements Iterable<EmbeddedExtractor> {
 
         @Override
         public EmbeddedData extract(DirectoryNode dn) throws IOException {
-            try (UnsynchronizedByteArrayOutputStream bos = UnsynchronizedByteArrayOutputStream.builder().get();
-                 InputStream is = dn.createDocumentInputStream("CONTENTS")) {
+            try(UnsynchronizedByteArrayOutputStream bos = UnsynchronizedByteArrayOutputStream.builder().get();
+                InputStream is = dn.createDocumentInputStream("CONTENTS")) {
                 IOUtils.copy(is, bos);
                 return new EmbeddedData(dn.getName() + ".pdf", bos.toByteArray(), CONTENT_TYPE_PDF);
             }
@@ -260,7 +262,7 @@ public class EmbeddedExtractor implements Iterable<EmbeddedExtractor> {
                 return null;
             }
 
-            int pictureBytesLen = idxEnd - idxStart + 6;
+            int pictureBytesLen = idxEnd-idxStart+6;
             byte[] pdfBytes = IOUtils.safelyClone(pictureBytes, idxStart, pictureBytesLen, MAX_RECORD_LENGTH);
             String filename = source.getShapeName().trim();
             if (!endsWithIgnoreCase(filename, ".pdf")) {
@@ -300,7 +302,7 @@ public class EmbeddedExtractor implements Iterable<EmbeddedExtractor> {
             byte[] data = IOUtils.toByteArray(dis);
             dis.close();
 
-            return new EmbeddedData(dn.getName() + ext, data, contentType);
+            return new EmbeddedData(dn.getName()+ext, data, contentType);
         }
     }
 
@@ -313,15 +315,15 @@ public class EmbeddedExtractor implements Iterable<EmbeddedExtractor> {
         protected boolean canExtractExcel(DirectoryNode dn) {
             ClassIDPredefined clsId = ClassIDPredefined.lookup(dn.getStorageClsid());
             return (ClassIDPredefined.EXCEL_V7 == clsId
-                    || ClassIDPredefined.EXCEL_V8 == clsId
-                    || dn.hasEntryCaseInsensitive("Workbook") /*...*/);
+                || ClassIDPredefined.EXCEL_V8 == clsId
+                || dn.hasEntryCaseInsensitive("Workbook") /*...*/);
         }
 
         protected boolean canExtractWord(DirectoryNode dn) {
             ClassIDPredefined clsId = ClassIDPredefined.lookup(dn.getStorageClsid());
             return (ClassIDPredefined.WORD_V7 == clsId
-                    || ClassIDPredefined.WORD_V8 == clsId
-                    || dn.hasEntryCaseInsensitive("WordDocument"));
+                || ClassIDPredefined.WORD_V8 == clsId
+                || dn.hasEntryCaseInsensitive("WordDocument"));
         }
 
         @Override
@@ -344,7 +346,6 @@ public class EmbeddedExtractor implements Iterable<EmbeddedExtractor> {
         public boolean canExtract(DirectoryNode dn) {
             return true;
         }
-
         @Override
         public EmbeddedData extract(DirectoryNode dn) throws IOException {
             EmbeddedData ed = super.extract(dn);
@@ -357,8 +358,8 @@ public class EmbeddedExtractor implements Iterable<EmbeddedExtractor> {
     protected static void copyNodes(DirectoryNode src, DirectoryNode dest) throws IOException {
         for (Entry e : src) {
             if (e instanceof DirectoryNode) {
-                DirectoryNode srcDir = (DirectoryNode) e;
-                DirectoryNode destDir = (DirectoryNode) dest.createDirectory(srcDir.getName());
+                DirectoryNode srcDir = (DirectoryNode)e;
+                DirectoryNode destDir = (DirectoryNode)dest.createDirectory(srcDir.getName());
                 destDir.setStorageClsid(srcDir.getStorageClsid());
                 copyNodes(srcDir, destDir);
             } else {
@@ -368,6 +369,7 @@ public class EmbeddedExtractor implements Iterable<EmbeddedExtractor> {
             }
         }
     }
+
 
 
     /**
@@ -386,9 +388,7 @@ public class EmbeddedExtractor implements Iterable<EmbeddedExtractor> {
             while (j > 0 && pattern[j] != data[i]) {
                 j = failure[j - 1];
             }
-            if (pattern[j] == data[i]) {
-                j++;
-            }
+            if (pattern[j] == data[i]) { j++; }
             if (j == pattern.length) {
                 return i - pattern.length + 1;
             }

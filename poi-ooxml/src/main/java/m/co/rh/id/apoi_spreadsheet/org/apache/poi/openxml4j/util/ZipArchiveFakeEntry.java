@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.util;
 
@@ -23,27 +24,22 @@ import android.util.Log;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 
-import java.io.Closeable;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.file.Files;
 
 import m.co.rh.id.apoi_spreadsheet.base.util.TempFile;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.temp.EncryptedTempData;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.IOUtils;
 
+
 /**
  * So we can close the real zip entry and still
- * effectively work with it.
+ *  effectively work with it.
  * Holds the (decompressed!) data in memory (or since POI 5.1.0, possibly in a temp file), so
- * close this as soon as you can!
- *
+ *  close this as soon as you can!
  * @see ZipInputStreamZipEntrySource#setThresholdBytesForTempFiles(int)
  */
-/* package */ class ZipArchiveFakeEntry extends ZipArchiveEntry implements Closeable {
+public final class ZipArchiveFakeEntry extends ZipArchiveEntry implements Closeable {
     private static final String TAG = "ZipArchiveFakeEntry";
 
     // how large a single entry in a zip-file should become at max
@@ -51,12 +47,22 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.IOUtils;
     private static final int DEFAULT_MAX_ENTRY_SIZE = 100_000_000;
     private static int MAX_ENTRY_SIZE = DEFAULT_MAX_ENTRY_SIZE;
 
+    /**
+     * Set the maximum size of a single entry in a zip-file.
+     * @param maxEntrySize number of bytes at which a zip entry is regarded as too large for holding in memory
+     *                     - defaults to 100_000_000 (approx 100Mb). A value of -1 means the default value is used.
+     */
     public static void setMaxEntrySize(int maxEntrySize) {
-        MAX_ENTRY_SIZE = maxEntrySize;
+        if(maxEntrySize < 0) {
+            MAX_ENTRY_SIZE = DEFAULT_MAX_ENTRY_SIZE;
+        } else {
+            MAX_ENTRY_SIZE = maxEntrySize;
+        }
     }
 
     public static int getMaxEntrySize() {
-        return MAX_ENTRY_SIZE;
+        final int ioMaxSize = IOUtils.getByteArrayMaxOverride();
+        return ioMaxSize < 0 ? MAX_ENTRY_SIZE : Math.min(MAX_ENTRY_SIZE, ioMaxSize);
     }
 
     private byte[] data;
@@ -69,7 +75,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.IOUtils;
         final long entrySize = entry.getSize();
 
         final int threshold = ZipInputStreamZipEntrySource.getThresholdBytesForTempFiles();
-        if (threshold >= 0 && entrySize >= threshold) {
+        if (threshold >= 0 && (entrySize >= threshold || entrySize == -1)) {
             if (ZipInputStreamZipEntrySource.shouldEncryptTempFiles()) {
                 encryptedTempData = new EncryptedTempData();
                 try (OutputStream os = encryptedTempData.getOutputStream()) {
@@ -77,7 +83,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.IOUtils;
                 }
             } else {
                 tempFile = TempFile.createTempFile("poi-zip-entry", ".tmp");
-                Log.i(TAG, String.format("created for temp file %s for zip entry %s of size %d bytes", tempFile.getAbsolutePath(), entry.getName(), entrySize));
+                Log.i(TAG, String.format("Creating temp file %s for zip entry %s of size %s bytes", tempFile.getAbsolutePath(), entry.getName(), entrySize));
                 IOUtils.copy(inp, tempFile);
             }
         } else {
@@ -87,16 +93,15 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.IOUtils;
 
             // Grab the de-compressed contents for later
             data = (entrySize == -1) ? IOUtils.toByteArrayWithMaxLength(inp, getMaxEntrySize()) :
-                    IOUtils.toByteArray(inp, (int) entrySize, getMaxEntrySize());
+                    IOUtils.toByteArray(inp, entrySize, getMaxEntrySize());
         }
     }
 
     /**
      * Returns zip entry.
-     *
      * @return input stream
      * @throws IOException since POI 5.2.0,
-     *                     an IOException can occur if the optional temp file has been removed (was a RuntimeException in POI 5.1.0)
+     * an IOException can occur if the optional temp file has been removed (was a RuntimeException in POI 5.1.0)
      * @see ZipInputStreamZipEntrySource#setThresholdBytesForTempFiles(int)
      */
     public InputStream getInputStream() throws IOException {
@@ -121,7 +126,6 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.IOUtils;
 
     /**
      * Deletes any temp files and releases any byte arrays.
-     *
      * @throws IOException If closing the entry fails.
      * @since POI 5.1.0
      */

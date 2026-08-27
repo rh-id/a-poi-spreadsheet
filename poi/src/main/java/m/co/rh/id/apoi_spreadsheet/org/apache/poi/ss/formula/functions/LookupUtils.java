@@ -14,10 +14,12 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -40,6 +42,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.StringEval;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.ValueEval;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
 
+
 /**
  * Common functionality used by VLOOKUP, HLOOKUP, LOOKUP and MATCH
  */
@@ -58,9 +61,7 @@ public final class LookupUtils {
             this.intValue = intValue;
         }
 
-        public int getIntValue() {
-            return intValue;
-        }
+        public int getIntValue() { return intValue; }
     }
 
     public enum SearchMode {
@@ -75,21 +76,23 @@ public final class LookupUtils {
             this.intValue = intValue;
         }
 
-        public int getIntValue() {
-            return intValue;
-        }
+        public int getIntValue() { return intValue; }
     }
 
-    private static Map<Integer, MatchMode> matchModeMap = new HashMap<>();
-    private static Map<Integer, SearchMode> searchModeMap = new HashMap<>();
+    private static final Map<Integer, MatchMode> matchModeMap;
+    private static final Map<Integer, SearchMode> searchModeMap;
 
     static {
+        final Map<Integer, MatchMode> mmMap = new HashMap<>();
         for (MatchMode mode : MatchMode.values()) {
-            matchModeMap.put(mode.getIntValue(), mode);
+            mmMap.put(mode.getIntValue(), mode);
         }
+        matchModeMap = Collections.unmodifiableMap(mmMap);
+        final Map<Integer, SearchMode> smMap = new HashMap<>();
         for (SearchMode mode : SearchMode.values()) {
-            searchModeMap.put(mode.getIntValue(), mode);
+            smMap.put(mode.getIntValue(), mode);
         }
+        searchModeMap = Collections.unmodifiableMap(smMap);
     }
 
     public static MatchMode matchMode(int m) {
@@ -113,7 +116,6 @@ public final class LookupUtils {
      */
     public interface ValueVector {
         ValueEval getItem(int index);
-
         int getSize();
 
         default Iterator<Integer> indexIterator() {
@@ -160,8 +162,8 @@ public final class LookupUtils {
 
         public RowVector(TwoDEval tableArray, int rowIndex) {
             _rowIndex = rowIndex;
-            int lastRowIx = tableArray.getHeight() - 1;
-            if (rowIndex < 0 || rowIndex > lastRowIx) {
+            int lastRowIx =  tableArray.getHeight() - 1;
+            if(rowIndex < 0 || rowIndex > lastRowIx) {
                 throw new IllegalArgumentException("Specified row index (" + rowIndex
                         + ") is outside the allowed range (0.." + lastRowIx + ")");
             }
@@ -171,9 +173,9 @@ public final class LookupUtils {
 
         @Override
         public ValueEval getItem(int index) {
-            if (index > _size) {
+            if(index > _size) {
                 throw new ArrayIndexOutOfBoundsException("Specified index (" + index
-                        + ") is outside the allowed range (0.." + (_size - 1) + ")");
+                        + ") is outside the allowed range (0.." + (_size-1) + ")");
             }
             return _tableArray.getValue(_rowIndex, index);
         }
@@ -192,8 +194,8 @@ public final class LookupUtils {
 
         public ColumnVector(TwoDEval tableArray, int columnIndex) {
             _columnIndex = columnIndex;
-            int lastColIx = tableArray.getWidth() - 1;
-            if (columnIndex < 0 || columnIndex > lastColIx) {
+            int lastColIx =  tableArray.getWidth()-1;
+            if(columnIndex < 0 || columnIndex > lastColIx) {
                 throw new IllegalArgumentException("Specified column index (" + columnIndex
                         + ") is outside the allowed range (0.." + lastColIx + ")");
             }
@@ -203,13 +205,12 @@ public final class LookupUtils {
 
         @Override
         public ValueEval getItem(int index) {
-            if (index > _size) {
+            if(index > _size) {
                 throw new ArrayIndexOutOfBoundsException("Specified index (" + index
-                        + ") is outside the allowed range (0.." + (_size - 1) + ")");
+                        + ") is outside the allowed range (0.." + (_size-1) + ")");
             }
             return _tableArray.getValue(index, _columnIndex);
         }
-
         @Override
         public int getSize() {
             return _size;
@@ -227,14 +228,13 @@ public final class LookupUtils {
 
         @Override
         public ValueEval getItem(int index) {
-            if (index >= _size) {
+            if(index >= _size) {
                 throw new ArrayIndexOutOfBoundsException("Specified index (" + index
-                        + ") is outside the allowed range (0.." + (_size - 1) + ")");
+                        + ") is outside the allowed range (0.." + (_size-1) + ")");
             }
             int sheetIndex = _re.getFirstSheetIndex() + index;
             return _re.getInnerValueEval(sheetIndex);
         }
-
         @Override
         public int getSize() {
             return _size;
@@ -244,11 +244,9 @@ public final class LookupUtils {
     public static ValueVector createRowVector(TwoDEval tableArray, int relativeRowIndex) {
         return new RowVector(tableArray, relativeRowIndex);
     }
-
     public static ValueVector createColumnVector(TwoDEval tableArray, int relativeColumnIndex) {
         return new ColumnVector(tableArray, relativeColumnIndex);
     }
-
     /**
      * @return {@code null} if the supplied area is neither a single row nor a single column
      */
@@ -272,7 +270,7 @@ public final class LookupUtils {
      * types, and/or is unordered.  Contrary to suggestions in some Excel documentation, there
      * does not appear to be a universal ordering across types.  The binary search algorithm used
      * changes behaviour when the evaluated 'mid' value has a different type to the lookup value.<p>
-     * <p>
+     *
      * A simple int might have done the same job, but there is risk in confusion with the well
      * known {@code Comparable.compareTo()} and {@code Comparator.compare()} which both use
      * a ubiquitous 3 value result encoding.
@@ -284,7 +282,7 @@ public final class LookupUtils {
         private final boolean _isGreaterThan;
 
         private CompareResult(boolean isTypeMismatch, int simpleCompareResult) {
-            if (isTypeMismatch) {
+            if(isTypeMismatch) {
                 _isTypeMismatch = true;
                 _isLessThan = false;
                 _isEqual = false;
@@ -296,25 +294,24 @@ public final class LookupUtils {
                 _isGreaterThan = simpleCompareResult > 0;
             }
         }
-
         public static final CompareResult TYPE_MISMATCH = new CompareResult(true, 0);
         public static final CompareResult LESS_THAN = new CompareResult(false, -1);
         public static final CompareResult EQUAL = new CompareResult(false, 0);
         public static final CompareResult GREATER_THAN = new CompareResult(false, +1);
 
         public static CompareResult valueOf(int simpleCompareResult) {
-            if (simpleCompareResult < 0) {
+            if(simpleCompareResult < 0) {
                 return LESS_THAN;
             }
-            if (simpleCompareResult > 0) {
+            if(simpleCompareResult > 0) {
                 return GREATER_THAN;
             }
             return EQUAL;
         }
 
         public static CompareResult valueOf(boolean matches) {
-            if (matches) {
-                return EQUAL;
+            if(matches) {
+                return EQUAL ;
             }
             return LESS_THAN;
         }
@@ -323,19 +320,15 @@ public final class LookupUtils {
         public boolean isTypeMismatch() {
             return _isTypeMismatch;
         }
-
         public boolean isLessThan() {
             return _isLessThan;
         }
-
         public boolean isEqual() {
             return _isEqual;
         }
-
         public boolean isGreaterThan() {
             return _isGreaterThan;
         }
-
         public String toString() {
             return getClass().getName() + " [" +
                     formatAsString() +
@@ -343,16 +336,16 @@ public final class LookupUtils {
         }
 
         private String formatAsString() {
-            if (_isTypeMismatch) {
+            if(_isTypeMismatch) {
                 return "TYPE_MISMATCH";
             }
-            if (_isLessThan) {
+            if(_isLessThan) {
                 return "LESS_THAN";
             }
-            if (_isEqual) {
+            if(_isEqual) {
                 return "EQUAL";
             }
-            if (_isGreaterThan) {
+            if(_isGreaterThan) {
                 return "GREATER_THAN";
             }
             // toString must be reliable
@@ -371,14 +364,12 @@ public final class LookupUtils {
     private static abstract class LookupValueComparerBase implements LookupValueComparer {
 
         private final Class<? extends ValueEval> _targetClass;
-
         protected LookupValueComparerBase(ValueEval targetValue) {
-            if (targetValue == null) {
+            if(targetValue == null) {
                 throw new IllegalStateException("targetValue cannot be null");
             }
             _targetClass = targetValue.getClass();
         }
-
         @Override
         public final CompareResult compareTo(ValueEval other) {
             if (other == null) {
@@ -389,18 +380,13 @@ public final class LookupUtils {
             }
             return compareSameType(other);
         }
-
         public String toString() {
             return getClass().getName() + " [" +
                     getValueAsString() +
                     "]";
         }
-
         protected abstract CompareResult compareSameType(ValueEval other);
-
-        /**
-         * used only for debug purposes
-         */
+        /** used only for debug purposes */
         protected abstract String getValueAsString();
     }
 
@@ -436,7 +422,6 @@ public final class LookupUtils {
 
             return CompareResult.valueOf(_value.compareToIgnoreCase(stringValue));
         }
-
         @Override
         protected String getValueAsString() {
             return _value;
@@ -447,7 +432,7 @@ public final class LookupUtils {
 
         static StringEval convertToStringEval(ValueEval eval) {
             if (eval instanceof StringEval) {
-                return (StringEval) eval;
+                return (StringEval)eval;
             }
             String sv = OperandResolver.coerceValueToString(eval);
             return new StringEval(sv);
@@ -470,19 +455,16 @@ public final class LookupUtils {
             super(ne);
             _value = ne.getNumberValue();
         }
-
         @Override
         protected CompareResult compareSameType(ValueEval other) {
             NumberEval ne = (NumberEval) other;
             return CompareResult.valueOf(Double.compare(_value, ne.getNumberValue()));
         }
-
         @Override
         protected String getValueAsString() {
             return String.valueOf(_value);
         }
     }
-
     private static final class BooleanLookupComparer extends LookupValueComparerBase {
         private final boolean _value;
 
@@ -490,21 +472,19 @@ public final class LookupUtils {
             super(be);
             _value = be.getBooleanValue();
         }
-
         @Override
         protected CompareResult compareSameType(ValueEval other) {
             BoolEval be = (BoolEval) other;
             boolean otherVal = be.getBooleanValue();
-            if (_value == otherVal) {
+            if(_value == otherVal) {
                 return CompareResult.EQUAL;
             }
             // TRUE > FALSE
-            if (_value) {
+            if(_value) {
                 return CompareResult.GREATER_THAN;
             }
             return CompareResult.LESS_THAN;
         }
-
         @Override
         protected String getValueAsString() {
             return String.valueOf(_value);
@@ -530,30 +510,29 @@ public final class LookupUtils {
      *      <tr><td>""</td><td>&nbsp;</td><td>#REF!</td></tr>
      *      <tr><td>&lt;blank&gt;</td><td>&nbsp;</td><td>#VALUE!</td></tr>
      *    </table><br>
-     * <p>
-     * Note - out of range errors (result index too high) are handled by the caller.
      *
+     * Note - out of range errors (result index too high) are handled by the caller.
      * @return column or row index as a zero-based value, never negative.
      * @throws EvaluationException when the specified arg cannot be coerced to a non-negative integer
      */
     public static int resolveRowOrColIndexArg(ValueEval rowColIndexArg, int srcCellRow, int srcCellCol) throws EvaluationException {
-        if (rowColIndexArg == null) {
+        if(rowColIndexArg == null) {
             throw new IllegalArgumentException("argument must not be null");
         }
 
         ValueEval veRowColIndexArg;
         try {
-            veRowColIndexArg = OperandResolver.getSingleValue(rowColIndexArg, srcCellRow, (short) srcCellCol);
+            veRowColIndexArg = OperandResolver.getSingleValue(rowColIndexArg, srcCellRow, (short)srcCellCol);
         } catch (EvaluationException e) {
             // All errors get translated to #REF!
             throw EvaluationException.invalidRef();
         }
         int oneBasedIndex;
-        if (veRowColIndexArg instanceof StringEval) {
+        if(veRowColIndexArg instanceof StringEval) {
             StringEval se = (StringEval) veRowColIndexArg;
             String strVal = se.getStringValue();
             Double dVal = OperandResolver.parseDouble(strVal);
-            if (dVal == null) {
+            if(dVal == null) {
                 // String does not resolve to a number. Raise #REF! error.
                 throw EvaluationException.invalidRef();
                 // This includes text booleans "TRUE" and "FALSE".  They are not valid.
@@ -570,6 +549,7 @@ public final class LookupUtils {
     }
 
 
+
     /**
      * The second argument (table_array) should be an area ref, but can actually be a cell ref, in
      * which case it is interpreted as a 1x1 area ref.  Other scalar values cause #VALUE! error.
@@ -579,7 +559,7 @@ public final class LookupUtils {
             return (TwoDEval) eval;
         }
 
-        if (eval instanceof RefEval) {
+        if(eval instanceof RefEval) {
             RefEval refEval = (RefEval) eval;
             // Make this cell ref look like a 1x1 area ref.
 
@@ -592,24 +572,23 @@ public final class LookupUtils {
 
     /**
      * Resolves the last (optional) parameter (<b>range_lookup</b>) to the VLOOKUP and HLOOKUP functions.
-     *
      * @param rangeLookupArg must not be {@code null}
      */
     public static boolean resolveRangeLookupArg(ValueEval rangeLookupArg, int srcCellRow, int srcCellCol) throws EvaluationException {
 
         ValueEval valEval = OperandResolver.getSingleValue(rangeLookupArg, srcCellRow, srcCellCol);
-        if (valEval == MissingArgEval.instance) {
+        if(valEval == MissingArgEval.instance) {
             // Tricky:
             // forth arg exists but is not supplied: "=VLOOKUP(A1,A2:A4,2,)"
             return false;
         }
-        if (valEval instanceof BlankEval) {
+        if(valEval instanceof BlankEval) {
             // Tricky:
             // fourth arg supplied but evaluates to blank
             // this does not get the default value
             return false;
         }
-        if (valEval instanceof BoolEval) {
+        if(valEval instanceof BoolEval) {
             // Happy day flow
             BoolEval boolEval = (BoolEval) valEval;
             return boolEval.getBooleanValue();
@@ -617,14 +596,14 @@ public final class LookupUtils {
 
         if (valEval instanceof StringEval) {
             String stringValue = ((StringEval) valEval).getStringValue();
-            if (stringValue.length() < 1) {
+            if(stringValue.isEmpty()) {
                 // More trickiness:
                 // Empty string is not the same as BlankEval.  It causes #VALUE! error
                 throw EvaluationException.invalidValue();
             }
             // TODO move parseBoolean to OperandResolver
             Boolean b = Countif.parseBoolean(stringValue);
-            if (b != null) {
+            if(b != null) {
                 // string converted to boolean OK
                 return b;
             }
@@ -646,12 +625,12 @@ public final class LookupUtils {
     public static int lookupFirstIndexOfValue(ValueEval lookupValue, ValueVector vector, boolean isRangeLookup) throws EvaluationException {
         LookupValueComparer lookupComparer = createLookupComparer(lookupValue, isRangeLookup, false);
         int result;
-        if (isRangeLookup) {
+        if(isRangeLookup) {
             result = performBinarySearch(vector, lookupComparer);
         } else {
             result = lookupFirstIndexOfValue(lookupComparer, vector, MatchMode.ExactMatch);
         }
-        if (result < 0) {
+        if(result < 0) {
             throw new EvaluationException(ErrorEval.NA);
         }
         return result;
@@ -661,7 +640,7 @@ public final class LookupUtils {
         ValueEval modifiedLookup = lookupValue;
         if (lookupValue instanceof StringEval &&
                 (matchMode == MatchMode.ExactMatchFallbackToLargerValue || matchMode == MatchMode.ExactMatchFallbackToSmallerValue)) {
-            String lookupText = ((StringEval) lookupValue).getStringValue();
+            String lookupText = ((StringEval)lookupValue).getStringValue();
             StringBuilder sb = new StringBuilder(lookupText.length());
             boolean containsWildcard = false;
             for (char c : lookupText.toCharArray()) {
@@ -692,7 +671,7 @@ public final class LookupUtils {
         } else {
             result = lookupFirstIndexOfValue(lookupComparer, vector, matchMode);
         }
-        if (result < 0) {
+        if(result < 0) {
             throw new EvaluationException(ErrorEval.NA);
         }
         return result;
@@ -700,10 +679,9 @@ public final class LookupUtils {
 
     /**
      * Finds first (lowest index) matching occurrence of specified value.
-     *
      * @param lookupComparer the value to be found in column or row vector
-     * @param vector         the values to be searched. For VLOOKUP this is the first column of the
-     *                       tableArray. For HLOOKUP this is the first row of the tableArray.
+     * @param vector the values to be searched. For VLOOKUP this is the first column of the
+     *  tableArray. For HLOOKUP this is the first row of the tableArray.
      * @param matchMode
      * @return zero based index into the vector, -1 if value cannot be found
      */
@@ -714,10 +692,9 @@ public final class LookupUtils {
 
     /**
      * Finds last (greatest index) matching occurrence of specified value.
-     *
      * @param lookupComparer the value to be found in column or row vector
-     * @param vector         the values to be searched. For VLOOKUP this is the first column of the
-     *                       tableArray. For HLOOKUP this is the first row of the tableArray.
+     * @param vector the values to be searched. For VLOOKUP this is the first column of the
+     *  tableArray. For HLOOKUP this is the first row of the tableArray.
      * @param matchMode
      * @return zero based index into the vector, -1 if value cannot be found
      */
@@ -780,7 +757,7 @@ public final class LookupUtils {
         BinarySearchIndexes bsi = new BinarySearchIndexes(vector.getSize());
         while (true) {
             int i = bsi.getMidIx();
-            if (i < 0 || alreadySearched.contains(i)) {
+            if(i < 0 || alreadySearched.contains(i)) {
                 return bestMatchIdx;
             }
             alreadySearched.add(i);
@@ -851,7 +828,7 @@ public final class LookupUtils {
          */
         public int getMidIx() {
             int ixDiff = _highIx - _lowIx;
-            if (ixDiff < 2) {
+            if(ixDiff < 2) {
                 return -1;
             }
             return _lowIx + (ixDiff / 2);
@@ -860,90 +837,86 @@ public final class LookupUtils {
         public int getLowIx() {
             return _lowIx;
         }
-
         public int getHighIx() {
             return _highIx;
         }
-
         public void narrowSearch(int midIx, boolean isLessThan) {
-            if (isLessThan) {
+            if(isLessThan) {
                 _highIx = midIx;
             } else {
                 _lowIx = midIx;
             }
         }
     }
-
     /**
      * Excel has funny behaviour when the some elements in the search vector are the wrong type.
+     *
      */
     private static int performBinarySearch(ValueVector vector, LookupValueComparer lookupComparer) {
         // both low and high indexes point to values assumed too low and too high.
         BinarySearchIndexes bsi = new BinarySearchIndexes(vector.getSize());
 
-        while (true) {
+        while(true) {
             int midIx = bsi.getMidIx();
 
-            if (midIx < 0) {
+            if(midIx < 0) {
                 return bsi.getLowIx();
             }
             CompareResult cr = lookupComparer.compareTo(vector.getItem(midIx));
-            if (cr.isTypeMismatch()) {
+            if(cr.isTypeMismatch()) {
                 int newMidIx = handleMidValueTypeMismatch(lookupComparer, vector, bsi, midIx, false);
-                if (newMidIx < 0) {
+                if(newMidIx < 0) {
                     continue;
                 }
                 midIx = newMidIx;
                 cr = lookupComparer.compareTo(vector.getItem(midIx));
             }
-            if (cr.isEqual()) {
+            if(cr.isEqual()) {
                 return findLastIndexInRunOfEqualValues(lookupComparer, vector, midIx, bsi.getHighIx());
             }
             bsi.narrowSearch(midIx, cr.isLessThan());
         }
     }
-
     /**
      * Excel seems to handle mismatched types initially by just stepping 'mid' ix forward to the
      * first compatible value.
-     *
-     * @param midIx   'mid' index (value which has the wrong type)
+     * @param midIx 'mid' index (value which has the wrong type)
      * @param reverse the data is sorted in reverse order
      * @return usually -1, signifying that the BinarySearchIndex has been narrowed to the new mid
      * index.  Zero or greater signifies that an exact match for the lookup value was found
      */
     private static int handleMidValueTypeMismatch(LookupValueComparer lookupComparer, ValueVector vector,
-                                                  BinarySearchIndexes bsi, int midIx, boolean reverse) {
+            BinarySearchIndexes bsi, int midIx, boolean reverse) {
         int newMid = midIx;
         int highIx = bsi.getHighIx();
 
-        while (true) {
+        while(true) {
             newMid++;
-            if (newMid == highIx) {
+            if(newMid == highIx) {
                 // every element from midIx to highIx was the wrong type
                 // move highIx down to the low end of the mid values
                 bsi.narrowSearch(midIx, true);
                 return -1;
             }
             CompareResult cr = lookupComparer.compareTo(vector.getItem(newMid));
-            if (cr.isLessThan() && !reverse && newMid == highIx - 1) {
+            if(cr.isLessThan() && !reverse && newMid == highIx-1) {
                 // move highIx down to the low end of the mid values
                 bsi.narrowSearch(midIx, true);
                 return -1;
                 // but only when "newMid == highIx-1"? slightly weird.
                 // It would seem more efficient to always do this.
-            } else if (cr.isGreaterThan() && reverse && newMid == highIx - 1) {
+            } else if(cr.isGreaterThan() && reverse && newMid == highIx-1) {
                 // move highIx down to the low end of the mid values
                 bsi.narrowSearch(midIx, true);
                 return -1;
                 // but only when "newMid == highIx-1"? slightly weird.
                 // It would seem more efficient to always do this.
             }
-            if (cr.isTypeMismatch()) {
+            if(cr.isTypeMismatch()) {
                 // keep stepping over values until the right type is found
                 continue;
             }
-            if (cr.isEqual()) {
+            if(cr.isEqual()) {
                 return newMid;
             }
             // Note - if moving highIx down (due to lookup<vector[newMid]),
@@ -957,16 +930,15 @@ public final class LookupUtils {
             return -1;
         }
     }
-
     /**
      * Once the binary search has found a single match, (V/H)LOOKUP steps one by one over subsequent
      * values to choose the last matching item.
      */
     private static int findLastIndexInRunOfEqualValues(LookupValueComparer lookupComparer, ValueVector vector,
-                                                       int firstFoundIndex, int maxIx) {
-        for (int i = firstFoundIndex + 1; i < maxIx; i++) {
-            if (!lookupComparer.compareTo(vector.getItem(i)).isEqual()) {
-                return i - 1;
+                int firstFoundIndex, int maxIx) {
+        for(int i=firstFoundIndex+1; i<maxIx; i++) {
+            if(!lookupComparer.compareTo(vector.getItem(i)).isEqual()) {
+                return i-1;
             }
         }
         return maxIx - 1;

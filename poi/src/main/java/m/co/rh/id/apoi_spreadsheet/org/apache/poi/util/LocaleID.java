@@ -15,16 +15,20 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.util;
 
 import static java.util.Calendar.SATURDAY;
 import static java.util.Calendar.SUNDAY;
 
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 
 /**
  * Locale Collection
@@ -508,11 +512,12 @@ public enum LocaleID {
     private final int defaultCodepage;
     private final int firstWeekday;
 
-    private static final Map<String, LocaleID> languageTagLookup =
-        Stream.of(values()).filter(LocaleID::isValid).collect(Collectors.toMap(LocaleID::getLanguageTag, Function.identity()));
+    private static final Map<String, LocaleID> languageTagLookup = Collections.unmodifiableMap(
+        Stream.of(values()).filter(LocaleID::isValid)
+            .collect(Collectors.toMap(LocaleID::getLanguageTag, Function.identity())));
 
-    private static final Map<Integer, LocaleID> lcidLookup =
-        Stream.of(values()).collect(Collectors.toMap(LocaleID::getLcid, Function.identity()));
+    private static final Map<Integer, LocaleID> lcidLookup = Collections.unmodifiableMap(
+        Stream.of(values()).collect(Collectors.toMap(LocaleID::getLcid, Function.identity())));
 
     LocaleID(int lcid, String windowsId, String languageTag, String description, int defaultCodepage, int firstWeekday) {
         this.lcid = lcid;

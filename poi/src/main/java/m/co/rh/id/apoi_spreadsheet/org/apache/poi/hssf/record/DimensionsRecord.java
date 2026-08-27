@@ -15,8 +15,9 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record;
 
@@ -27,6 +28,7 @@ import java.util.function.Supplier;
 
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.GenericRecordUtil;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndianOutput;
+
 
 /**
  * Provides the minumum and maximum bounds of a sheet.
@@ -39,30 +41,29 @@ public final class DimensionsRecord extends StandardRecord {
     private static final String TAG = "DimensionsRecord";
 
     public static final short sid = 0x200;
-    private int field_1_first_row;
-    private int field_2_last_row;   // plus 1
-    private short field_3_first_col;
-    private short field_4_last_col;
-    private short field_5_zero;       // must be 0 (reserved)
+    private int               field_1_first_row;
+    private int               field_2_last_row;   // plus 1
+    private short             field_3_first_col;
+    private short             field_4_last_col;
+    private short             field_5_zero;       // must be 0 (reserved)
 
-    public DimensionsRecord() {
-    }
+    public DimensionsRecord() {}
 
     public DimensionsRecord(DimensionsRecord other) {
         super(other);
         field_1_first_row = other.field_1_first_row;
-        field_2_last_row = other.field_2_last_row;
+        field_2_last_row  = other.field_2_last_row;
         field_3_first_col = other.field_3_first_col;
-        field_4_last_col = other.field_4_last_col;
-        field_5_zero = other.field_5_zero;
+        field_4_last_col  = other.field_4_last_col;
+        field_5_zero      = other.field_5_zero;
     }
 
     public DimensionsRecord(RecordInputStream in) {
         field_1_first_row = in.readInt();
-        field_2_last_row = in.readInt();
+        field_2_last_row  = in.readInt();
         field_3_first_col = in.readShort();
-        field_4_last_col = in.readShort();
-        field_5_zero = in.readShort();
+        field_4_last_col  = in.readShort();
+        field_5_zero      = in.readShort();
         //POI-61045 -- in practice, there can be an extra 2 bytes
         if (in.available() == 2) {
             Log.i(TAG, "DimensionsRecord has extra 2 bytes.");
@@ -72,81 +73,81 @@ public final class DimensionsRecord extends StandardRecord {
 
     /**
      * set the first row number for the sheet
-     *
      * @param row - first row on the sheet
      */
 
-    public void setFirstRow(int row) {
+    public void setFirstRow(int row)
+    {
         field_1_first_row = row;
     }
 
     /**
      * set the last row number for the sheet
-     *
      * @param row - last row on the sheet
      */
 
-    public void setLastRow(int row) {
+    public void setLastRow(int row)
+    {
         field_2_last_row = row;
     }
 
     /**
      * set the first column number for the sheet
-     *
-     * @param col first column on the sheet
+     * @param col  first column on the sheet
      */
 
-    public void setFirstCol(short col) {
+    public void setFirstCol(short col)
+    {
         field_3_first_col = col;
     }
 
     /**
      * set the last col number for the sheet
-     *
-     * @param col last column on the sheet
+     * @param col  last column on the sheet
      */
 
-    public void setLastCol(short col) {
+    public void setLastCol(short col)
+    {
         field_4_last_col = col;
     }
 
     /**
      * get the first row number for the sheet
-     *
      * @return row - first row on the sheet
      */
 
-    public int getFirstRow() {
+    public int getFirstRow()
+    {
         return field_1_first_row;
     }
 
     /**
      * get the last row number for the sheet
-     *
      * @return row - last row on the sheet
      */
 
-    public int getLastRow() {
+    public int getLastRow()
+    {
         return field_2_last_row;
     }
 
     /**
      * get the first column number for the sheet
-     *
      * @return column - first column on the sheet
      */
 
-    public short getFirstCol() {
+    public short getFirstCol()
+    {
         return field_3_first_col;
     }
 
     /**
      * get the last col number for the sheet
-     *
      * @return column - last column on the sheet
      */
 
-    public short getLastCol() {
+    public short getLastCol()
+    {
         return field_4_last_col;
     }
 
@@ -155,20 +156,21 @@ public final class DimensionsRecord extends StandardRecord {
         out.writeInt(getLastRow());
         out.writeShort(getFirstCol());
         out.writeShort(getLastCol());
-        out.writeShort((short) 0);
+        out.writeShort(( short ) 0);
     }
 
     protected int getDataSize() {
         return 14;
     }
 
-    public short getSid() {
+    public short getSid()
+    {
         return sid;
     }
 
     @Override
     public DimensionsRecord copy() {
-        return new DimensionsRecord(this);
+      return new DimensionsRecord(this);
     }
 
     @Override
@@ -179,11 +181,11 @@ public final class DimensionsRecord extends StandardRecord {
     @Override
     public Map<String, Supplier<?>> getGenericProperties() {
         return GenericRecordUtil.getGenericProperties(
-                "firstRow", this::getFirstRow,
-                "lastRow", this::getLastRow,
-                "firstColumn", this::getFirstCol,
-                "lastColumn", this::getLastCol,
-                "zero", () -> field_5_zero
+            "firstRow", this::getFirstRow,
+            "lastRow", this::getLastRow,
+            "firstColumn", this::getFirstCol,
+            "lastColumn", this::getLastCol,
+            "zero", () -> field_5_zero
         );
     }
 }

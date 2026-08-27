@@ -15,11 +15,14 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Objects;
+
 
 /**
  * A part relationship.
@@ -85,18 +88,20 @@ public final class PackageRelationship {
 
     /**
      * Constructor.
+     *
+     * @throws NullPointerException if inputs are null
      */
     public PackageRelationship(OPCPackage pkg, PackagePart sourcePart,
             URI targetUri, TargetMode targetMode, String relationshipType,
             String id) {
         if (pkg == null)
-            throw new IllegalArgumentException("pkg");
+            throw new NullPointerException("pkg cannot be null");
         if (targetUri == null)
-            throw new IllegalArgumentException("targetUri");
+            throw new NullPointerException("targetUri cannot be null");
         if (relationshipType == null)
-            throw new IllegalArgumentException("relationshipType");
+            throw new NullPointerException("relationshipType cannot be null");
         if (id == null)
-            throw new IllegalArgumentException("id");
+            throw new NullPointerException("id cannot be null");
 
         this.container = pkg;
         this.source = sourcePart;
@@ -183,6 +188,12 @@ public final class PackageRelationship {
         // If it's an external target, we don't
         //  need to apply our normal validation rules
         if(targetMode == TargetMode.EXTERNAL) {
+            return targetUri;
+        }
+
+        // If it's an internal hyperlink target, we don't
+        //  need to apply our normal validation rules
+        if (PackageRelationshipTypes.HYPERLINK_PART.equals(relationshipType)) {
             return targetUri;
         }
 

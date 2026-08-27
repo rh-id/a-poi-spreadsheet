@@ -15,15 +15,19 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.binary;
+
+import com.zaxxer.sparsebits.SparseBitSet;
 
 import java.io.IOException;
 import java.io.InputStream;
 
-import com.zaxxer.sparsebits.SparseBitSet;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.IOUtils;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndianInputStream;
+
 
 /**
  * Experimental parser for Microsoft's ooxml xlsb format.
@@ -107,7 +111,7 @@ public abstract class XSSFBParser {
 
         }
         if (records == null || records.get(recordId)) {
-            byte[] buff = IOUtils.safelyAllocate(recordLength, MAX_RECORD_LENGTH);
+            byte[] buff = IOUtils.safelyAllocate(recordLength, getMaxRecordLength());
             is.readFully(buff);
             handleRecord(recordId, buff);
         } else {

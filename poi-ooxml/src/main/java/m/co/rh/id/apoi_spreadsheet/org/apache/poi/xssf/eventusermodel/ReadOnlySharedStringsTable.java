@@ -14,16 +14,23 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.eventusermodel;
 
 import static m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFRelation.NS_SPREADSHEETML;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.xml.parsers.ParserConfigurationException;
 
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.OPCPackage;
@@ -33,11 +40,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.XMLHelper;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.model.SharedStrings;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFRelation;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFRichTextString;
-import org.xml.sax.Attributes;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.DefaultHandler;
+
 
 /**
  * <p>This is a lightweight way to process the Shared Strings
@@ -248,7 +251,10 @@ public class ReadOnlySharedStringsTable extends DefaultHandler implements Shared
             String uniqueCount = attributes.getValue("uniqueCount");
             if(uniqueCount != null) this.uniqueCount = (int) Long.parseLong(uniqueCount);
 
-            this.strings = new ArrayList<>(this.uniqueCount);
+            this.strings = new ArrayList<>(
+                    // corrupted files may have a very large number here, so only use it
+                    // up to some size as guideline for pre-allocating the list
+                    Math.min(this.uniqueCount, 100_000));
             characters = new StringBuilder(64);
         } else if ("si".equals(localName)) {
             if (characters != null) {

@@ -1,28 +1,7 @@
-/*
- *  ====================================================================
- *    Licensed to the Apache Software Foundation (ASF) under one or more
- *    contributor license agreements.  See the NOTICE file distributed with
- *    this work for additional information regarding copyright ownership.
- *    The ASF licenses this file to You under the Apache License, Version 2.0
- *    (the "License"); you may not use this file except in compliance with
- *    the License.  You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
- * ====================================================================
- */
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel;
 
-import javax.xml.namespace.QName;
-
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.POIXMLDocumentPart;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
 import org.apache.xmlbeans.XmlCursor;
 import org.openxmlformats.schemas.drawingml.x2006.main.CTGraphicalObjectData;
 import org.openxmlformats.schemas.drawingml.x2006.main.CTNonVisualDrawingProps;
@@ -35,6 +14,12 @@ import org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTGraphical
 import org.openxmlformats.schemas.officeDocument.x2006.relationships.STRelationshipId;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import javax.xml.namespace.QName;
+
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.POIXMLDocumentPart;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
+
 
 /**
  * Represents DrawingML GraphicalObjectFrame.
@@ -63,12 +48,15 @@ public final class XSSFGraphicFrame extends XSSFShape {
             for (int i = 0; i < nodes.getLength(); i++) {
                 final Node node = nodes.item(i);
                 // if the frame references a chart, associate the chart with this instance
-                if (node.getNodeName().equals("c:chart")) {
-                    // this better succeed or the document is invalid
-                    POIXMLDocumentPart relation = drawing.getRelationById(node.getAttributes().getNamedItem("r:id").getNodeValue());
-                    // Do XWPF charts need similar treatment?
-                    if (relation instanceof XSSFChart) {
-                        ((XSSFChart) relation).setGraphicFrame(this);
+                if (node.getAttributes() != null) {
+                    Node namedItem = node.getAttributes().getNamedItem("r:id");
+                    if (node.getNodeName().equals("c:chart") && namedItem != null) {
+                        // this better succeed or the document is invalid
+                        POIXMLDocumentPart relation = drawing.getRelationById(namedItem.getNodeValue());
+                        // Do XWPF charts need similar treatment?
+                        if (relation instanceof XSSFChart) {
+                            ((XSSFChart) relation).setGraphicFrame(this);
+                        }
                     }
                 }
             }

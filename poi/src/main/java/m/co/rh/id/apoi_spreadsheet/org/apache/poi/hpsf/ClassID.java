@@ -15,6 +15,8 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.hpsf;
 
 import java.nio.ByteBuffer;
@@ -29,6 +31,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.common.usermodel.GenericRecord
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.GenericRecordUtil;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndianInput;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndianOutput;
+
 
 /**
  * Represents a class ID (16 bytes). Unlike other little-endian
@@ -109,11 +112,12 @@ public class ClassID implements Duplicatable, GenericRecord {
 
     /**
      * Gets the bytes making out the class ID. They are returned in correct order, i.e. big-endian.
+     * This no longer returns a reference to the internal byte array, but a copy of it.
      *
      * @return the bytes making out the class ID.
      */
     public byte[] getBytes() {
-        return bytes;
+        return bytes.clone();
     }
 
     /**
@@ -152,7 +156,7 @@ public class ClassID implements Duplicatable, GenericRecord {
         /* Read 8 bytes. */
         System.arraycopy(src, 8 + offset, bytes, 8, 8);
 
-        return bytes;
+        return bytes.clone();
     }
 
     /**

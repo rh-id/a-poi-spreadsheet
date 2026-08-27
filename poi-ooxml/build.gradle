@@ -44,10 +44,12 @@ android {
 dependencies {
     implementation project(':base')
     implementation project(':poi')
-    implementation 'org.apache.poi:poi-ooxml-full:5.2.5'
+    implementation 'org.apache.poi:poi-ooxml-full:5.5.1'
 
     implementation 'javax.xml.crypto:jsr105-api:1.0.1'
-    implementation 'org.apache.santuario:xmlsec:3.0.3'
+    implementation 'org.apache.santuario:xmlsec:3.0.6'
+    // xmlbeans 5.x requires log4j-api classes at runtime (logging-only shim; no backend bundled, output stays silent)
+    implementation 'org.apache.logging.log4j:log4j-api:2.24.3'
 
     // (Required) Writing and executing Unit Tests on the JUnit Platform
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
@@ -67,7 +69,7 @@ afterEvaluate {
                 // You can then customize attributes of the publication as shown below.
                 groupId = 'com.github.rh-id'
                 artifactId = 'a-poi-spreadsheet-ooxml'
-                version = '0.0.4'
+                version = '0.0.5'
                 pom {
                     name = 'a-poi-spreadsheet-ooxml'
                     description = 'Apache POI spreadsheet support for Android - OOXML (.xlsx) support adapted from Apache POI ooxml module'

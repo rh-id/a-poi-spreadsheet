@@ -14,8 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 /* ====================================================================
    This product contains an ASLv2 licensed version of the OOXML signer
    package from the eID Applet project
@@ -24,6 +24,7 @@
    ================================================================= */
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.dsig.services;
+
 
 import static m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.POIXMLTypeLoader.DEFAULT_XML_OPTIONS;
 import static m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.dsig.facets.SignatureFacet.OO_DIGSIG_NS;
@@ -52,7 +53,6 @@ import java.security.spec.AlgorithmParameterSpec;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
-
 import javax.xml.crypto.Data;
 import javax.xml.crypto.MarshalException;
 import javax.xml.crypto.OctetStreamData;
@@ -65,6 +65,7 @@ import javax.xml.crypto.dsig.spec.TransformParameterSpec;
 
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.util.DocumentHelper;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.SuppressForbidden;
+
 
 /**
  * JSR105 implementation of the RelationshipTransform transformation.
@@ -86,11 +87,9 @@ public class RelationshipTransformService extends TransformService {
      */
     public static class RelationshipTransformParameterSpec implements TransformParameterSpec {
         List<String> sourceIds = new ArrayList<>();
-
         public void addRelationshipReference(String relationshipId) {
-            sourceIds.add(relationshipId);
+                sourceIds.add(relationshipId);
         }
-
         public boolean hasSourceIds() {
             return !sourceIds.isEmpty();
         }
@@ -153,7 +152,7 @@ public class RelationshipTransformService extends TransformService {
                 Log.w(TAG, "no RelationshipReference/@SourceId parameters present");
             }
             for (XmlObject xo : xoList) {
-                String sourceId = ((CTRelationshipReference) xo).getSourceId();
+                String sourceId = ((CTRelationshipReference)xo).getSourceId();
                 Log.d(TAG, String.format("sourceId: %s", sourceId));
                 this.sourceIds.add(sourceId);
             }
@@ -166,7 +165,7 @@ public class RelationshipTransformService extends TransformService {
     public void marshalParams(XMLStructure parent, XMLCryptoContext context) throws MarshalException {
         Log.d(TAG, "marshallParams(parent,context)");
         DOMStructure domParent = (DOMStructure) parent;
-        Element parentNode = (Element) domParent.getNode();
+        Element parentNode = (Element)domParent.getNode();
         Document doc = parentNode.getOwnerDocument();
 
         for (String sourceId : this.sourceIds) {
@@ -205,11 +204,11 @@ public class RelationshipTransformService extends TransformService {
         // keep only those relationships which id is registered in the sourceIds
         Element root = doc.getDocumentElement();
         NodeList nl = root.getChildNodes();
-        TreeMap<String, Element> rsList = new TreeMap<>();
-        for (int i = nl.getLength() - 1; i >= 0; i--) {
+        TreeMap<String,Element> rsList = new TreeMap<>();
+        for (int i=nl.getLength()-1; i>=0; i--) {
             Node n = nl.item(i);
             if ("Relationship".equals(n.getLocalName())) {
-                Element el = (Element) n;
+                Element el = (Element)n;
                 String id = el.getAttribute("Id");
                 if (sourceIds.contains(id)) {
                     String targetMode = el.getAttribute("TargetMode");

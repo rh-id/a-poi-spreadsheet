@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.streaming;
 
@@ -30,10 +31,11 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.NotImplemented;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFSheet;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+
 /**
- * An variant of SXSSFWorkbook that avoids generating a temporary file and writes data directly to
+ * A variant of SXSSFWorkbook that avoids generating a temporary file and writes data directly to
  * the provided OutputStream.
- * <p>
+ *
  * This variant is experimental and APIs may change at short notice.
  *
  * @since 5.0.0
@@ -46,9 +48,7 @@ public class DeferredSXSSFWorkbook extends SXSSFWorkbook {
         this(null);
     }
 
-    public DeferredSXSSFWorkbook(int rowAccessWindowSize) {
-        this(null, rowAccessWindowSize);
-    }
+    public DeferredSXSSFWorkbook(int rowAccessWindowSize) { this(null, rowAccessWindowSize); }
 
     public DeferredSXSSFWorkbook(XSSFWorkbook workbook) {
         this(workbook, SXSSFWorkbook.DEFAULT_WINDOW_SIZE);
@@ -60,7 +60,7 @@ public class DeferredSXSSFWorkbook extends SXSSFWorkbook {
 
     @NotImplemented
     @Override
-    protected SheetDataWriter createSheetDataWriter() throws IOException {
+    protected SheetDataWriter createSheetDataWriter() {
         throw new IllegalStateException("Not supported by DeferredSXSSFWorkbook");
     }
 
@@ -69,11 +69,9 @@ public class DeferredSXSSFWorkbook extends SXSSFWorkbook {
     }
 
     @Override
-    protected ISheetInjector createSheetInjector(SXSSFSheet sxSheet) throws IOException {
+    protected ISheetInjector createSheetInjector(SXSSFSheet sxSheet) {
         DeferredSXSSFSheet ssxSheet = (DeferredSXSSFSheet) sxSheet;
-        return (output) -> {
-            ssxSheet.writeRows(output);
-        };
+        return ssxSheet::writeRows;
     }
 
     @Override

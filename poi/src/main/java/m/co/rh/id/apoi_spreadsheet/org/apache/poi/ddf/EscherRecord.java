@@ -16,6 +16,8 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ddf;
 
 import java.io.PrintWriter;
@@ -34,6 +36,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.GenericRecordXmlWriter;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndian;
 
+
 /**
  * The base abstract record from which all escher records are defined.  Subclasses will need
  * to define methods for serialization/deserialization and for determining the record size.
@@ -44,6 +47,10 @@ public abstract class EscherRecord implements Duplicatable, GenericRecord {
 
     private short _options;
     private short _recordId;
+
+    // arbitrarily selected; may need to increase
+    private static final int DEFAULT_MAX_NUMBER_OF_CHILDREN = 100_000;
+    protected static int MAX_NUMBER_OF_CHILDREN = DEFAULT_MAX_NUMBER_OF_CHILDREN;
 
     /**
      * Create a new instance
@@ -64,7 +71,7 @@ public abstract class EscherRecord implements Duplicatable, GenericRecord {
      * @param f the escher record factory
      * @return The number of bytes written.
      *
-     * @see #fillFields(byte[], int, m.co.rh.id.apoi_spreadsheet.org.apache.poi.ddf.EscherRecordFactory)
+     * @see #fillFields(byte[], int, org.apache.poi.ddf.EscherRecordFactory)
      */
     protected int fillFields( byte[] data, EscherRecordFactory f )
     {
@@ -82,6 +89,31 @@ public abstract class EscherRecord implements Duplicatable, GenericRecord {
      * @return          The number of bytes written.
      */
     public abstract int fillFields( byte[] data, int offset, EscherRecordFactory recordFactory );
+
+    /**
+     * Internal method to prevent too deep nesting/using too much memory.
+     *
+     * This is done by counting the level of "nesting" via the parameter.
+     *
+     * The default method just forwards to fillFields() so it does not properly
+     * handle nesting. Subclasses which do recursive calls need to pass
+     * around the nesting-level properly.
+     *
+     * Usually both fillFields() methods should be overwritten by subclasses,
+     * the one without the "nesting"-parameter should routes to this one in
+     * classes which overwrite this method and this method should be overwritten
+     * with the actual functionality to fill fields.
+     *
+     * @param data      The byte array containing the serialized escher
+     *                  records.
+     * @param offset    The offset into the byte array.
+     * @param recordFactory     A factory for creating new escher records.
+     * @param nesting   The current nesting factor, usually increased by one on each recursive call
+     * @return          The number of bytes written.
+     */
+    protected int fillFields(byte[] data, int offset, EscherRecordFactory recordFactory, int nesting) {
+        return fillFields(data, offset, recordFactory);
+    }
 
     /**
      * Reads the 8 byte header information and populates the <code>options</code>
@@ -170,7 +202,7 @@ public abstract class EscherRecord implements Duplicatable, GenericRecord {
      * @param data      the data array to serialize to.
      * @return          The number of bytes written.
      *
-     * @see #serialize(int, byte[], m.co.rh.id.apoi_spreadsheet.org.apache.poi.ddf.EscherSerializationListener)
+     * @see #serialize(int, byte[], org.apache.poi.ddf.EscherSerializationListener)
      */
     public int serialize( int offset, byte[] data)
     {
@@ -342,4 +374,18 @@ public abstract class EscherRecord implements Duplicatable, GenericRecord {
 
     @Override
     public abstract EscherRecord copy();
+
+    /**
+     * @param length the max number of children allowed for EscherRecords which support nesting
+     */
+    public static void setMaxNumberOfChildren(int length) {
+        MAX_NUMBER_OF_CHILDREN = length;
+    }
+
+    /**
+     * @return the max number of children allowed for EscherRecords which support nesting
+     */
+    public static int getMaxNumberOfChildren() {
+        return MAX_NUMBER_OF_CHILDREN;
+    }
 }

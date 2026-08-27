@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.hpsf;
 
@@ -43,6 +44,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndianByteArrayInpu
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndianConsts;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndianOutputStream;
 
+
 /**
  * Represents a section in a {@link PropertySet}.
  */
@@ -54,7 +56,7 @@ public class Section {
      * Maps property IDs to section-private PID strings. These
      * strings can be found in the property with ID 0.
      */
-    private Map<Long, String> dictionary;
+    private Map<Long,String> dictionary;
 
     /**
      * The section's format ID, {@link #getFormatID}.
@@ -76,7 +78,7 @@ public class Section {
     /**
      * This section's properties.
      */
-    private final Map<Long, Property> properties = new LinkedHashMap<>();
+    private final Map<Long,Property> properties = new LinkedHashMap<>();
 
     /**
      * This member is {@code true} if the last call to {@link
@@ -110,14 +112,16 @@ public class Section {
     }
 
 
+
     /**
      * Creates a Section instance from a byte array.
      *
-     * @param src    Contains the complete property set stream.
+     * @param src Contains the complete property set stream.
      * @param offset The position in the stream that points to the
-     *               section's format ID.
+     * section's format ID.
+     *
      * @throws UnsupportedEncodingException if the section's codepage is not
-     *                                      supported.
+     * supported.
      */
     public Section(final byte[] src, final int offset) throws UnsupportedEncodingException {
         /*
@@ -129,15 +133,14 @@ public class Section {
          * Read the offset from the stream's start and positions to
          * the section header.
          */
-        int offFix = (int) LittleEndian.getUInt(src, offset + ClassID.LENGTH);
+        int offFix = (int)LittleEndian.getUInt(src, offset + ClassID.LENGTH);
 
         // some input files have an invalid (padded?) offset, which need to be fixed
         // search for beginning of size field
         if (src[offFix] == 0) {
-            for (int i = 0; i < 3 && src[offFix] == 0; i++, offFix++) ;
+            for (int i=0; i<3 && src[offFix] == 0; i++,offFix++);
             // cross check with propertyCount field and the property list field
-            for (int i = 0; i < 3 && (src[offFix + 3] != 0 || src[offFix + 7] != 0 || src[offFix + 11] != 0); i++, offFix--)
-                ;
+            for (int i=0; i<3 && (src[offFix+3] != 0 || src[offFix+7] != 0 || src[offFix+11] != 0); i++,offFix--);
         }
 
         this._offset = offFix;
@@ -147,12 +150,12 @@ public class Section {
         /*
          * Read the section length.
          */
-        int size = (int) Math.min(leis.readUInt(), src.length - _offset);
+        int size = (int)Math.min(leis.readUInt(), src.length-_offset);
 
         /*
          * Read the number of properties.
          */
-        final int propertyCount = (int) leis.readUInt();
+        final int propertyCount = (int)leis.readUInt();
 
         /*
          * Read the properties. The offset is positioned at the first
@@ -179,7 +182,7 @@ public class Section {
          *    seconds pass reads the other properties.
          */
         /* Pass 1: Read the property list. */
-        final TreeBidiMap<Long, Long> offset2Id = new TreeBidiMap<>();
+        final TreeBidiMap<Long,Long> offset2Id = new TreeBidiMap<>();
         for (int i = 0; i < propertyCount; i++) {
             /* Read the property ID. */
             long id = leis.readUInt();
@@ -190,7 +193,7 @@ public class Section {
             offset2Id.put(off, id);
         }
 
-        Long cpOffset = offset2Id.getKey((long) PropertyIDMap.PID_CODEPAGE);
+        Long cpOffset = offset2Id.getKey((long)PropertyIDMap.PID_CODEPAGE);
 
         /* Look for the codepage. */
         int codepage = -1;
@@ -201,18 +204,18 @@ public class Section {
 
             if (type != Variant.VT_I2) {
                 throw new HPSFRuntimeException
-                        ("Value type of property ID 1 is not VT_I2 but " + type + ".");
+                    ("Value type of property ID 1 is not VT_I2 but " + type + ".");
             }
 
             /* Read the codepage number. */
-            codepage = leis.readUShort();
+            codepage =  leis.readUShort();
             setCodepage(codepage);
         }
 
 
         /* Pass 2: Read all properties - including the codepage property,
          * if available. */
-        for (Map.Entry<Long, Long> me : offset2Id.entrySet()) {
+        for (Map.Entry<Long,Long> me : offset2Id.entrySet()) {
             long off = me.getKey();
             long id = me.getValue();
 
@@ -231,7 +234,7 @@ public class Section {
                     leis.reset();
                     try {
                         // fix id
-                        id = Math.max(PropertyIDMap.PID_MAX, offset2Id.inverseBidiMap().lastKey()) + 1;
+                        id = Math.max(PropertyIDMap.PID_MAX, offset2Id.inverseBidiMap().lastKey())+1;
                         setProperty(new Property(id, leis, pLen, codepage));
                     } catch (RuntimeException e) {
                         Log.i(TAG, "Dictionary fallback failed - ignoring property");
@@ -249,15 +252,15 @@ public class Section {
     /**
      * Retrieves the length of the given property (by key)
      *
-     * @param offset2Id   the offset to id map
+     * @param offset2Id the offset to id map
      * @param entryOffset the current entry key
-     * @param maxSize     the maximum offset/size of the section stream
+     * @param maxSize the maximum offset/size of the section stream
      * @return the length of the current property
      */
     private static int propLen(
-            TreeBidiMap<Long, Long> offset2Id,
-            Long entryOffset,
-            long maxSize) {
+        TreeBidiMap<Long,Long> offset2Id,
+        Long entryOffset,
+        long maxSize) {
         Long nextKey = offset2Id.nextKey(entryOffset);
         long begin = entryOffset;
         long end = (nextKey != null) ? nextKey : maxSize;
@@ -291,7 +294,7 @@ public class Section {
      * Sets the section's format ID.
      *
      * @param formatID The section's format ID as a byte array. It components
-     *                 are in big-endian format.
+     * are in big-endian format.
      */
     @SuppressWarnings("WeakerAccess")
     public void setFormatID(final byte[] formatID) {
@@ -349,6 +352,7 @@ public class Section {
      * {@code true}.
      *
      * @param id The property's ID
+     *
      * @return The property's value
      */
     public Object getProperty(final long id) {
@@ -359,7 +363,7 @@ public class Section {
     /**
      * Sets the string value of the property with the specified ID.
      *
-     * @param id    The property's ID
+     * @param id The property's ID
      * @param value The property's value.
      */
     public void setProperty(final int id, final String value) {
@@ -369,8 +373,9 @@ public class Section {
     /**
      * Sets the int value of the property with the specified ID.
      *
-     * @param id    The property's ID
+     * @param id The property's ID
      * @param value The property's value.
+     *
      * @see #setProperty(int, long, Object)
      * @see #getProperty
      */
@@ -379,11 +384,13 @@ public class Section {
     }
 
 
+
     /**
      * Sets the long value of the property with the specified ID.
      *
-     * @param id    The property's ID
+     * @param id The property's ID
      * @param value The property's value.
+     *
      * @see #setProperty(int, long, Object)
      * @see #getProperty
      */
@@ -392,17 +399,20 @@ public class Section {
     }
 
 
+
     /**
      * Sets the boolean value of the property with the specified ID.
      *
-     * @param id    The property's ID
+     * @param id The property's ID
      * @param value The property's value.
+     *
      * @see #setProperty(int, long, Object)
      * @see #getProperty
      */
     public void setProperty(final int id, final boolean value) {
         setProperty(id, Variant.VT_BOOL, value);
     }
+
 
 
     /**
@@ -412,9 +422,10 @@ public class Section {
      * the specified ID will be overwritten. A default mapping will be
      * used to choose the property's type.
      *
-     * @param id          The property's ID.
+     * @param id The property's ID.
      * @param variantType The property's variant type.
-     * @param value       The property's value.
+     * @param value The property's value.
+     *
      * @see #setProperty(int, String)
      * @see #getProperty
      * @see Variant
@@ -424,10 +435,12 @@ public class Section {
     }
 
 
+
     /**
      * Sets a property.
      *
      * @param p The property to be set.
+     *
      * @see #setProperty(int, long, Object)
      * @see #getProperty
      * @see Variant
@@ -443,9 +456,9 @@ public class Section {
     /**
      * Sets a property.
      *
-     * @param id    The property ID.
+     * @param id The property ID.
      * @param value The property's value. The value's class must be one of those
-     *              supported by HPSF.
+     *        supported by HPSF.
      */
     public void setProperty(final int id, final Object value) {
         if (value instanceof String) {
@@ -463,7 +476,7 @@ public class Section {
         } else {
             throw new HPSFRuntimeException(
                     "HPSF does not support properties of type " +
-                            value.getClass().getName() + ".");
+                    value.getClass().getName() + ".");
         }
     }
 
@@ -475,6 +488,7 @@ public class Section {
      * a real property value of 0.
      *
      * @param id The property's ID
+     *
      * @return The property's value
      */
     int getPropertyIntValue(final long id) {
@@ -485,8 +499,8 @@ public class Section {
         }
         if (!(o instanceof Long || o instanceof Integer)) {
             throw new HPSFRuntimeException
-                    ("This property is not an integer type, but " +
-                            o.getClass().getName() + ".");
+                ("This property is not an integer type, but " +
+                 o.getClass().getName() + ".");
         }
         i = (Number) o;
         return i.intValue();
@@ -500,6 +514,7 @@ public class Section {
      * a real property value of {@code false}.
      *
      * @param id The property's ID
+     *
      * @return The property's value
      */
     boolean getPropertyBooleanValue(final int id) {
@@ -511,8 +526,9 @@ public class Section {
      * Sets the value of the boolean property with the specified
      * ID.
      *
-     * @param id    The property's ID
+     * @param id The property's ID
      * @param value The property's value
+     *
      * @see #setProperty(int, long, Object)
      * @see #getProperty
      * @see Variant
@@ -546,7 +562,7 @@ public class Section {
      *
      * @return the section's length in bytes.
      * @throws WritingNotSupportedException If the document is opened read-only.
-     * @throws IOException                  If an error happens while writing.
+     * @throws IOException If an error happens while writing.
      */
     private int calcSize() throws WritingNotSupportedException, IOException {
         sectionBytes.reset();
@@ -556,7 +572,7 @@ public class Section {
     }
 
     private void padSectionBytes() {
-        byte[] padArray = {0, 0, 0};
+        byte[] padArray = { 0, 0, 0 };
         /* Pad to multiple of 4 bytes so that even the Windows shell (explorer)
          * shows custom properties. */
         int pad = (4 - (sectionBytes.size() & 0x3)) & 0x3;
@@ -583,6 +599,7 @@ public class Section {
     }
 
 
+
     /**
      * Returns the PID string associated with a property ID. The ID
      * is first looked up in the Sections private dictionary.
@@ -592,11 +609,12 @@ public class Section {
      * {@code "[undefined]"} is returned.
      *
      * @param pid The property ID
+     *
      * @return The well-known property ID string associated with the
      * property ID {@code pid}
      */
     public String getPIDString(final long pid) {
-        Map<Long, String> dic = getDictionary();
+        Map<Long,String> dic = getDictionary();
         if (dic == null || !dic.containsKey(pid)) {
             ClassID fmt = getFormatID();
             if (SummaryInformation.FORMAT_ID.equals(fmt)) {
@@ -668,8 +686,8 @@ public class Section {
         }
 
         /* If the dictionaries are unequal the sections are unequal. */
-        Map<Long, String> d1 = getDictionary();
-        Map<Long, String> d2 = s.getDictionary();
+        Map<Long,String> d1 = getDictionary();
+        Map<Long,String> d2 = s.getDictionary();
 
         return (d1 == null && d2 == null) || (d1 != null && d1.equals(d2));
     }
@@ -688,17 +706,18 @@ public class Section {
 
     /**
      * Writes this section into an output stream.<p>
-     * <p>
+     *
      * Internally this is done by writing into three byte array output
      * streams: one for the properties, one for the property list and one for
      * the section as such. The two former are appended to the latter when they
      * have received all their data.
      *
      * @param out The stream to write into.
+     *
      * @return The number of bytes written, i.e. the section's size.
-     * @throws IOException                  if an I/O error occurs
+     * @throws IOException if an I/O error occurs
      * @throws WritingNotSupportedException if HPSF does not yet support
-     *                                      writing a property's variant type.
+     * writing a property's variant type.
      */
     public int write(final OutputStream out) throws WritingNotSupportedException, IOException {
         /* Check whether we have already generated the bytes making out the
@@ -719,7 +738,7 @@ public class Section {
 
         final int[][] offsets = new int[properties.size()][2];
         try (UnsynchronizedByteArrayOutputStream bos = UnsynchronizedByteArrayOutputStream.builder().get();
-             LittleEndianOutputStream leos = new LittleEndianOutputStream(bos)) {
+            LittleEndianOutputStream leos = new LittleEndianOutputStream(bos)) {
 
             /* Write the section's length - dummy value, fixed later */
             leos.writeInt(-1);
@@ -771,13 +790,14 @@ public class Section {
     /**
      * Reads a dictionary.
      *
-     * @param leis     The byte stream containing the bytes making out the dictionary.
-     * @param length   The dictionary contains at most this many bytes.
+     * @param leis The byte stream containing the bytes making out the dictionary.
+     * @param length The dictionary contains at most this many bytes.
      * @param codepage The codepage of the string values.
+     *
      * @return {@code true} if dictionary was read successful, {@code false} otherwise
      */
     private boolean readDictionary(LittleEndianByteArrayInputStream leis, final int length, final int codepage) {
-        Map<Long, String> dic = new HashMap<>();
+        Map<Long,String> dic = new HashMap<>();
 
         /*
          * Read the number of dictionary entries.
@@ -788,9 +808,9 @@ public class Section {
         boolean isCorrupted = false;
         for (int i = 0; i < nrEntries; i++) {
             String errMsg =
-                    "The property set's dictionary contains bogus data. "
-                            + "All dictionary entries starting with the one with ID "
-                            + id + " will be ignored.";
+                "The property set's dictionary contains bogus data. "
+                + "All dictionary entries starting with the one with ID "
+                + id + " will be ignored.";
 
             /* The key. */
             id = leis.readUInt();
@@ -804,7 +824,7 @@ public class Section {
 
             /* Read the string - Strip 0x00 characters from the end of the string. */
             int cp = (codepage == -1) ? Property.DEFAULT_CODEPAGE : codepage;
-            int nrBytes = Math.toIntExact(((sLength - 1) * (cp == CodePageUtil.CP_UNICODE ? 2 : 1)));
+            int nrBytes = Math.toIntExact(((sLength-1) * (cp == CodePageUtil.CP_UNICODE ? 2 : 1)));
             if (nrBytes > 0xFFFFFF) {
                 Log.w(TAG, errMsg);
                 isCorrupted = true;
@@ -818,12 +838,12 @@ public class Section {
 
                 int pad = 1;
                 if (cp == CodePageUtil.CP_UNICODE) {
-                    pad = 2 + ((4 - ((nrBytes + 2) & 0x3)) & 0x3);
+                    pad = 2+((4 - ((nrBytes+2) & 0x3)) & 0x3);
                 }
                 IOUtils.skipFully(leis, pad);
 
                 dic.put(id, str);
-            } catch (RuntimeException | IOException ex) {
+            } catch (RuntimeException|IOException ex) {
                 Log.w(TAG, errMsg, ex);
                 isCorrupted = true;
                 break;
@@ -837,27 +857,27 @@ public class Section {
     /**
      * Writes the section's dictionary.
      *
-     * @param out      The output stream to write to.
+     * @param out The output stream to write to.
      * @param codepage The codepage to be used to write the dictionary items.
      * @throws IOException if an I/O exception occurs.
      */
     private void writeDictionary(final OutputStream out, final int codepage)
-            throws IOException {
+    throws IOException {
         final byte[] padding = new byte[4];
-        final Map<Long, String> dic = getDictionary();
+        final Map<Long,String> dic = getDictionary();
 
         LittleEndian.putUInt(dic.size(), out);
         int length = LittleEndianConsts.INT_SIZE;
-        for (Map.Entry<Long, String> ls : dic.entrySet()) {
+        for (Map.Entry<Long,String> ls : dic.entrySet()) {
 
             LittleEndian.putUInt(ls.getKey(), out);
             length += LittleEndianConsts.INT_SIZE;
 
-            final String value = ls.getValue() + "\0";
+            final String value = ls.getValue()+"\0";
             final byte[] bytes = CodePageUtil.getBytesInCodePage(value, codepage);
             final int len = (codepage == CodePageUtil.CP_UNICODE) ? value.length() : bytes.length;
 
-            LittleEndian.putUInt(len, out);
+            LittleEndian.putUInt( len, out );
             length += LittleEndianConsts.INT_SIZE;
 
             out.write(bytes);
@@ -882,11 +902,13 @@ public class Section {
      * method.
      *
      * @param dictionary The dictionary
+     *
      * @throws IllegalPropertySetDataException if the dictionary's key and
-     *                                         value types are not correct.
+     * value types are not correct.
+     *
      * @see Section#getDictionary()
      */
-    public void setDictionary(final Map<Long, String> dictionary) throws IllegalPropertySetDataException {
+    public void setDictionary(final Map<Long,String> dictionary) throws IllegalPropertySetDataException {
         if (dictionary != null) {
             if (this.dictionary == null) {
                 this.dictionary = new TreeMap<>();
@@ -914,7 +936,7 @@ public class Section {
 
     @Override
     public int hashCode() {
-        return Arrays.deepHashCode(new Object[]{getFormatID(), getProperties()});
+        return Arrays.deepHashCode(new Object[]{getFormatID(),getProperties()});
     }
 
     @Override
@@ -951,6 +973,7 @@ public class Section {
     }
 
 
+
     /**
      * Gets the section's dictionary. A dictionary allows an application to
      * use human-readable property names instead of numeric property IDs. It
@@ -962,13 +985,14 @@ public class Section {
      * a dictionary.
      */
     @SuppressWarnings("unchecked")
-    public Map<Long, String> getDictionary() {
+    public Map<Long,String> getDictionary() {
         if (dictionary == null) {
-            dictionary = (Map<Long, String>) getProperty(PropertyIDMap.PID_DICTIONARY);
+            dictionary = (Map<Long,String>) getProperty(PropertyIDMap.PID_DICTIONARY);
         }
 
         return dictionary;
     }
+
 
 
     /**

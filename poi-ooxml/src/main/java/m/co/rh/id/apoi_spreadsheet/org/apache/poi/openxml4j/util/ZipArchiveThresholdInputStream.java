@@ -15,7 +15,15 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.util;
+
+import static m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.util.ZipSecureFile.*;
+
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
+import org.apache.commons.compress.utils.InputStreamStatistics;
 
 import java.io.EOFException;
 import java.io.FilterInputStream;
@@ -24,14 +32,10 @@ import java.io.InputStream;
 import java.util.Locale;
 import java.util.zip.ZipException;
 
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
-import org.apache.commons.compress.utils.InputStreamStatistics;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.exceptions.NotOfficeXmlFileException;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.IOUtils;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
 
-import static m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.util.ZipSecureFile.*;
 
 @Internal
 public class ZipArchiveThresholdInputStream extends FilterInputStream {
@@ -123,8 +127,8 @@ public class ZipArchiveThresholdInputStream extends FilterInputStream {
         final String entryName = entry == null ? "not set" : entry.getName();
 
         // check the file size first, in case we are working on uncompressed streams
-        if (payloadSize > MAX_ENTRY_SIZE) {
-            throw new IOException(String.format(Locale.ROOT, MAX_ENTRY_SIZE_MSG, payloadSize, rawSize, MAX_ENTRY_SIZE, entryName));
+        if (payloadSize > getMaxEntrySize()) {
+            throw new IOException(String.format(Locale.ROOT, MAX_ENTRY_SIZE_MSG, payloadSize, rawSize, getMaxEntrySize(), entryName));
         }
 
         // don't alert for small expanded size
@@ -147,7 +151,7 @@ public class ZipArchiveThresholdInputStream extends FilterInputStream {
         }
 
         try {
-            entry = ((ZipArchiveInputStream) in).getNextZipEntry();
+            entry = ((ZipArchiveInputStream) in).getNextEntry();
             if (guardState && entry != null) {
                 if (++entryCount > MAX_FILE_COUNT) {
                     throw new IOException(String.format(Locale.ROOT, MAX_FILE_COUNT_MSG, MAX_FILE_COUNT));
@@ -155,7 +159,9 @@ public class ZipArchiveThresholdInputStream extends FilterInputStream {
             }
             return entry;
         } catch (ZipException ze) {
-            if (ze.getMessage().startsWith("Unexpected record signature")) {
+            final String msg = ze.getMessage();
+            if (msg.startsWith("Unexpected record signature")
+                    || msg.startsWith("Cannot find zip signature within the file")) {
                 throw new NotOfficeXmlFileException(
                         "No valid entries or contents found, this is not a valid OOXML (Office Open XML) file", ze);
             }

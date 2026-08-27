@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.extractor;
 
 import android.util.Log;
@@ -31,7 +32,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-
 import javax.xml.parsers.ParserConfigurationException;
 
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.POIXMLDocument;
@@ -58,14 +58,15 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFComment;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFShape;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFSimpleShape;
 
+
 /**
  * Implementation of a text extractor from OOXML Excel
  * files that uses SAX event based parsing.
  */
 public class XSSFEventBasedExcelExtractor
-        implements POIXMLTextExtractor, ExcelExtractor {
+    implements POIXMLTextExtractor, ExcelExtractor {
 
-    private static final String TAG = "XSSFEventBasedExcelExtractor";
+    private static final String LOGGER_TAG = "XSSFEventBasedExcelExtractor";
 
     protected final OPCPackage container;
     protected final POIXMLProperties properties;
@@ -292,7 +293,7 @@ public class XSSFEventBasedExcelExtractor
 
             return text.toString();
         } catch (IOException | OpenXML4JException | SAXException | NumberFormatException e) {
-            Log.w(TAG, "Failed to load text", e);
+            Log.w(LOGGER_TAG, "Failed to load text", e);
             return "";
         }
     }
@@ -304,7 +305,7 @@ public class XSSFEventBasedExcelExtractor
         for (XSSFShape shape : shapes) {
             if (shape instanceof XSSFSimpleShape) {
                 String sText = ((XSSFSimpleShape) shape).getText();
-                if (sText != null && sText.length() > 0) {
+                if (sText != null && !sText.isEmpty()) {
                     text.append(sText).append('\n');
                 }
             }
@@ -386,7 +387,7 @@ public class XSSFEventBasedExcelExtractor
          */
         private void appendHeaderFooterText(StringBuilder buffer, String name) {
             String text = headerFooterMap.get(name);
-            if (text != null && text.length() > 0) {
+            if (text != null && !text.isEmpty()) {
                 // this is a naive way of handling the left, center, and right
                 // header and footer delimiters, but it seems to be as good as
                 // the method used by XSSFExcelExtractor
@@ -417,7 +418,7 @@ public class XSSFEventBasedExcelExtractor
          * they are appended in XSSFExcelExtractor.
          *
          * @see XSSFExcelExtractor#getText()
-         * @see m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.extractor.ExcelExtractor#_extractHeaderFooter(HeaderFooter)
+         * @see org.apache.poi.hssf.extractor.ExcelExtractor#_extractHeaderFooter(HeaderFooter)
          */
         void appendHeaderText(StringBuilder buffer) {
             appendHeaderFooterText(buffer, "firstHeader");
@@ -430,7 +431,7 @@ public class XSSFEventBasedExcelExtractor
          * they are appended in XSSFExcelExtractor.
          *
          * @see XSSFExcelExtractor#getText()
-         * @see m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.extractor.ExcelExtractor#_extractHeaderFooter(HeaderFooter)
+         * @see org.apache.poi.hssf.extractor.ExcelExtractor#_extractHeaderFooter(HeaderFooter)
          */
         void appendFooterText(StringBuilder buffer) {
             // append the text for each footer type in the same order

@@ -84,6 +84,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackageRelations
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackagingURIHelper;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.ZipPackage;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.internal.FileHelper;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.internal.InvalidZipException;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.internal.MemoryPackagePart;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.internal.PackagePropertiesPart;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.util.ZipInputStreamZipEntrySource;
@@ -1294,6 +1295,31 @@ public final class TestXSSFWorkbook extends BaseTestXWorkbook {
     }
 
     @Test
+    public void testNewWorkbookWithTempFilePackagePartsClose() throws Exception {
+        try (UnsynchronizedByteArrayOutputStream bos = UnsynchronizedByteArrayOutputStream.builder().get()) {
+            ZipPackage.setUseTempFilePackageParts(true);
+            XSSFWorkbook workbook = new XSSFWorkbook();
+            XSSFSheet sheet = workbook.createSheet("sheet1");
+            XSSFRow row = sheet.createRow(0);
+            XSSFCell cell0 = row.createCell(0);
+            cell0.setCellValue("");
+            XSSFCell cell1 = row.createCell(1);
+            cell1.setCellErrorValue(FormulaError.DIV0);
+            XSSFCell cell2 = row.createCell(2);
+            cell2.setCellErrorValue(FormulaError.FUNCTION_NOT_IMPLEMENTED);
+            workbook.write(bos);
+            List<PackagePart> packageParts = workbook.getPackage().getParts();
+            workbook.close();
+            // workaround for https://github.com/apache/poi/issues/879 (needs to happen after workbook close)
+            for (PackagePart part : packageParts) {
+                part.close();
+            }
+        } finally {
+            ZipPackage.setUseTempFilePackageParts(false);
+        }
+    }
+
+    @Test
     public void testNewWorkbookWithEncryptedTempFilePackageParts() throws Exception {
         try (UnsynchronizedByteArrayOutputStream bos = UnsynchronizedByteArrayOutputStream.builder().get()) {
             assertFalse("useTempFilePackageParts defaults to false?", ZipPackage.useTempFilePackageParts());
@@ -1400,7 +1426,7 @@ public final class TestXSSFWorkbook extends BaseTestXWorkbook {
             try (
                     XSSFWorkbook workbook2 = new XSSFWorkbook(bosB.toInputStream())
             ) {
-                CTExternalLink link = workbook2.getExternalLinksTable().get(0).getCTExternalLink();
+                CTExternalLink link = workbook2.getExternalLinksTable(0).getCTExternalLink();
                 CTExternalSheetData sheetData = link.getExternalBook().getSheetDataSet().getSheetDataArray(0);
                 assertEquals(Double.valueOf(sheetData.getRowArray(0).getCellArray(0).getV()), Double.valueOf(v1));
                 assertEquals(Double.valueOf(sheetData.getRowArray(0).getCellArray(1).getV()), Double.valueOf(v2));
@@ -1458,6 +1484,42 @@ public final class TestXSSFWorkbook extends BaseTestXWorkbook {
     }
 
     @Test
+    public void testDuplicateFileReadAsOPCFile() {
+        assertThrows(InvalidFormatException.class, () -> {
+            try (OPCPackage pkg = OPCPackage.open(getSampleFile("duplicate-filename.xlsx"), PackageAccess.READ)) {
+                // expect exception here
+            }
+        });
+    }
+
+    @Test
+    public void testDuplicateFileReadAsFile() {
+        assertThrows(InvalidFormatException.class, () -> {
+            try (XSSFWorkbook wb = new XSSFWorkbook(getSampleFile("duplicate-filename.xlsx"))) {
+                // expect exception here
+            }
+        });
+    }
+
+    @Test
+    public void testDuplicateFileReadAsStream() {
+        assertThrows(InvalidZipException.class, () -> {
+            try (XSSFWorkbook wb = new XSSFWorkbook(openSampleFileStream("duplicate-filename.xlsx"))) {
+                // expect exception here
+            }
+        });
+    }
+
+    @Test
+    public void testDuplicateFileCaseInsensitiveReadAsStream() {
+        assertThrows(InvalidZipException.class, () -> {
+            try (XSSFWorkbook wb = new XSSFWorkbook(openSampleFileStream("duplicate-filename-case-insensitive.xlsx"))) {
+                // expect exception here
+            }
+        });
+    }
+
+    @Test
     public void testWorkbookCloseClosesInputStream() throws Exception {
         try (TrackingInputStream stream = new TrackingInputStream(
                 HSSFTestDataSamples.openSampleFileStream("github-321.xlsx"))) {
@@ -1506,7 +1568,7 @@ public final class TestXSSFWorkbook extends BaseTestXWorkbook {
             int count = 0;
             try (ZipArchiveInputStream zis = new ZipArchiveInputStream(Files.newInputStream(tempFile.toPath()))) {
                 ZipArchiveEntry entry;
-                while ((entry = zis.getNextZipEntry()) != null) {
+                while ((entry = zis.getNextEntry()) != null) {
                     // Since POI 5.2.5, you can stop XSSFWorkbook closing the InputStream by using this new constructor
                     XSSFWorkbook wb = new XSSFWorkbook(zis, false);
                     assertNotNull(wb);

@@ -14,9 +14,11 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.cf;
+
 
 import static m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.GenericRecordUtil.getBitsAsString;
 
@@ -34,6 +36,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.GenericRecordJsonWriter;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.GenericRecordUtil;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndianInput;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndianOutput;
+
 
 /**
  * Data Bar Conditional Formatting Rule Record.
@@ -72,9 +75,9 @@ public final class DataBarFormatting implements Duplicatable, GenericRecord {
         percentMin = in.readByte();
         percentMax = in.readByte();
         if (percentMin < 0 || percentMin > 100)
-            Log.w(TAG, String.format("Inconsistent Minimum Percentage found %d", percentMin));
+            Log.w(TAG, String.format("Inconsistent Minimum Percentage found %s", percentMin));
         if (percentMax < 0 || percentMax > 100)
-            Log.w(TAG, String.format("Inconsistent Maximum Percentage found %d", percentMax));
+            Log.w(TAG, String.format("Inconsistent Maximum Percentage found %s", percentMax));
 
         color = new ExtendedColor(in);
         thresholdMin = new DataBarThreshold(in);
@@ -84,7 +87,6 @@ public final class DataBarFormatting implements Duplicatable, GenericRecord {
     public boolean isIconOnly() {
         return getOptionFlag(ICON_ONLY);
     }
-
     public void setIconOnly(boolean only) {
         setOptionFlag(only, ICON_ONLY);
     }
@@ -92,7 +94,6 @@ public final class DataBarFormatting implements Duplicatable, GenericRecord {
     public boolean isReversed() {
         return getOptionFlag(REVERSED);
     }
-
     public void setReversed(boolean rev) {
         setOptionFlag(rev, REVERSED);
     }
@@ -101,7 +102,6 @@ public final class DataBarFormatting implements Duplicatable, GenericRecord {
         int value = field.getValue(options);
         return value != 0;
     }
-
     private void setOptionFlag(boolean option, BitField field) {
         options = field.setByteBoolean(options, option);
     }
@@ -109,7 +109,6 @@ public final class DataBarFormatting implements Duplicatable, GenericRecord {
     public byte getPercentMin() {
         return percentMin;
     }
-
     public void setPercentMin(byte percentMin) {
         this.percentMin = percentMin;
     }
@@ -117,7 +116,6 @@ public final class DataBarFormatting implements Duplicatable, GenericRecord {
     public byte getPercentMax() {
         return percentMax;
     }
-
     public void setPercentMax(byte percentMax) {
         this.percentMax = percentMax;
     }
@@ -125,7 +123,6 @@ public final class DataBarFormatting implements Duplicatable, GenericRecord {
     public ExtendedColor getColor() {
         return color;
     }
-
     public void setColor(ExtendedColor color) {
         this.color = color;
     }
@@ -133,7 +130,6 @@ public final class DataBarFormatting implements Duplicatable, GenericRecord {
     public DataBarThreshold getThresholdMin() {
         return thresholdMin;
     }
-
     public void setThresholdMin(DataBarThreshold thresholdMin) {
         this.thresholdMin = thresholdMin;
     }
@@ -141,7 +137,6 @@ public final class DataBarFormatting implements Duplicatable, GenericRecord {
     public DataBarThreshold getThresholdMax() {
         return thresholdMax;
     }
-
     public void setThresholdMax(DataBarThreshold thresholdMax) {
         this.thresholdMax = thresholdMax;
     }
@@ -149,12 +144,12 @@ public final class DataBarFormatting implements Duplicatable, GenericRecord {
     @Override
     public Map<String, Supplier<?>> getGenericProperties() {
         return GenericRecordUtil.getGenericProperties(
-                "options", getBitsAsString(() -> options, new BitField[]{ICON_ONLY, REVERSED}, new String[]{"ICON_ONLY", "REVERSED"}),
-                "color", this::getColor,
-                "percentMin", this::getPercentMin,
-                "percentMax", this::getPercentMax,
-                "thresholdMin", this::getThresholdMin,
-                "thresholdMax", this::getThresholdMax
+            "options", getBitsAsString(() -> options, new BitField[]{ICON_ONLY, REVERSED}, new String[]{"ICON_ONLY", "REVERSED"}),
+            "color", this::getColor,
+            "percentMin", this::getPercentMin,
+            "percentMax", this::getPercentMax,
+            "thresholdMin", this::getThresholdMin,
+            "thresholdMax", this::getThresholdMax
         );
     }
 
@@ -162,14 +157,14 @@ public final class DataBarFormatting implements Duplicatable, GenericRecord {
         return GenericRecordJsonWriter.marshal(this);
     }
 
-    public DataBarFormatting copy() {
-        return new DataBarFormatting(this);
+    public DataBarFormatting copy()  {
+      return new DataBarFormatting(this);
     }
 
     public int getDataLength() {
         return 6 + color.getDataLength() +
-                thresholdMin.getDataLength() +
-                thresholdMax.getDataLength();
+               thresholdMin.getDataLength() +
+               thresholdMax.getDataLength();
     }
 
     public void serialize(LittleEndianOutput out) {

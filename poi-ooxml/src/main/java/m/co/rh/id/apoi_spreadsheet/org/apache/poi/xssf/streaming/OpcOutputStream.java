@@ -15,15 +15,18 @@
    limitations under the License.
 ==================================================================== */
 
-package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.streaming;
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.streaming.Zip64Impl.Entry;
+package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.streaming;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.*;
+
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.streaming.Zip64Impl.Entry;
+
 
 /**
  * ZIP64 OutputStream implementation compatible with MS Excel.
@@ -37,7 +40,7 @@ class OpcOutputStream extends DeflaterOutputStream {
     private final List<Entry> entries = new ArrayList<>();
     private final CRC32 crc = new CRC32();
     private Entry current;
-    private int written = 0;
+    private long written = 0;
     private boolean finished = false;
 
     /**
@@ -84,7 +87,7 @@ class OpcOutputStream extends DeflaterOutputStream {
         }
 
         current.size = def.getBytesRead();
-        current.compressedSize = Math.toIntExact(def.getBytesWritten());
+        current.compressedSize = def.getBytesWritten();
         current.crc = crc.getValue();
 
         written += current.compressedSize;
@@ -106,7 +109,7 @@ class OpcOutputStream extends DeflaterOutputStream {
         if(current != null) {
             closeEntry();
         }
-        int offset = written;
+        long offset = written;
         for (Entry entry : entries) {
             written += spec.writeCEN(entry);
         }

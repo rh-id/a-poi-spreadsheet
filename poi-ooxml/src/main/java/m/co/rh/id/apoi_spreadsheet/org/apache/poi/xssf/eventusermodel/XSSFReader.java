@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.eventusermodel;
 
 import android.util.Log;
@@ -38,7 +39,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.xml.parsers.ParserConfigurationException;
 
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.POIXMLException;
@@ -52,15 +52,11 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackageRelations
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackageRelationshipTypes;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackagingURIHelper;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.XMLHelper;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.model.Comments;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.model.CommentsTable;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.model.SharedStrings;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.model.SharedStringsTable;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.model.StylesTable;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.model.ThemesTable;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.model.*;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFDrawing;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFRelation;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFShape;
+
 
 /**
  * This class makes it easy to get at individual parts
@@ -77,7 +73,7 @@ public class XSSFReader {
                             XSSFRelation.CHARTSHEET.getRelation(),
                             XSSFRelation.MACRO_SHEET_XML.getRelation())
             ));
-    private static final String TAG = "XSSFReader";
+    private static final String LOGGER_TAG = "XSSFReader";
 
     protected OPCPackage pkg;
     protected PackagePart workbookPart;
@@ -87,7 +83,7 @@ public class XSSFReader {
      * Creates a new XSSFReader, for the given package
      *
      * @throws OpenXML4JException if the package format is invalid
-     * @throws IOException        if there is an I/O issue reading the data
+     * @throws IOException if there is an I/O issue reading the data
      */
     public XSSFReader(OPCPackage pkg) throws IOException, OpenXML4JException {
         this(pkg, false);
@@ -96,10 +92,10 @@ public class XSSFReader {
     /**
      * Creates a new XSSFReader, for the given package
      *
-     * @param pkg                   an {@code OPCPackage} representing a spreasheet file
+     * @param pkg an {@code OPCPackage} representing a spreasheet file
      * @param allowStrictOoxmlFiles whether to try to handle Strict OOXML format files
      * @throws OpenXML4JException if the package format is invalid
-     * @throws IOException        if there is an I/O issue reading the data
+     * @throws IOException if there is an I/O issue reading the data
      */
     public XSSFReader(OPCPackage pkg, boolean allowStrictOoxmlFiles) throws IOException, OpenXML4JException {
         this.pkg = pkg;
@@ -156,7 +152,7 @@ public class XSSFReader {
      *
      * @return {@link SharedStrings}
      * @throws InvalidFormatException if the shared strings data format is invalid
-     * @throws IOException            if there is an I/O issue reading the data
+     * @throws IOException if there is an I/O issue reading the data
      * @see #setUseReadOnlySharedStringsTable(boolean)
      */
     public SharedStrings getSharedStringsTable() throws IOException, InvalidFormatException {
@@ -176,7 +172,7 @@ public class XSSFReader {
      *
      * @return {@link StylesTable}
      * @throws InvalidFormatException if the styles data format is invalid
-     * @throws IOException            if there is an I/O issue reading the data
+     * @throws IOException if there is an I/O issue reading the data
      */
     public StylesTable getStylesTable() throws IOException, InvalidFormatException {
         ArrayList<PackagePart> parts = pkg.getPartsByContentType(XSSFRelation.STYLES.getContentType());
@@ -185,7 +181,7 @@ public class XSSFReader {
         // Create the Styles Table, and associate the Themes if present
         StylesTable styles = new StylesTable(parts.get(0));
         parts = pkg.getPartsByContentType(XSSFRelation.THEME.getContentType());
-        if (parts.size() != 0) {
+        if (!parts.isEmpty()) {
             styles.setTheme(new ThemesTable(parts.get(0)));
         }
         return styles;
@@ -198,7 +194,7 @@ public class XSSFReader {
      *
      * @return input stream
      * @throws InvalidFormatException if the shared string data format is invalid
-     * @throws IOException            if there is an I/O issue reading the data
+     * @throws IOException if there is an I/O issue reading the data
      */
     public InputStream getSharedStringsData() throws IOException, InvalidFormatException {
         return XSSFRelation.SHARED_STRINGS.getContents(workbookPart);
@@ -210,7 +206,7 @@ public class XSSFReader {
      *
      * @return input stream
      * @throws InvalidFormatException if the styles data format is invalid
-     * @throws IOException            if there is an I/O issue reading the data
+     * @throws IOException if there is an I/O issue reading the data
      */
     public InputStream getStylesData() throws IOException, InvalidFormatException {
         return XSSFRelation.STYLES.getContents(workbookPart);
@@ -222,7 +218,7 @@ public class XSSFReader {
      *
      * @return input stream
      * @throws InvalidFormatException if the themes data format is invalid
-     * @throws IOException            if there is an I/O issue reading the data
+     * @throws IOException if there is an I/O issue reading the data
      */
     public InputStream getThemesData() throws IOException, InvalidFormatException {
         return XSSFRelation.THEME.getContents(workbookPart);
@@ -235,7 +231,7 @@ public class XSSFReader {
      *
      * @return input stream
      * @throws InvalidFormatException if the sheet data format is invalid
-     * @throws IOException            if there is an I/O issue reading the data
+     * @throws IOException if there is an I/O issue reading the data
      */
     public InputStream getWorkbookData() throws IOException, InvalidFormatException {
         return workbookPart.getInputStream();
@@ -247,7 +243,7 @@ public class XSSFReader {
      *
      * @param relId The relationId of the sheet, from a r:id on the workbook
      * @throws InvalidFormatException if the sheet data format is invalid
-     * @throws IOException            if there is an I/O issue reading the data
+     * @throws IOException if there is an I/O issue reading the data
      */
     public InputStream getSheet(String relId) throws IOException, InvalidFormatException {
         PackageRelationship rel = workbookPart.getRelationship(relId);
@@ -271,9 +267,25 @@ public class XSSFReader {
      * InputStreams when done with each one.
      *
      * @throws InvalidFormatException if the sheet data format is invalid
-     * @throws IOException            if there is an I/O issue reading the data
+     * @throws IOException if there is an I/O issue reading the data
+     * @see #getSheetIterator()
      */
     public Iterator<InputStream> getSheetsData() throws IOException, InvalidFormatException {
+        return getSheetIterator();
+    }
+
+    /**
+     * Returns an Iterator which will let you get at all the
+     * different Sheets in turn.
+     * Each sheet's InputStream is only opened when fetched
+     * from the Iterator. It's up to you to close the
+     * InputStreams when done with each one.
+     *
+     * @throws InvalidFormatException if the sheet data format is invalid
+     * @throws IOException if there is an I/O issue reading the data
+     * @since POI 5.4.0
+     */
+    public SheetIterator getSheetIterator() throws IOException, InvalidFormatException {
         return new SheetIterator(workbookPart);
     }
 
@@ -304,7 +316,7 @@ public class XSSFReader {
          *
          * @param wb package part holding workbook.xml
          * @throws InvalidFormatException if the sheet data format is invalid
-         * @throws IOException            if there is an I/O issue reading the data
+         * @throws IOException if there is an I/O issue reading the data
          */
         protected SheetIterator(PackagePart wb) throws IOException, InvalidFormatException {
             if (wb == null) {
@@ -350,7 +362,7 @@ public class XSSFReader {
             for (XSSFSheetRef xssfSheetRef : xmlSheetRefReader.getSheetRefs()) {
                 //if there's no relationship id, silently skip the sheet
                 String sheetId = xssfSheetRef.getId();
-                if (sheetId != null && sheetId.length() > 0) {
+                if (sheetId != null && !sheetId.isEmpty()) {
                     validSheets.add(xssfSheetRef);
                 }
             }
@@ -431,8 +443,8 @@ public class XSSFReader {
                     PackagePart commentsPart = sheetPkg.getPackage().getPart(commentsName);
                     return parseComments(commentsPart);
                 }
-            } catch (InvalidFormatException | IOException e) {
-                Log.w(TAG, "Failed to load sheet comments", e);
+            } catch (InvalidFormatException|IOException e) {
+                Log.w(LOGGER_TAG, "Failed to load sheet comments", e);
                 return null;
             }
             return null;
@@ -460,14 +472,14 @@ public class XSSFReader {
                     PackagePart drawingsPart = sheetPkg.getPackage().getPart(drawingsName);
                     if (drawingsPart == null) {
                         //parts can go missing; Excel ignores them silently -- TIKA-2134
-                        Log.w(TAG, String.format("Missing drawing: %s. Skipping it.", drawingsName));
+                        Log.w(LOGGER_TAG, String.format("Missing drawing: %s. Skipping it.", drawingsName));
                         continue;
                     }
                     XSSFDrawing drawing = new XSSFDrawing(drawingsPart);
                     shapes.addAll(drawing.getShapes());
                 }
-            } catch (XmlException | InvalidFormatException | IOException e) {
-                Log.w(TAG, "Failed to load shapes", e);
+            } catch (XmlException|InvalidFormatException|IOException e) {
+                Log.w(LOGGER_TAG, "Failed to load shapes", e);
                 return null;
             }
             return shapes;

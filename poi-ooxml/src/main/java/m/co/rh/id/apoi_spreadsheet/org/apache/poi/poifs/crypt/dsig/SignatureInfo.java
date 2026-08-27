@@ -14,8 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 /* ====================================================================
    This product contains an ASLv2 licensed version of the OOXML signer
    package from the eID Applet project
@@ -58,7 +58,6 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.stream.Stream;
-
 import javax.xml.crypto.MarshalException;
 import javax.xml.crypto.URIDereferencer;
 import javax.xml.crypto.XMLStructure;
@@ -92,6 +91,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.HashAlgorithm;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.dsig.facets.SignatureFacet;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.dsig.services.RelationshipTransformService;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.NotImplemented;
+
 
 
 /**
@@ -156,7 +156,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.NotImplemented;
  * <p>To use SignatureInfo and its sibling classes, you'll need to have the following libs
  * in the classpath:</p>
  * <ul>
- * <li>BouncyCastle bcpkix and bcprov (tested against 1.77)</li>
+ * <li>BouncyCastle bcpkix and bcprov (tested against 1.81)</li>
  * <li>Apache Santuario "xmlsec" (tested against 3.0.x)</li>
  * <li>and log4j-api (tested against 2.22.x)</li>
  * </ul>
@@ -217,7 +217,7 @@ public class SignatureInfo {
      * add the xml signature to the document
      *
      * @throws XMLSignatureException if the signature can't be calculated
-     * @throws MarshalException      if the document can't be serialized
+     * @throws MarshalException if the document can't be serialized
      */
     public void confirmSignature() throws XMLSignatureException, MarshalException {
         initXmlProvider();
@@ -238,6 +238,7 @@ public class SignatureInfo {
      * Convenience method for creating the signature context
      *
      * @param document the document the signature is based on
+     *
      * @return the initialized signature context
      */
     public DOMSignContext createXMLSignContext(final Document document) {
@@ -261,35 +262,30 @@ public class SignatureInfo {
         final int BASE64DEFAULTLENGTH = 76;
 
 
-        if (algo.hashSize * 4 / 3 > BASE64DEFAULTLENGTH && !XMLUtils.ignoreLineBreaks()) {
-            throw new EncryptedDocumentException("The hash size of the chosen hash algorithm (" + algo + " = " + algo.hashSize + " bytes), " +
-                    "will motivate XmlSec to add linebreaks to the generated digest, which results in an invalid signature (... at least " +
-                    "for Office) - please persuade it otherwise by adding '-Dorg.apache.xml.security.ignoreLineBreaks=true' to the JVM " +
-                    "system properties.");
+        if (algo.hashSize*4/3 > BASE64DEFAULTLENGTH && !XMLUtils.ignoreLineBreaks()) {
+            throw new EncryptedDocumentException("The hash size of the chosen hash algorithm ("+algo+" = "+algo.hashSize+" bytes), "+
+                "will motivate XmlSec to add linebreaks to the generated digest, which results in an invalid signature (... at least "+
+                "for Office) - please persuade it otherwise by adding '-Dorg.apache.xml.security.ignoreLineBreaks=true' to the JVM "+
+                "system properties.");
         }
 
         try (final DigestOutputStream dos = getDigestStream(algo, key)) {
             dos.init();
 
-            final Document document = (Document) xmlSignContext.getParent();
+            final Document document = (Document)xmlSignContext.getParent();
             final Element el = getDsigElement(document, "SignedInfo");
             final DOMSubTreeData subTree = new DOMSubTreeData(el, true);
             signedInfo.getCanonicalizationMethod().transform(subTree, xmlSignContext, dos);
 
             return Base64.getEncoder().encodeToString(dos.sign());
-        } catch (GeneralSecurityException | IOException | TransformException e) {
+        } catch (GeneralSecurityException|IOException|TransformException e) {
             throw new EncryptedDocumentException(e);
         }
     }
 
     private static DigestOutputStream getDigestStream(final HashAlgorithm algo, final PrivateKey key) {
         switch (algo) {
-            case md2:
-            case md5:
-            case sha1:
-            case sha256:
-            case sha384:
-            case sha512:
+            case md2: case md5: case sha1: case sha256: case sha384: case sha512:
                 return new SignatureOutputStream(algo, key);
             default:
                 return new DigestOutputStream(algo, key);
@@ -325,7 +321,7 @@ public class SignatureInfo {
                 try {
                     sigRels = sigPart.getRelationshipsByType(PackageRelationshipTypes.DIGITAL_SIGNATURE).iterator();
                 } catch (InvalidFormatException e) {
-                    Log.w(TAG, "Reference to signature is invalid.");
+                    Log.w(TAG, "Reference to signature is invalid.", e);
                 }
             }
             return true;
@@ -342,7 +338,7 @@ public class SignatureInfo {
                     sigRelPart = sigPart.getRelatedPart(sigRels.next());
                     Log.d(TAG, String.format("XML Signature part: %s", sigRelPart));
                 } catch (InvalidFormatException e) {
-                    Log.w(TAG, "Reference to signature is invalid.");
+                    Log.w(TAG, "Reference to signature is invalid.", e);
                 }
             } while (sigRelPart == null);
             return new SignaturePart(sigRelPart, SignatureInfo.this);
@@ -367,8 +363,8 @@ public class SignatureInfo {
      */
     @SuppressWarnings("unchecked")
     public DOMSignedInfo preSign(final DOMSignContext xmlSignContext)
-            throws XMLSignatureException, MarshalException {
-        final Document document = (Document) xmlSignContext.getParent();
+    throws XMLSignatureException, MarshalException {
+        final Document document = (Document)xmlSignContext.getParent();
 
         registerEventListener(document);
 
@@ -401,12 +397,12 @@ public class SignatureInfo {
         SignedInfo signedInfo;
         try {
             SignatureMethod signatureMethod = signatureFactory.newSignatureMethod
-                    (signatureConfig.getSignatureMethodUri(), null);
+                (signatureConfig.getSignatureMethodUri(), null);
             CanonicalizationMethod canonicalizationMethod = signatureFactory
-                    .newCanonicalizationMethod(signatureConfig.getCanonicalizationMethod(),
-                            (C14NMethodParameterSpec) null);
+                .newCanonicalizationMethod(signatureConfig.getCanonicalizationMethod(),
+                (C14NMethodParameterSpec) null);
             signedInfo = signatureFactory.newSignedInfo(
-                    canonicalizationMethod, signatureMethod, references);
+                canonicalizationMethod, signatureMethod, references);
         } catch (GeneralSecurityException e) {
             throw new XMLSignatureException(e);
         }
@@ -416,8 +412,8 @@ public class SignatureInfo {
          */
         String signatureValueId = signatureConfig.getPackageSignatureId() + "-signature-value";
         XMLSignature xmlSignature = signatureFactory
-                .newXMLSignature(signedInfo, null, objects, signatureConfig.getPackageSignatureId(),
-                        signatureValueId);
+            .newXMLSignature(signedInfo, null, objects, signatureConfig.getPackageSignatureId(),
+            signatureValueId);
 
         /*
          * ds:Signature Marshalling.
@@ -442,7 +438,7 @@ public class SignatureInfo {
                         continue;
                     }
 
-                    DOMReference manifestDOMReference = (DOMReference) manifestReference;
+                    DOMReference manifestDOMReference = (DOMReference)manifestReference;
                     manifestDOMReference.digest(xmlSignContext);
                 }
             }
@@ -453,7 +449,7 @@ public class SignatureInfo {
          */
         List<Reference> signedInfoReferences = signedInfo.getReferences();
         for (Reference signedInfoReference : signedInfoReferences) {
-            DOMReference domReference = (DOMReference) signedInfoReference;
+            DOMReference domReference = (DOMReference)signedInfoReference;
 
             // ds:Reference with external digest value
             if (domReference.getDigestValue() != null) {
@@ -463,7 +459,7 @@ public class SignatureInfo {
             domReference.digest(xmlSignContext);
         }
 
-        return (DOMSignedInfo) signedInfo;
+        return (DOMSignedInfo)signedInfo;
     }
 
     // it's necessary to explicitly set the mdssi namespace, but the sign() method has no
@@ -474,8 +470,8 @@ public class SignatureInfo {
             return;
         }
 
-        final EventListener[] el = {null};
-        final EventTarget eventTarget = (EventTarget) document;
+        final EventListener[] el = { null };
+        final EventTarget eventTarget = (EventTarget)document;
         final String eventType = "DOMSubtreeModified";
         final boolean DONT_USE_CAPTURE = false;
 
@@ -495,10 +491,10 @@ public class SignatureInfo {
      * Normally {@link #confirmSignature()} is sufficient to be used.
      */
     public void postSign(final DOMSignContext xmlSignContext, final String signatureValue)
-            throws MarshalException {
+    throws MarshalException {
         Log.d(TAG, "postSign");
 
-        final Document document = (Document) xmlSignContext.getParent();
+        final Document document = (Document)xmlSignContext.getParent();
 
         /*
          * Check ds:Signature node.
@@ -535,8 +531,8 @@ public class SignatureInfo {
      */
     protected void writeDocument(Document document) throws MarshalException {
         XmlOptions xo = new XmlOptions();
-        Map<String, String> namespaceMap = new HashMap<>();
-        signatureConfig.getNamespacePrefixes().forEach((k, v) -> namespaceMap.put(v, k));
+        Map<String,String> namespaceMap = new HashMap<>();
+        signatureConfig.getNamespacePrefixes().forEach((k,v) -> namespaceMap.put(v,k));
         xo.setSaveSuggestedPrefixes(namespaceMap);
         xo.setUseDefaultNamespace();
 
@@ -564,7 +560,7 @@ public class SignatureInfo {
 
             if (!signatureConfig.isAllowMultipleSignatures()) {
                 PackageRelationshipCollection prc = originPart.getRelationshipsByType(sigDesc.getRelation());
-                for (int i = 2; i < nextSigIdx; i++) {
+                for (int i=2; i<nextSigIdx; i++) {
                     PackagePartName pn = PackagingURIHelper.createPartName(sigDesc.getFileName(i));
                     for (PackageRelationship rel : prc) {
                         PackagePart pp = originPart.getRelatedPart(rel);
@@ -603,7 +599,7 @@ public class SignatureInfo {
     private Element getDsigElement(final Document document, final String localName) {
         NodeList sigValNl = document.getElementsByTagNameNS(XML_DIGSIG_NS, localName);
         if (sigValNl.getLength() == 1) {
-            return (Element) sigValNl.item(0);
+            return (Element)sigValNl.item(0);
         }
 
         Log.w(TAG, String.format("Signature element '%s' was %s", localName, sigValNl.getLength() == 0 ? "not found" : "multiple times"));
@@ -632,6 +628,7 @@ public class SignatureInfo {
     }
 
 
+
     /**
      * Initialize the xml signing environment and the bouncycastle provider
      */
@@ -650,7 +647,7 @@ public class SignatureInfo {
             uriDereferencer = new OOXMLURIDereferencer();
         }
         if (uriDereferencer instanceof OOXMLURIDereferencer) {
-            ((OOXMLURIDereferencer) uriDereferencer).setSignatureInfo(this);
+            ((OOXMLURIDereferencer)uriDereferencer).setSignatureInfo(this);
         }
     }
 
@@ -661,7 +658,7 @@ public class SignatureInfo {
             private static final XmlProviderInitSingleton INSTANCE = new XmlProviderInitSingleton();
         }
 
-        public static XmlProviderInitSingleton getInstance() {
+        public static XmlProviderInitSingleton getInstance(){
             return SingletonHelper.INSTANCE;
         }
 
@@ -682,7 +679,7 @@ public class SignatureInfo {
          * <li>the Santuario xmlsec provider</li>
          * <li>the JDK xmlsec provider</li>
          * </ul>
-         * <p>
+         *
          * For signing the classes are linked against the Santuario xmlsec, so this might
          * only work for validation (not tested).
          *
@@ -690,15 +687,15 @@ public class SignatureInfo {
          */
         public Provider findProvider() {
             return
-                    Stream.of(SignatureConfig.getProviderNames())
-                            .map(this::getProvider)
-                            .filter(Objects::nonNull).findFirst()
-                            .orElseThrow(this::providerNotFound);
+                Stream.of(SignatureConfig.getProviderNames())
+                .map(this::getProvider)
+                .filter(Objects::nonNull).findFirst()
+                .orElseThrow(this::providerNotFound);
         }
 
         private Provider getProvider(String className) {
             try {
-                return (Provider) Class.forName(className).getDeclaredConstructor().newInstance();
+                return (Provider)Class.forName(className).getDeclaredConstructor().newInstance();
             } catch (Exception e) {
                 Log.d(TAG, String.format("XMLDsig-Provider '%s' can't be found - trying next.", className));
                 return null;

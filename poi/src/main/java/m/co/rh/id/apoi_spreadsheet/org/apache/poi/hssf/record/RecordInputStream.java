@@ -15,13 +15,16 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record;
+
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Locale;
 
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.crypto.Biff8DecryptingStream;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.EncryptionInfo;
@@ -31,6 +34,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndianConsts;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndianInput;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndianInputStream;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.RecordFormatException;
+
 
 /**
  * Title:  Record Input Stream
@@ -216,7 +220,8 @@ public final class RecordInputStream implements LittleEndianInput {
         _currentDataLength = _bhi.readDataSize();
         if (_currentDataLength > MAX_RECORD_DATA_SIZE) {
             throw new RecordFormatException("The content of an excel record cannot exceed "
-                    + MAX_RECORD_DATA_SIZE + " bytes");
+                    + MAX_RECORD_DATA_SIZE + " bytes, but had: " + _currentDataLength +
+                    " for record with sid: " + _currentSid);
         }
     }
 
@@ -516,6 +521,9 @@ public final class RecordInputStream implements LittleEndianInput {
      */
     @Internal
     public void mark(int readlimit) {
+        if (!(_dataInput instanceof InputStream)) {
+            throw new IllegalStateException("Cannot use mark for dataInput of type " + _dataInput.getClass() + ", need an InputStream");
+        }
         ((InputStream)_dataInput).mark(readlimit);
         _markedDataOffset = _currentDataOffset;
     }

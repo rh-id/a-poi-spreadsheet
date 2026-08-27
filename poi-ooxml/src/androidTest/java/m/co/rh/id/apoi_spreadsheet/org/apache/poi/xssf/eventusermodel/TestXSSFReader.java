@@ -174,7 +174,7 @@ public final class TestXSSFReader {
             XSSFReader r = new XSSFReader(pkg);
 
             String[] sheetNames = {"Sheet4", "Sheet2", "Sheet3", "Sheet1"};
-            XSSFReader.SheetIterator it = (XSSFReader.SheetIterator) r.getSheetsData();
+            XSSFReader.SheetIterator it = r.getSheetIterator();
 
             int count = 0;
             while (it.hasNext()) {

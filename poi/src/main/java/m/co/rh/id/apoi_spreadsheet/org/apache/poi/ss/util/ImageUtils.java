@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util;
 
 import static m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Units.EMU_PER_PIXEL;
@@ -27,6 +28,7 @@ import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Iterator;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -40,35 +42,39 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Sheet;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Workbook;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Units;
 
+
 public final class ImageUtils {
     private static final String TAG = "ImageUtils";
 
     private static final int WIDTH_UNITS = 1024;
     private static final int HEIGHT_UNITS = 256;
 
-    private ImageUtils() {
-    }
+    private ImageUtils() {}
 
     /**
      * Return the dimension of this image
      *
-     * @param is   the stream containing the image data
+     * @param is the stream containing the image data
      * @param type type of the picture: {@link Workbook#PICTURE_TYPE_JPEG},
-     *             {@link Workbook#PICTURE_TYPE_PNG} or {@link Workbook#PICTURE_TYPE_DIB}
+     * {@link Workbook#PICTURE_TYPE_PNG} or {@link Workbook#PICTURE_TYPE_DIB}
+     *
      * @return image dimension in pixels
      */
     public static Dimension getImageDimension(InputStream is, int type) {
         Dimension size = new Dimension();
 
-        switch (type) {
+        switch (type){
             //we can calculate the preferred size only for JPEG, PNG and BMP
             //other formats like WMF, EMF and PICT are not supported in Java
             case Workbook.PICTURE_TYPE_JPEG:
             case Workbook.PICTURE_TYPE_PNG:
             case Workbook.PICTURE_TYPE_DIB:
                 Bitmap bitmap = BitmapFactory.decodeStream(is);
-                size.height = bitmap.getHeight();
-                size.width = bitmap.getWidth();
+                if (bitmap != null) {
+                    size.width = bitmap.getWidth();
+                    size.height = bitmap.getHeight();
+                    bitmap.recycle();
+                }
 
                 break;
             default:
@@ -84,7 +90,7 @@ public final class ImageUtils {
      * @param scaleY the amount by which image height is multiplied relative to the original height.
      * @return the new Dimensions of the scaled picture in EMUs
      * @throws IllegalArgumentException if scale values lead to negative or infinite results
-     * @throws IllegalStateException    if the picture data is corrupt
+     * @throws IllegalStateException if the picture data is corrupt
      */
     public static Dimension setPreferredSize(Picture picture, double scaleX, double scaleY) {
         ClientAnchor anchor = picture.getClientAnchor();
@@ -96,8 +102,8 @@ public final class ImageUtils {
         final Dimension imgSize;
         try {
             imgSize = (scaleX == Double.MAX_VALUE || scaleY == Double.MAX_VALUE)
-                    ? getImageDimension(UnsynchronizedByteArrayInputStream.builder().setByteArray(data.getData()).get(), data.getPictureType())
-                    : new Dimension();
+                ? getImageDimension(UnsynchronizedByteArrayInputStream.builder().setByteArray(data.getData()).get(), data.getPictureType())
+                : new Dimension();
         } catch (IOException e) {
             // is actually impossible with ByteArray, but still declared in the interface
             throw new IllegalStateException(e);
@@ -105,23 +111,23 @@ public final class ImageUtils {
 
         // in emus
         final Dimension anchorSize = (scaleX != Double.MAX_VALUE || scaleY != Double.MAX_VALUE)
-                ? ImageUtils.getDimensionFromAnchor(picture)
-                : new Dimension();
+            ? ImageUtils.getDimensionFromAnchor(picture)
+            : new Dimension();
 
         final double scaledWidth = (scaleX == Double.MAX_VALUE)
-                ? imgSize.getWidth() : anchorSize.getWidth() / EMU_PER_PIXEL * scaleX;
+            ? imgSize.getWidth() : anchorSize.getWidth()/EMU_PER_PIXEL * scaleX;
         final double scaledHeight = (scaleY == Double.MAX_VALUE)
-                ? imgSize.getHeight() : anchorSize.getHeight() / EMU_PER_PIXEL * scaleY;
+            ? imgSize.getHeight() : anchorSize.getHeight()/EMU_PER_PIXEL * scaleY;
 
         scaleCell(scaledWidth, anchor.getCol1(), anchor.getDx1(), anchor::setCol2, anchor::setDx2,
-                isHSSF ? WIDTH_UNITS : 0, sheet::getColumnWidthInPixels);
+             isHSSF ? WIDTH_UNITS : 0, sheet::getColumnWidthInPixels);
 
         scaleCell(scaledHeight, anchor.getRow1(), anchor.getDy1(), anchor::setRow2, anchor::setDy2,
-                isHSSF ? HEIGHT_UNITS : 0, (row) -> getRowHeightInPixels(sheet, row));
+                  isHSSF ? HEIGHT_UNITS : 0, (row) -> getRowHeightInPixels(sheet, row));
 
         return new Dimension(
-                (int) Math.round(scaledWidth * EMU_PER_PIXEL),
-                (int) Math.round(scaledHeight * EMU_PER_PIXEL)
+            (int)Math.round(scaledWidth*EMU_PER_PIXEL),
+            (int)Math.round(scaledHeight*EMU_PER_PIXEL)
         );
     }
 
@@ -149,10 +155,10 @@ public final class ImageUtils {
         }
 
         int w = getDimFromCell(imgSize == null ? 0 : imgSize.getWidth(), anchor.getCol1(), anchor.getDx1(), anchor.getCol2(), anchor.getDx2(),
-                isHSSF ? WIDTH_UNITS : 0, sheet::getColumnWidthInPixels);
+            isHSSF ? WIDTH_UNITS : 0, sheet::getColumnWidthInPixels);
 
         int h = getDimFromCell(imgSize == null ? 0 : imgSize.getHeight(), anchor.getRow1(), anchor.getDy1(), anchor.getRow2(), anchor.getDy2(),
-                isHSSF ? HEIGHT_UNITS : 0, (row) -> getRowHeightInPixels(sheet, row));
+                               isHSSF ? HEIGHT_UNITS : 0, (row) -> getRowHeightInPixels(sheet, row));
 
         return new Dimension(w, h);
     }
@@ -161,7 +167,7 @@ public final class ImageUtils {
     public static double getRowHeightInPixels(Sheet sheet, int rowNum) {
         Row r = sheet.getRow(rowNum);
         double points = (r == null) ? sheet.getDefaultRowHeightInPoints() : r.getHeightInPoints();
-        return Units.toEMU(points) / (double) EMU_PER_PIXEL;
+        return Units.toEMU(points)/(double)EMU_PER_PIXEL;
     }
 
     private static void scaleCell(final double targetSize,
@@ -170,7 +176,7 @@ public final class ImageUtils {
                                   Consumer<Integer> endCell,
                                   Consumer<Integer> endD,
                                   final int hssfUnits,
-                                  Function<Integer, Number> nextSize) {
+                                  Function<Integer,Number> nextSize) {
         if (targetSize < 0) {
             throw new IllegalArgumentException("target size < 0");
         }
@@ -180,14 +186,14 @@ public final class ImageUtils {
 
         int cellIdx = startCell;
         double dim, delta;
-        for (double totalDim = 0, remDim; ; cellIdx++, totalDim += remDim) {
+        for (double totalDim = 0, remDim;; cellIdx++, totalDim += remDim) {
             dim = nextSize.apply(cellIdx).doubleValue();
             remDim = dim;
             if (cellIdx == startCell) {
                 if (hssfUnits > 0) {
-                    remDim *= 1 - startD / (double) hssfUnits;
+                    remDim *= 1 - startD/(double)hssfUnits;
                 } else {
-                    remDim -= startD / (double) EMU_PER_PIXEL;
+                    remDim -= startD/(double)EMU_PER_PIXEL;
                 }
             }
             delta = targetSize - totalDim;
@@ -198,7 +204,7 @@ public final class ImageUtils {
 
         double endDval;
         if (hssfUnits > 0) {
-            endDval = delta / dim * (double) hssfUnits;
+            endDval = delta/dim * (double)hssfUnits;
         } else {
             endDval = delta * EMU_PER_PIXEL;
         }
@@ -207,37 +213,37 @@ public final class ImageUtils {
         }
 
         endCell.accept(cellIdx);
-        endD.accept((int) Math.rint(endDval));
+        endD.accept((int)Math.rint(endDval));
     }
 
     private static int getDimFromCell(double imgSize, int startCell, int startD, int endCell, int endD, int hssfUnits,
-                                      Function<Integer, Number> nextSize) {
+         Function<Integer,Number> nextSize) {
         double targetSize;
         if (endCell < startCell) {
             targetSize = imgSize * EMU_PER_PIXEL;
         } else {
             targetSize = 0;
-            for (int cellIdx = startCell; cellIdx <= endCell; cellIdx++) {
+            for (int cellIdx = startCell; cellIdx<=endCell; cellIdx++) {
                 final double dim = nextSize.apply(cellIdx).doubleValue() * EMU_PER_PIXEL;
                 double leadSpace = 0;
                 if (cellIdx == startCell) {
                     //space in the leftmost cell
                     leadSpace = (hssfUnits > 0)
-                            ? dim * startD / (double) hssfUnits
-                            : startD;
+                        ? dim * startD/(double)hssfUnits
+                        : startD;
                 }
 
                 double trailSpace = 0;
                 if (cellIdx == endCell) {
                     // space after the rightmost cell
                     trailSpace = (hssfUnits > 0)
-                            ? dim * (hssfUnits - endD) / (double) hssfUnits
-                            : dim - endD;
+                        ? dim * (hssfUnits-endD)/(double)hssfUnits
+                        : dim - endD;
                 }
                 targetSize += dim - leadSpace - trailSpace;
             }
         }
 
-        return (int) Math.rint(targetSize);
+        return (int)Math.rint(targetSize);
     }
 }

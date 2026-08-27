@@ -1,22 +1,4 @@
-/*
- *  ====================================================================
- *    Licensed to the Apache Software Foundation (ASF) under one or more
- *    contributor license agreements.  See the NOTICE file distributed with
- *    this work for additional information regarding copyright ownership.
- *    The ASF licenses this file to You under the Apache License, Version 2.0
- *    (the "License"); you may not use this file except in compliance with
- *    the License.  You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
- * ====================================================================
- */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.temp;
 
@@ -31,6 +13,8 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Beta;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.IOUtils;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.streaming.SheetDataWriter;
+
+
 
 
 @Beta
@@ -65,8 +49,8 @@ public class SXSSFWorkbookWithCustomZipEntrySource extends SXSSFWorkbook {
     @Override
     protected SheetDataWriter createSheetDataWriter() throws IOException {
         //log values to ensure these values are accessible to subclasses
-        Log.i(TAG, String.format("isCompressTempFiles: %b", isCompressTempFiles()));
-        Log.i(TAG,String.format("SharedStringSource: %s", getSharedStringSource()));
+        Log.i(TAG, String.format("isCompressTempFiles: %s", isCompressTempFiles()));
+        Log.i(TAG, String.format("SharedStringSource: %s", getSharedStringSource()));
         return new SheetDataWriterWithDecorator();
     }
 }

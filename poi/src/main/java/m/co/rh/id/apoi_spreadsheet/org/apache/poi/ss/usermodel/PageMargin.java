@@ -14,10 +14,14 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
 
 /**
  * Enumeration which represents the various margins which are present within an
@@ -75,11 +79,11 @@ public enum PageMargin {
     private static final Map<Short, PageMargin> PAGE_MARGIN_BY_LEGACY_API_VALUE;
 
     static {
-        PAGE_MARGIN_BY_LEGACY_API_VALUE = new HashMap<>();
-
+        final Map<Short, PageMargin> map = new HashMap<>();
         for (PageMargin margin : values()) {
-            PAGE_MARGIN_BY_LEGACY_API_VALUE.put(margin.legacyApiValue, margin);
+            map.put(margin.legacyApiValue, margin);
         }
+        PAGE_MARGIN_BY_LEGACY_API_VALUE = Collections.unmodifiableMap(map);
     }
 
     /**

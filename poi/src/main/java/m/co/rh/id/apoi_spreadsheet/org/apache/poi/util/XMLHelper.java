@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.util;
 
@@ -31,6 +32,8 @@ import static m.co.rh.id.apoi_spreadsheet.base.xml.XMLConstants.ACCESS_EXTERNAL_
 
 import android.util.Log;
 
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.POIException;
+import org.w3c.dom.Node;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -38,9 +41,9 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 
 import java.io.StringReader;
+import java.util.Locale;
 import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -54,6 +57,7 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.validation.SchemaFactory;
+
 
 /**
  * Helper methods for working with javax.xml classes.
@@ -75,7 +79,6 @@ public final class XMLHelper {
             //"com.sun.org.apache.xerces.internal.util.SecurityManager",
             "org.apache.xerces.util.SecurityManager"
     };
-
 
     private static final String TAG = "XMLHelper";
     private static long lastLog;
@@ -223,7 +226,7 @@ public final class XMLHelper {
         return XMLEventFactory.newInstance();
     }
 
-    @SuppressWarnings({"squid:S4435", "java:S2755"})
+    @SuppressWarnings({"squid:S4435","java:S2755"})
     public static TransformerFactory getTransformerFactory() {
         TransformerFactory factory = TransformerFactory.newInstance();
         trySet(factory::setFeature, FEATURE_SECURE_PROCESSING, true);
@@ -253,7 +256,25 @@ public final class XMLHelper {
     }
 
 
+
+    private static Object _xercesSecurityManager;
+    private static volatile boolean _xercesSecurityManagerSet = false;
+
     private static Object getXercesSecurityManager() {
+        if (_xercesSecurityManagerSet) {
+            return _xercesSecurityManager;
+        } else {
+            synchronized (XMLHelper.class) {
+                if (!_xercesSecurityManagerSet) {
+                    _xercesSecurityManager = tryGetXercesSecurityManager();
+                    _xercesSecurityManagerSet = true;
+                }
+            }
+            return _xercesSecurityManager;
+        }
+    }
+
+    private static Object tryGetXercesSecurityManager() {
         // Try built-in JVM one first, standalone if not
         for (String securityManagerClassName : SECURITY_MANAGERS) {
             try {
@@ -271,7 +292,6 @@ public final class XMLHelper {
                 logThrowable(e, "SAX Feature unsupported", securityManagerClassName);
             }
         }
-
         return null;
     }
 
@@ -327,7 +347,7 @@ public final class XMLHelper {
 
     private static void logThrowable(Throwable t, String message, String name) {
         if (System.currentTimeMillis() > lastLog + TimeUnit.MINUTES.toMillis(5)) {
-            Log.w(TAG, String.format("%s [log suppressed for 5 minutes] %s", message, name));
+            Log.w(TAG, String.format("%s [log suppressed for 5 minutes] %s", message, name), t);
             lastLog = System.currentTimeMillis();
         }
     }
@@ -371,21 +391,29 @@ public final class XMLHelper {
                 case Log.INFO:
                     if (logException) {
                         Log.i(TAG, message, ex);
+                    } else {
+                        Log.i(TAG, message);
                     }
                     break;
                 case Log.DEBUG:
                     if (logException) {
                         Log.d(TAG, message, ex);
+                    } else {
+                        Log.d(TAG, message);
                     }
                     break;
                 case Log.WARN:
                     if (logException) {
                         Log.w(TAG, message, ex);
+                    } else {
+                        Log.w(TAG, message);
                     }
                     break;
                 case Log.ERROR:
                     if (logException) {
                         Log.e(TAG, message, ex);
+                    } else {
+                        Log.e(TAG, message);
                     }
                     break;
             }
@@ -394,5 +422,36 @@ public final class XMLHelper {
 
     private static InputSource ignoreEntity(String publicId, String systemId) {
         return new InputSource(new StringReader(""));
+    }
+    /**
+     * Counts the depth of the DOM tree starting from the given node.
+     *
+     * @param node the node to check
+     * @param maxSupportedDepth the maximum supported depth of the DOM tree
+     * @return the depth
+     * @throws POIException if the depth exceeds <code>maxSupportedDepth</code>
+     */
+    public static int getDepthOfChildNodes(final Node node, final int maxSupportedDepth) throws POIException {
+        return getDepthOfChildNodes(node, maxSupportedDepth, 0);
+    }
+
+    private static int getDepthOfChildNodes(final Node node, final int maxSupportedDepth,
+                                            final int nodeDepth) throws POIException {
+        final int currentDepth = nodeDepth + 1;
+        int maxDepth = currentDepth;
+        Node child = node.getFirstChild();
+        while (child != null) {
+            int childDepth = getDepthOfChildNodes(child, maxSupportedDepth, currentDepth);
+            if (childDepth > maxDepth) {
+                maxDepth = childDepth;
+                if (maxDepth > maxSupportedDepth) {
+                    throw new POIException(String.format(Locale.ROOT,
+                            "Node depth exceeds maximum supported depth of %s" ,
+                            maxSupportedDepth));
+                }
+            }
+            child = child.getNextSibling();
+        }
+        return maxDepth;
     }
 }

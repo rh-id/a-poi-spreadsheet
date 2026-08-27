@@ -15,6 +15,8 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel;
 
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.BaseFormulaEvaluator;
@@ -34,6 +36,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.CellValue;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.RichTextString;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.CellReference;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.model.ExternalLinksTable;
+
 
 /**
  * Internal POI use only - parent of XSSF and SXSSF formula evaluators
@@ -128,7 +131,7 @@ public abstract class BaseXSSFFormulaEvaluator extends BaseFormulaEvaluator {
         XSSFWorkbook xssfWorkbook = xssfCell.getSheet().getWorkbook();
         XSSFWorkbook externalWorkbook = (XSSFWorkbook) xssfWorkbook.getCreationHelper()
                 .getReferencedWorkbooks().get(externalSheet.getWorkbookName());
-        ExternalLinksTable externalLinksTable = xssfWorkbook.getExternalLinksTable().get(area3DPxg.getExternalWorkbookNumber() - 1);
+        ExternalLinksTable externalLinksTable = xssfWorkbook.getExternalLinksTable(area3DPxg.getExternalWorkbookNumber() - 1);
 
         if (externalWorkbook != null && externalLinksTable != null) {
             int firstSheet = externalWorkbook.getSheetIndex(area3DPxg.getSheetName());

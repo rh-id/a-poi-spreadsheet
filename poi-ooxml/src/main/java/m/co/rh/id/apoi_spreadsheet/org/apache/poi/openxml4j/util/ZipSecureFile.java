@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.util;
 
@@ -25,15 +26,21 @@ import org.apache.commons.compress.archivers.zip.ZipFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Set;
 
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.internal.InvalidZipException;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Removal;
+
 
 /**
  * This class wraps a {@link ZipFile} in order to check the
  * entries for <a href="https://en.wikipedia.org/wiki/Zip_bomb">zip bombs</a>
  * while reading the archive.<p>
- * <p>
+ *
  * The alert limits can be globally defined via {@link #setMaxEntrySize(long)}
  * and {@link #setMinInflateRatio(double)}.
  */
@@ -43,13 +50,13 @@ public class ZipSecureFile extends ZipFile {
     /* package */ static double MIN_INFLATE_RATIO = 0.01d;
     /* package */ static final long DEFAULT_MAX_ENTRY_SIZE = 0xFFFFFFFFL;
     /* package */ static final long DEFAULT_MAX_FILE_COUNT = 1000;
-    /* package */ static final long DEFAULT_GRACE_ENTRY_SIZE = 100 * 1024L;
+    /* package */ static final long DEFAULT_GRACE_ENTRY_SIZE = 100*1024L;
     /* package */ static long MAX_ENTRY_SIZE = DEFAULT_MAX_ENTRY_SIZE;
     /* package */ static long MAX_FILE_COUNT = DEFAULT_MAX_FILE_COUNT;
     /* package */ static long GRACE_ENTRY_SIZE = DEFAULT_GRACE_ENTRY_SIZE;
 
     // The maximum chars of extracted text
-    /* package */ static final long DEFAULT_MAX_TEXT_SIZE = 10 * 1024 * 1024L;
+    /* package */ static final long DEFAULT_MAX_TEXT_SIZE = 10*1024*1024L;
     private static long MAX_TEXT_SIZE = DEFAULT_MAX_TEXT_SIZE;
 
     public static final String MAX_FILE_COUNT_MSG =
@@ -75,7 +82,7 @@ public class ZipSecureFile extends ZipFile {
 
     /**
      * Returns the current minimum compression rate that is used.
-     * <p>
+     *
      * See setMinInflateRatio() for details.
      *
      * @return The min accepted compression-ratio.
@@ -86,7 +93,7 @@ public class ZipSecureFile extends ZipFile {
 
     /**
      * Returns the current maximum file count that is used.
-     * <p>
+     *
      * See setMaxFileCount() for details.
      *
      * @return The max accepted file count (i.e. the max number of files we allow inside zip files that we read - including OOXML files like xlsx, docx, pptx, etc.).
@@ -110,7 +117,7 @@ public class ZipSecureFile extends ZipFile {
     /**
      * Sets the maximum file size of a single zip entry. It defaults to 4GB,
      * i.e. the 32-bit zip format maximum.
-     * <p>
+     *
      * This can be used to limit memory consumption and protect against
      * security vulnerabilities when documents are provided by users.
      *
@@ -121,14 +128,14 @@ public class ZipSecureFile extends ZipFile {
         if (maxEntrySize < 0) {
             throw new IllegalArgumentException("Max entry size must be greater than or equal to zero");
         } else if (maxEntrySize > DEFAULT_MAX_ENTRY_SIZE) {
-            Log.w(TAG, "setting max entry size greater than 4Gb can be risky; set to " + maxEntrySize + " bytes");
+            Log.w(TAG, String.format("setting max entry size greater than 4Gb can be risky; set to %s bytes", maxEntrySize));
         }
         MAX_ENTRY_SIZE = maxEntrySize;
     }
 
     /**
      * Returns the current maximum allowed uncompressed file size.
-     * <p>
+     *
      * See setMaxEntrySize() for details.
      *
      * @return The max accepted uncompressed file size.
@@ -139,10 +146,10 @@ public class ZipSecureFile extends ZipFile {
 
     /**
      * Sets the grace entry size of a single zip entry. It defaults to 100Kb.
-     * <p>
+     *
      * When decompressed data in a zip entry is smaller than this size, the
      * Minimum Inflation Ratio check is ignored.
-     * <p>
+     *
      * Setting this to a very small value may lead to more files being flagged
      * as potential Zip Bombs are rejected as a result.
      *
@@ -160,7 +167,7 @@ public class ZipSecureFile extends ZipFile {
     /**
      * Returns the current threshold for decompressed data in zip entries that are regarded as too small
      * to worry about from a Zip Bomb perspective (default is 100Kb).
-     * <p>
+     *
      * See setGraceEntrySize() for details.
      *
      * @return The current grace entry size
@@ -174,7 +181,7 @@ public class ZipSecureFile extends ZipFile {
      * Sets the maximum number of characters of text that are
      * extracted before an exception is thrown during extracting
      * text from documents.
-     * <p>
+     *
      * This can be used to limit memory consumption and protect against
      * security vulnerabilities when documents are provided by users.
      *
@@ -184,8 +191,8 @@ public class ZipSecureFile extends ZipFile {
     public static void setMaxTextSize(long maxTextSize) {
         if (maxTextSize < 0) {
             throw new IllegalArgumentException("Max text size must be greater than or equal to zero");
-        } else if (maxTextSize > DEFAULT_MAX_TEXT_SIZE) {
-            Log.w(TAG, "setting max text size greater than " + DEFAULT_MAX_TEXT_SIZE + " can be risky; set to " + maxTextSize + " chars");
+        }else if (maxTextSize > DEFAULT_MAX_TEXT_SIZE) {
+            Log.w(TAG, String.format("setting max text size greater than %s can be risky; set to %s chars", DEFAULT_MAX_TEXT_SIZE, maxTextSize));
         }
         MAX_TEXT_SIZE = maxTextSize;
     }
@@ -207,15 +214,17 @@ public class ZipSecureFile extends ZipFile {
     public ZipSecureFile(File file) throws IOException {
         super(file);
         this.fileName = file.getAbsolutePath();
+        validateEntryNames();
     }
 
     /**
      * @param name the file name, possibly including path traversal - it is up to users to validate that the input value is safe
-     * @throws IOException if an error occurs while reading the file.
+     * @throws IOException  if an error occurs while reading the file.
      */
     public ZipSecureFile(String name) throws IOException {
         super(name);
         this.fileName = new File(name).getAbsolutePath();
+        validateEntryNames();
     }
 
     /**
@@ -228,7 +237,7 @@ public class ZipSecureFile extends ZipFile {
      * @param entry the zip file entry
      * @return the input stream for reading the contents of the specified
      * zip file entry.
-     * @throws IOException           if an I/O error has occurred
+     * @throws IOException if an I/O error has occurred
      * @throws IllegalStateException if the zip file has been closed
      */
     @Override
@@ -241,12 +250,28 @@ public class ZipSecureFile extends ZipFile {
 
     /**
      * Returns the path name of the ZIP file.
-     *
      * @return the path name of the ZIP file
-     * @deprecated there is no need for this method - it will be removed in a future version of POI (deprecated since POI 5.2.6)
+     * @deprecated there is no need for this method - it will be removed in a future version of POI (deprecated since POI 5.3.0)
      */
     @Removal(version = "7.0.0")
     public String getName() {
         return fileName;
+    }
+
+    private void validateEntryNames() throws IOException {
+        final Enumeration<ZipArchiveEntry> en = getEntries();
+        final Set<String> filenames = new HashSet<>();
+        while (en.hasMoreElements()) {
+            final ZipArchiveEntry entry = en.nextElement();
+            String name = entry.getName();
+            if (name == null || name.isEmpty()) {
+                throw new InvalidZipException("Input file contains an entry with an empty name");
+            }
+            name = name.toLowerCase(Locale.ROOT);
+            if (filenames.contains(name)) {
+                throw new InvalidZipException("Input file contains more than 1 entry with the name " + entry.getName());
+            }
+            filenames.add(name);
+        }
     }
 }

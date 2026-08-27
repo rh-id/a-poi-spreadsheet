@@ -15,6 +15,8 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record;
 
 import java.util.Collections;
@@ -30,6 +32,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ptg.Ptg;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.BitField;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.BitFieldFactory;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.RecordFormatException;
+
 
 /**
  * The TXO record (0x01B6) is used to define the properties of a text box. It is
@@ -212,7 +215,7 @@ public final class TextObjectRecord extends ContinuableRecord {
     protected void serialize(ContinuableRecordOutput out) {
 
         serializeTXORecord(out);
-        if (_text.getString().length() > 0) {
+        if (!_text.getString().isEmpty()) {
             serializeTrailingRecords(out);
         }
     }

@@ -14,11 +14,10 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.function;
-
-import android.content.Context;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -30,9 +29,10 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import m.co.rh.id.apoi_spreadsheet.base.POISpreadsheetContext;
+import m.co.rh.id.apoi_spreadsheet.base.util.Assets;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ptg.Ptg;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.IOUtils;
+
 
 /**
  * Converts the text meta-data file into a {@code FunctionMetadataRegistry}
@@ -46,19 +46,17 @@ final class FunctionMetadataReader {
     private static final String METADATA_FILE_NAME = "functionMetadata.txt";
     private static final String METADATA_FILE_NAME_CETAB = "functionMetadataCetab.txt";
 
-    /**
-     * plain ASCII text metadata file uses three dots for ellipsis
-     */
+    /** plain ASCII text metadata file uses three dots for ellipsis */
     private static final String ELLIPSIS = "...";
 
     private static final Pattern TAB_DELIM_PATTERN = Pattern.compile("\t");
     private static final Pattern SPACE_DELIM_PATTERN = Pattern.compile(" ");
-    private static final byte[] EMPTY_BYTE_ARRAY = {};
+    private static final byte[] EMPTY_BYTE_ARRAY = { };
 
     private static final String[] DIGIT_ENDING_FUNCTION_NAMES = {
-            // Digits at the end of a function might be due to a left-over footnote marker.
-            // except in these cases
-            "LOG10", "ATAN2", "DAYS360", "SUMXMY2", "SUMX2MY2", "SUMX2PY2", "A1.R1C1",
+        // Digits at the end of a function might be due to a left-over footnote marker.
+        // except in these cases
+        "LOG10", "ATAN2", "DAYS360", "SUMXMY2", "SUMX2MY2", "SUMX2PY2", "A1.R1C1",
     };
     private static final Set<String> DIGIT_ENDING_FUNCTION_NAMES_SET = new HashSet<>(Arrays.asList(DIGIT_ENDING_FUNCTION_NAMES));
 
@@ -88,17 +86,22 @@ final class FunctionMetadataReader {
         return fdb.build();
     }
 
-    private static void readResourceFile(FunctionDataBuilder fdb, String resourceFile) {
-        Context context = POISpreadsheetContext.getInstance().getAppContext();
-        if (context == null) {
-            throw new UnsupportedOperationException("Context has not been set");
+    private static InputStream openMetadata(String resourceFile) {
+        InputStream is = FunctionMetadataReader.class.getResourceAsStream(resourceFile);
+        if (is == null) {
+            // resources may be shipped as Android assets (not on the JVM classpath), fall back to the asset manager
+            is = Assets.openOrNull("org/apache/poi/ss/formula/function/" + resourceFile);
         }
-        try (InputStream is = context.getAssets().open("org/apache/poi/ss/formula/function/" + resourceFile)) {
+        return is;
+    }
+
+    private static void readResourceFile(FunctionDataBuilder fdb, String resourceFile) {
+        try (InputStream is = openMetadata(resourceFile)) {
             if (is == null) {
                 throw new IllegalStateException("resource '" + resourceFile + "' not found");
             }
 
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
+            try(BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
 
                 while (true) {
                     String line = br.readLine();
@@ -123,7 +126,7 @@ final class FunctionMetadataReader {
     private static void processLine(FunctionDataBuilder fdb, String line) {
 
         String[] parts = TAB_DELIM_PATTERN.split(line, -2);
-        if (parts.length != 8) {
+        if(parts.length != 8) {
             throw new IllegalStateException("Bad line format '" + line + "' - expected 8 data fields delimited by tab, " +
                     "but had " + parts.length + ": " + Arrays.toString(parts));
         }
@@ -134,7 +137,7 @@ final class FunctionMetadataReader {
         byte returnClassCode = parseReturnTypeCode(parts[4]);
         byte[] parameterClassCodes = parseOperandTypeCodes(parts[5]);
         // 6 isVolatile
-        boolean hasNote = parts[7].length() > 0;
+        boolean hasNote = !parts[7].isEmpty();
 
         validateFunctionName(functionName);
         // TODO - make POI use isVolatile
@@ -144,28 +147,28 @@ final class FunctionMetadataReader {
 
 
     private static byte parseReturnTypeCode(String code) {
-        if (code.length() == 0) {
+        if(code.isEmpty()) {
             return Ptg.CLASS_REF; // happens for GETPIVOTDATA
         }
         return parseOperandTypeCode(code);
     }
 
     private static byte[] parseOperandTypeCodes(String codes) {
-        if (codes.length() < 1) {
+        if(codes.length() < 1) {
             return EMPTY_BYTE_ARRAY; // happens for GETPIVOTDATA
         }
-        if (isDash(codes)) {
+        if(isDash(codes)) {
             // '-' means empty:
             return EMPTY_BYTE_ARRAY;
         }
         String[] array = SPACE_DELIM_PATTERN.split(codes);
         int nItems = array.length;
-        if (ELLIPSIS.equals(array[nItems - 1])) {
+        if(ELLIPSIS.equals(array[nItems-1])) {
             // final ellipsis is optional, and ignored
             // (all unspecified params are assumed to be the same as the last)
-            nItems--;
+            nItems --;
         }
-        byte[] result = IOUtils.safelyAllocate(nItems, MAX_RECORD_LENGTH);
+        byte[] result = IOUtils.safelyAllocate(nItems, getMaxRecordLength());
         for (int i = 0; i < nItems; i++) {
             result[i] = parseOperandTypeCode(array[i]);
         }
@@ -177,18 +180,15 @@ final class FunctionMetadataReader {
     }
 
     private static byte parseOperandTypeCode(String code) {
-        if (code.length() != 1) {
-            throw new IllegalStateException("Bad operand type code format '" + code + "' expected single char");
+        if(code.length() != 1) {
+            throw new IllegalStateException("Bad operand type code format '" + code  + "' expected single char");
         }
-        switch (code.charAt(0)) {
-            case 'V':
-                return Ptg.CLASS_VALUE;
-            case 'R':
-                return Ptg.CLASS_REF;
-            case 'A':
-                return Ptg.CLASS_ARRAY;
+        switch(code.charAt(0)) {
+            case 'V': return Ptg.CLASS_VALUE;
+            case 'R': return Ptg.CLASS_REF;
+            case 'A': return Ptg.CLASS_ARRAY;
         }
-        throw new IllegalArgumentException("Unexpected operand type code '" + code + "' (" + (int) code.charAt(0) + ")");
+        throw new IllegalArgumentException("Unexpected operand type code '" + code + "' (" + (int)code.charAt(0) + ")");
     }
 
     /**
@@ -201,13 +201,13 @@ final class FunctionMetadataReader {
         if (!Character.isDigit(functionName.charAt(ix))) {
             return;
         }
-        while (ix >= 0) {
+        while(ix >= 0) {
             if (!Character.isDigit(functionName.charAt(ix))) {
                 break;
             }
             ix--;
         }
-        if (DIGIT_ENDING_FUNCTION_NAMES_SET.contains(functionName)) {
+        if(DIGIT_ENDING_FUNCTION_NAMES_SET.contains(functionName)) {
             return;
         }
         throw new IllegalStateException("Invalid function name '" + functionName

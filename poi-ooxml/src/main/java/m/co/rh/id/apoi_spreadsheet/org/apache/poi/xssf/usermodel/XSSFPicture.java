@@ -14,10 +14,10 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel;
-
 
 import android.util.Log;
 
@@ -43,6 +43,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Picture;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Workbook;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.ImageUtils;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
+
 
 /**
  * Represents a picture shape in a SpreadsheetML drawing.
@@ -71,11 +72,11 @@ public final class XSSFPicture extends XSSFShape implements Picture {
 
     /**
      * Construct a new XSSFPicture object. This constructor is called from
-     * {@link XSSFDrawing#createPicture(XSSFClientAnchor, int)}
+     *  {@link XSSFDrawing#createPicture(XSSFClientAnchor, int)}
      *
      * @param drawing the XSSFDrawing that owns this picture
      */
-    protected XSSFPicture(XSSFDrawing drawing, CTPicture ctPicture) {
+    protected XSSFPicture(XSSFDrawing drawing, CTPicture ctPicture){
         this.drawing = drawing;
         this.ctPicture = ctPicture;
     }
@@ -85,8 +86,8 @@ public final class XSSFPicture extends XSSFShape implements Picture {
      *
      * @return a prototype that is used to construct new shapes
      */
-    protected static CTPicture prototype() {
-        if (prototype == null) {
+    protected static CTPicture prototype(){
+        if(prototype == null) {
             CTPicture pic = CTPicture.Factory.newInstance();
             CTPictureNonVisual nvpr = pic.addNewNvPicPr();
             CTNonVisualDrawingProps nvProps = nvpr.addNewCNvPr();
@@ -125,7 +126,7 @@ public final class XSSFPicture extends XSSFShape implements Picture {
      *
      * @param rel relationship referring the picture data
      */
-    protected void setPictureReference(PackageRelationship rel) {
+    protected void setPictureReference(PackageRelationship rel){
         ctPicture.getBlipFill().getBlip().setEmbed(rel.getId());
     }
 
@@ -135,7 +136,7 @@ public final class XSSFPicture extends XSSFShape implements Picture {
      * @return the underlying CTPicture bean
      */
     @Internal
-    public CTPicture getCTPicture() {
+    public CTPicture getCTPicture(){
         return ctPicture;
     }
 
@@ -145,7 +146,7 @@ public final class XSSFPicture extends XSSFShape implements Picture {
      * @see #resize(double, double)
      */
     @Override
-    public void resize() {
+    public void resize(){
         resize(Double.MAX_VALUE);
     }
 
@@ -172,14 +173,14 @@ public final class XSSFPicture extends XSSFShape implements Picture {
      * <code>resize({@link Double#MAX_VALUE},{@link Double#MAX_VALUE})</code> resizes to the dimension of the embedded image.
      *
      * @param scaleX the amount by which the image width is multiplied relative to the original width,
-     *               when set to {@link Double#MAX_VALUE} the width of the embedded image is used
+     *  when set to {@link Double#MAX_VALUE} the width of the embedded image is used
      * @param scaleY the amount by which the image height is multiplied relative to the original height,
-     *               when set to {@link Double#MAX_VALUE} the height of the embedded image is used
+     *  when set to {@link Double#MAX_VALUE} the height of the embedded image is used
      */
     @Override
-    public void resize(double scaleX, double scaleY) {
+    public void resize(double scaleX, double scaleY){
         XSSFClientAnchor anchor = getClientAnchor();
-        XSSFClientAnchor pref = getPreferredSize(scaleX, scaleY);
+        XSSFClientAnchor pref = getPreferredSize(scaleX,scaleY);
         if (anchor == null || pref == null) {
             Log.w(TAG, "picture is not anchored via client anchor - ignoring resize call");
             return;
@@ -203,7 +204,7 @@ public final class XSSFPicture extends XSSFShape implements Picture {
      * @return XSSFClientAnchor with the preferred size for this image
      */
     @Override
-    public XSSFClientAnchor getPreferredSize() {
+    public XSSFClientAnchor getPreferredSize(){
         return getPreferredSize(1);
     }
 
@@ -213,7 +214,7 @@ public final class XSSFPicture extends XSSFShape implements Picture {
      * @param scale the amount by which image dimensions are multiplied relative to the original size.
      * @return XSSFClientAnchor with the preferred size for this image
      */
-    public XSSFClientAnchor getPreferredSize(double scale) {
+    public XSSFClientAnchor getPreferredSize(double scale){
         return getPreferredSize(scale, scale);
     }
 
@@ -225,11 +226,11 @@ public final class XSSFPicture extends XSSFShape implements Picture {
      * @return XSSFClientAnchor with the preferred size for this image
      */
     @Override
-    public XSSFClientAnchor getPreferredSize(double scaleX, double scaleY) {
+    public XSSFClientAnchor getPreferredSize(double scaleX, double scaleY){
         Dimension dim = ImageUtils.setPreferredSize(this, scaleX, scaleY);
-        CTPositiveSize2D size2d = ctPicture.getSpPr().getXfrm().getExt();
-        size2d.setCx((int) dim.getWidth());
-        size2d.setCy((int) dim.getHeight());
+        CTPositiveSize2D size2d =  ctPicture.getSpPr().getXfrm().getExt();
+        size2d.setCx((int)dim.getWidth());
+        size2d.setCy((int)dim.getHeight());
         return getClientAnchor();
     }
 
@@ -238,13 +239,14 @@ public final class XSSFPicture extends XSSFShape implements Picture {
      *
      * @param part the package part holding raw picture data
      * @param type type of the picture: {@link Workbook#PICTURE_TYPE_JPEG},
-     *             {@link Workbook#PICTURE_TYPE_PNG} or {@link Workbook#PICTURE_TYPE_DIB}
+     * {@link Workbook#PICTURE_TYPE_PNG} or {@link Workbook#PICTURE_TYPE_DIB}
+     *
      * @return image dimension in pixels
      */
-    protected static Dimension getImageDimension(PackagePart part, int type) {
+    protected static Dimension getImageDimension(PackagePart part, int type){
         try (InputStream stream = part.getInputStream()) {
             return ImageUtils.getImageDimension(stream, type);
-        } catch (IOException e) {
+        } catch (IOException e){
             //return a "singulariry" if ImageIO failed to read the image
             Log.w(TAG, "Failed to read image", e);
             return new Dimension();
@@ -270,11 +272,11 @@ public final class XSSFPicture extends XSSFShape implements Picture {
     @Override
     public XSSFPictureData getPictureData() {
         String blipId = ctPicture.getBlipFill().getBlip().getEmbed();
-        return (XSSFPictureData) getDrawing().getRelationById(blipId);
+        return  (XSSFPictureData)getDrawing().getRelationById(blipId);
     }
 
     @Override
-    protected CTShapeProperties getShapeProperties() {
+    protected CTShapeProperties getShapeProperties(){
         return ctPicture.getSpPr();
     }
 
@@ -284,7 +286,7 @@ public final class XSSFPicture extends XSSFShape implements Picture {
     @Override
     public XSSFClientAnchor getClientAnchor() {
         XSSFAnchor a = getAnchor();
-        return (a instanceof XSSFClientAnchor) ? (XSSFClientAnchor) a : null;
+        return (a instanceof XSSFClientAnchor) ? (XSSFClientAnchor)a : null;
     }
 
     /**
@@ -292,7 +294,7 @@ public final class XSSFPicture extends XSSFShape implements Picture {
      */
     @Override
     public XSSFSheet getSheet() {
-        return (XSSFSheet) getDrawing().getParent();
+        return (XSSFSheet)getDrawing().getParent();
     }
 
     @Override

@@ -14,9 +14,13 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.internal;
+
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -24,10 +28,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.exceptions.NotOfficeXmlFileException;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.exceptions.OLE2NotOfficeXmlFileException;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackageRelationship;
@@ -37,6 +40,8 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.util.ZipArchiveThres
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.util.ZipSecureFile;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.filesystem.FileMagic;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Reproducibility;
+
 
 @Internal
 public final class ZipHelper {
@@ -68,7 +73,9 @@ public final class ZipHelper {
             return null;
         }
 
-        return new ZipArchiveEntry(corePropsRel.getTargetURI().getPath());
+        ZipArchiveEntry entry = new ZipArchiveEntry(corePropsRel.getTargetURI().getPath());
+        ZipHelper.adjustEntryTime(entry);
+        return entry;
     }
 
     /**
@@ -132,10 +139,10 @@ public final class ZipHelper {
             return null;
         }
     }
-    
+
     /**
      * Verifies that the given stream starts with a Zip structure.
-     * 
+     *
      * Warning - this will consume the first few bytes of the stream,
      *  you should push-back or reset the stream after use!
      */
@@ -189,11 +196,12 @@ public final class ZipHelper {
 
         final InputStream processStream = closeStream ? checkedStream : new NoCloseInputStream(checkedStream);
         // Open as a proper zip stream
-        return new ZipArchiveThresholdInputStream(new ZipArchiveInputStream(processStream));
+        return new ZipArchiveThresholdInputStream(new ZipArchiveInputStream(
+                processStream, StandardCharsets.UTF_8.name(), false, true));
     }
 
     /**
-     * Opens the specified file as a secure zip, or returns null if no 
+     * Opens the specified file as a secure zip, or returns null if no
      *  such file exists
      *
      * @param file
@@ -209,7 +217,7 @@ public final class ZipHelper {
         if (file.isDirectory()) {
             throw new IOException("File is a directory");
         }
-        
+
         // Peek at the first few bytes to sanity check
         try (InputStream input = Files.newInputStream(file.toPath())) {
             verifyZipHeader(input);
@@ -228,5 +236,18 @@ public final class ZipHelper {
      */
     public static ZipSecureFile openZipFile(String path) throws IOException {
         return openZipFile(new File(path));
+    }
+
+    /**
+     * If environment-variable SOURCE_DATE_EPOCH is set, we use "0" for the
+     * time of the entry.
+     *
+     * @param entry The zip-entry to adjust
+     */
+    public static void adjustEntryTime(ZipArchiveEntry entry) {
+        // if SOURCE_DATE_EPOCH is set, we set the time-field to zero
+        if (Reproducibility.isSourceDateEpoch()) {
+            entry.setTime(0);
+        }
     }
 }

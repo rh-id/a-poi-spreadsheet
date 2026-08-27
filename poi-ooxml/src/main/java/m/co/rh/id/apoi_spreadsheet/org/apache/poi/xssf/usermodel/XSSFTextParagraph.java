@@ -14,23 +14,26 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel;
 
 
-import android.graphics.Color;
+import org.apache.xmlbeans.XmlObject;
+import org.openxmlformats.schemas.drawingml.x2006.main.*;
+import org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTShape;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.util.NumberHelper;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.util.POIXMLUnits;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Units;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.model.ParagraphPropertyFetcher;
-import org.apache.xmlbeans.XmlObject;
-import org.openxmlformats.schemas.drawingml.x2006.main.*;
-import org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTShape;
+
 
 /**
  * Represents a paragraph of text within the containing text body.
@@ -66,7 +69,7 @@ public class XSSFTextParagraph implements Iterable<XSSFTextRun>{
         }
     }
 
-    public String getText(){
+    public String getText() {
         StringBuilder out = new StringBuilder();
         for (XSSFTextRun r : _runs) {
             out.append(r.getText());
@@ -85,7 +88,7 @@ public class XSSFTextParagraph implements Iterable<XSSFTextRun>{
     }
 
     public List<XSSFTextRun> getTextRuns(){
-        return _runs;
+        return Collections.unmodifiableList(_runs);
     }
 
     public Iterator<XSSFTextRun> iterator(){
@@ -151,7 +154,7 @@ public class XSSFTextParagraph implements Iterable<XSSFTextRun>{
     /**
      * Specifies the alignment that is to be applied to the paragraph.
      * Possible values for this include left, right, centered, justified and distributed,
-     * see {@link m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.TextAlign}.
+     * see {@link org.apache.poi.xssf.usermodel.TextAlign}.
      *
      * @param align text align
      */
@@ -254,14 +257,13 @@ public class XSSFTextParagraph implements Iterable<XSSFTextRun>{
      * @return the color of bullet characters within a given paragraph.
      * A <code>null</code> value means to use the text font color.
      */
-    public Color getBulletFontColor(){
-        ParagraphPropertyFetcher<Color> fetcher = new ParagraphPropertyFetcher<Color>(getLevel()){
+    public byte[] getBulletFontColorAsBytes() {
+        ParagraphPropertyFetcher<byte[]> fetcher = new ParagraphPropertyFetcher<byte[]>(getLevel()) {
             public boolean fetch(CTTextParagraphProperties props){
                 if(props.isSetBuClr()){
                     if(props.getBuClr().isSetSrgbClr()){
                         CTSRgbColor clr = props.getBuClr().getSrgbClr();
-                        byte[] rgb = clr.getVal();
-                        setValue(Color.valueOf(0xFF & rgb[0], 0xFF & rgb[1], 0xFF & rgb[2]));
+                        setValue(clr.getVal());
                         return true;
                     }
                 }
@@ -275,13 +277,14 @@ public class XSSFTextParagraph implements Iterable<XSSFTextRun>{
     /**
      * Set the color to be used on bullet characters within a given paragraph.
      *
-     * @param color the bullet color
+     * @param colorArray the bullet color (as byte array)
+     * @since POI 5.5.0
      */
-    public void setBulletFontColor(Color color){
+    public void setBulletFontColor(byte[] colorArray) {
         CTTextParagraphProperties pr = _p.isSetPPr() ? _p.getPPr() : _p.addNewPPr();
         CTColor c = pr.isSetBuClr() ? pr.getBuClr() : pr.addNewBuClr();
         CTSRgbColor clr = c.isSetSrgbClr() ? c.getSrgbClr() : c.addNewSrgbClr();
-        clr.setVal(new byte[]{(byte) color.red(), (byte) color.green(), (byte) color.blue()});
+        clr.setVal(colorArray);
     }
 
     /**
@@ -554,8 +557,8 @@ public class XSSFTextParagraph implements Iterable<XSSFTextRun>{
         if(lnSpc > 0) {
             // check if the percentage value is scaled
             CTTextNormalAutofit normAutofit = _shape.getTxBody().getBodyPr().getNormAutofit();
-            if(normAutofit != null) {
-                double scale = 1 - (double)normAutofit.getLnSpcReduction() / 100000;
+            if(normAutofit != null && normAutofit.isSetLnSpcReduction()) {
+                double scale = 1 - NumberHelper.toDouble(normAutofit.getLnSpcReduction()) / 100000;
                 lnSpc *= scale;
             }
         }
@@ -868,5 +871,30 @@ public class XSSFTextParagraph implements Iterable<XSSFTextRun>{
     @Override
     public String toString(){
         return "[" + getClass() + "]" + getText();
+    }
+
+    /**
+     *
+     * @return the color of bullet characters within a given paragraph.
+     * A <code>null</code> value means to use the text font color.
+     */
+    public android.graphics.Color getBulletFontColor(){
+        byte[] bytes = getBulletFontColorAsBytes();
+        if (bytes == null) {
+            return null;
+        } else if (bytes.length == 3) {
+            return android.graphics.Color.valueOf((0xFF << 24) | ((bytes[0] & 0xFF) << 16) | ((bytes[1] & 0xFF) << 8) | (bytes[2] & 0xFF));
+        } else {
+            return android.graphics.Color.valueOf(((bytes[0] & 0xFF) << 24) | ((bytes[1] & 0xFF) << 16) | ((bytes[2] & 0xFF) << 8) | (bytes[3] & 0xFF));
+        }
+    }
+
+    /**
+     * Set the color to be used on bullet characters within a given paragraph.
+     *
+     * @param color the bullet color
+     */
+    public void setBulletFontColor(android.graphics.Color color){
+        setBulletFontColor(new byte[]{(byte) Math.round(color.red() * 255), (byte) Math.round(color.green() * 255), (byte) Math.round(color.blue() * 255)});
     }
 }

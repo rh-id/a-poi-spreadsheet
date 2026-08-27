@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.cf;
 
@@ -33,6 +34,9 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.GenericRecordJsonWriter;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.GenericRecordUtil;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndianInput;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndianOutput;
+
+
+
 
 /**
  * Icon / Multi-State Conditional Formatting Rule Record.
@@ -68,12 +72,12 @@ public final class IconMultiStateFormatting implements Duplicatable, GenericReco
         int set = in.readByte();
         iconSet = IconSet.byId(set);
         if (iconSet.num != num) {
-            Log.w(TAG, String.format("Inconsistent Icon Set definition, found %s but defined as %d entries", iconSet, num));
+            Log.w(TAG, String.format("Inconsistent Icon Set definition, found %s but defined as %s entries", iconSet, num));
         }
         options = in.readByte();
 
         thresholds = new Threshold[iconSet.num];
-        for (int i = 0; i < thresholds.length; i++) {
+        for (int i=0; i<thresholds.length; i++) {
             thresholds[i] = new IconMultiStateThreshold(in);
         }
     }
@@ -81,7 +85,6 @@ public final class IconMultiStateFormatting implements Duplicatable, GenericReco
     public IconSet getIconSet() {
         return iconSet;
     }
-
     public void setIconSet(IconSet set) {
         this.iconSet = set;
     }
@@ -89,7 +92,6 @@ public final class IconMultiStateFormatting implements Duplicatable, GenericReco
     public Threshold[] getThresholds() {
         return thresholds;
     }
-
     public void setThresholds(Threshold[] thresholds) {
         this.thresholds = (thresholds == null) ? null : thresholds.clone();
     }
@@ -97,7 +99,6 @@ public final class IconMultiStateFormatting implements Duplicatable, GenericReco
     public boolean isIconOnly() {
         return ICON_ONLY.isSet(options);
     }
-
     public void setIconOnly(boolean only) {
         options = ICON_ONLY.setByteBoolean(options, only);
     }
@@ -113,10 +114,10 @@ public final class IconMultiStateFormatting implements Duplicatable, GenericReco
     @Override
     public Map<String, Supplier<?>> getGenericProperties() {
         return GenericRecordUtil.getGenericProperties(
-                "iconSet", this::getIconSet,
-                "iconOnly", this::isIconOnly,
-                "reversed", this::isReversed,
-                "thresholds", this::getThresholds
+            "iconSet", this::getIconSet,
+            "iconOnly", this::isIconOnly,
+            "reversed", this::isReversed,
+            "thresholds", this::getThresholds
         );
     }
 
@@ -125,7 +126,7 @@ public final class IconMultiStateFormatting implements Duplicatable, GenericReco
     }
 
     @Override
-    public IconMultiStateFormatting copy() {
+    public IconMultiStateFormatting copy()  {
         return new IconMultiStateFormatting(this);
     }
 

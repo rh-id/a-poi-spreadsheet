@@ -9,6 +9,8 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 
+import java.util.TimeZone;
+
 import m.co.rh.id.apoi_spreadsheet.base.POISpreadsheetContext;
 
 public class POIJUnit4ClassRunner extends AndroidJUnit4ClassRunner {
@@ -27,6 +29,8 @@ public class POIJUnit4ClassRunner extends AndroidJUnit4ClassRunner {
         return new Statement() {
             @Override
             public void evaluate() throws Throwable {
+                // deterministic date formatting/evaluation regardless of device timezone (matches JVM CI environment)
+                TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
                 POISpreadsheetContext.getInstance().setAppContext(InstrumentationRegistry.getInstrumentation().getTargetContext());
                 parentStatement.evaluate();
                 POISpreadsheetContext.getInstance().setAppContext(null);

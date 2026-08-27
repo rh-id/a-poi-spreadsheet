@@ -15,13 +15,16 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.OperationEvaluationContext;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.*;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Implementation for Excel IMAGINARY() function.
@@ -74,7 +77,7 @@ public class Imaginary extends Fixed1ArgFunction implements FreeRefFunction {
             String imaginaryGroup = m.group(5);
             boolean hasImaginaryPart = imaginaryGroup.equals("i") || imaginaryGroup.equals("j");
 
-            if (imaginaryGroup.length() == 0) {
+            if (imaginaryGroup.isEmpty()) {
                 return new StringEval(String.valueOf(0));
             }
 

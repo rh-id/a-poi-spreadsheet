@@ -15,7 +15,11 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.cryptoapi;
+
+import org.apache.commons.io.input.BoundedInputStream;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -23,12 +27,10 @@ import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.util.Arrays;
-
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
-import org.apache.commons.io.input.BoundedInputStream;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.EncryptedDocumentException;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.ChunkedCipherInputStream;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.CryptoFunctions;
@@ -46,6 +48,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.IOUtils;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndian;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndianInputStream;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.StringUtil;
+
 
 public class CryptoAPIDecryptor extends Decryptor {
 
@@ -205,7 +208,7 @@ public class CryptoAPIDecryptor extends Decryptor {
             for (StreamDescriptorEntry entry : entries) {
                 sbis.seek(entry.streamOffset);
                 sbis.setBlock(entry.block);
-                try (InputStream is = new BoundedInputStream(sbis, entry.streamSize)) {
+                try (InputStream is = BoundedInputStream.builder().setInputStream(sbis).setMaxCount(entry.streamSize).get()) {
                     fsOut.createDocument(is, entry.streamName);
                 }
             }

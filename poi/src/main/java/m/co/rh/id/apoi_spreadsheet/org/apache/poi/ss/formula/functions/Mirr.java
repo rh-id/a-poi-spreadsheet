@@ -16,12 +16,15 @@
 ==================================================================== */
 
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions;
 
 import java.util.Arrays;
 
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.ErrorEval;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.EvaluationException;
+
 
 /**
  * Calculates Modified internal rate of return. Syntax is MIRR(cash_flow_values, finance_rate, reinvest_rate)
@@ -56,22 +59,19 @@ public class Mirr extends MultiOperandNumericFunction {
     @Override
     protected double evaluate(double[] values) throws EvaluationException {
 
-        double financeRate = values[values.length-1];
-        double reinvestRate = values[values.length-2];
+        final double financeRate = values[values.length-2];
+        final double reinvestRate = values[values.length-1];
 
-        double[] mirrValues = Arrays.copyOf(values, values.length - 2);
+        final double[] mirrValues = Arrays.copyOf(values, values.length - 2);
 
         boolean mirrValuesAreAllNegatives = true;
-        for (double mirrValue : mirrValues) {
-            mirrValuesAreAllNegatives &= mirrValue < 0;
-        }
-         if (mirrValuesAreAllNegatives) {
-             return -1.0d;
-         }
-
         boolean mirrValuesAreAllPositives = true;
         for (double mirrValue : mirrValues) {
+            mirrValuesAreAllNegatives &= mirrValue < 0;
             mirrValuesAreAllPositives &= mirrValue > 0;
+        }
+        if (mirrValuesAreAllNegatives) {
+            return -1.0d;
         }
         if (mirrValuesAreAllPositives) {
             throw new EvaluationException(ErrorEval.DIV_ZERO);
@@ -88,14 +88,10 @@ public class Mirr extends MultiOperandNumericFunction {
 
         int indexN = 0;
         for (double anIn : in) {
-            if (anIn < 0) {
-                pv += anIn / Math.pow(1 + financeRate + reinvestRate, indexN++);
-            }
-        }
-
-        for (double anIn : in) {
             if (anIn > 0) {
-                fv += anIn * Math.pow(1 + financeRate, numOfYears - indexN++);
+                fv += anIn * Math.pow(1 + reinvestRate, numOfYears - indexN++);
+            } else if (anIn < 0) {
+                pv += anIn / Math.pow(1 + financeRate, indexN++);
             }
         }
 

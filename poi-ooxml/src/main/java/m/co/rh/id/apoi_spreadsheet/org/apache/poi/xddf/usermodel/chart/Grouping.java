@@ -15,11 +15,14 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xddf.usermodel.chart;
+
+import org.openxmlformats.schemas.drawingml.x2006.chart.STGrouping;
 
 import java.util.HashMap;
 
-import org.openxmlformats.schemas.drawingml.x2006.chart.STGrouping;
 
 public enum Grouping {
     STANDARD(STGrouping.STANDARD),
@@ -32,7 +35,7 @@ public enum Grouping {
         this.underlying = grouping;
     }
 
-    private static final HashMap<STGrouping.Enum, Grouping> reverse = new HashMap<STGrouping.Enum, Grouping>();
+    private static final HashMap<STGrouping.Enum, Grouping> reverse = new HashMap<>();
     static {
         for (Grouping value : values()) {
             reverse.put(value.underlying, value);

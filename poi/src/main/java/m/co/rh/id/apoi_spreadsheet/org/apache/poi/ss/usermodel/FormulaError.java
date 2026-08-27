@@ -14,13 +14,16 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
 
-import java.util.HashMap;
 
 /**
  * Enumerates error values in SpreadsheetML formula calculations.
@@ -149,15 +152,21 @@ public enum FormulaError {
         return repr;
     }
 
-    private static final Map<String, FormulaError> smap = new HashMap<>();
-    private static final Map<Byte, FormulaError> bmap = new HashMap<>();
-    private static final Map<Integer, FormulaError> imap = new HashMap<>();
-    static{
+    private static final Map<String, FormulaError> smap;
+    private static final Map<Byte, FormulaError> bmap;
+    private static final Map<Integer, FormulaError> imap;
+    static {
+        final Map<String, FormulaError> mapS = new HashMap<>();
+        final Map<Byte, FormulaError> mapB = new HashMap<>();
+        final Map<Integer, FormulaError> mapI = new HashMap<>();
         for (FormulaError error : values()) {
-            bmap.put(error.getCode(), error);
-            imap.put(error.getLongCode(), error);
-            smap.put(error.getString(), error);
+            mapB.put(error.getCode(), error);
+            mapI.put(error.getLongCode(), error);
+            mapS.put(error.getString(), error);
         }
+        smap = Collections.unmodifiableMap(mapS);
+        bmap = Collections.unmodifiableMap(mapB);
+        imap = Collections.unmodifiableMap(mapI);
     }
 
     public static boolean isValidCode(int errorCode) {

@@ -14,18 +14,16 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.helpers;
 
+
+
 import android.util.Log;
 
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTCell;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTCellFormula;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTCfRule;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTConditionalFormatting;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTWorksheet;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.STCellFormulaType;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,21 +34,14 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.FormulaRenderer;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.FormulaShifter;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.FormulaType;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ptg.Ptg;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Cell;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Hyperlink;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Name;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Row;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Sheet;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Workbook;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.*;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.helpers.BaseRowColShifter;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.CellRangeAddress;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFCell;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFEvaluationWorkbook;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFHyperlink;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFRow;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFSheet;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.*;
+
+
+
 
 /**
  * Class for code common to {@link XSSFRowShifter} and {@link XSSFColumnShifter}
@@ -86,21 +77,20 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFWorkbook;
     /**
      * Update formulas.
      */
-    /*package*/
-    static void updateFormulas(Sheet sheet, FormulaShifter formulaShifter) {
+    /*package*/ static void updateFormulas(Sheet sheet, FormulaShifter formulaShifter) {
         //update formulas on the parent sheet
-        updateSheetFormulas(sheet, formulaShifter);
+        updateSheetFormulas(sheet,formulaShifter);
 
         //update formulas on other sheets
         Workbook wb = sheet.getWorkbook();
-        for (Sheet sh : wb) {
+        for(Sheet sh : wb)
+        {
             if (sheet == sh) continue;
             updateSheetFormulas(sh, formulaShifter);
         }
     }
 
-    /*package*/
-    static void updateSheetFormulas(Sheet sh, FormulaShifter formulashifter) {
+    /*package*/ static void updateSheetFormulas(Sheet sh, FormulaShifter formulashifter) {
         for (Row r : sh) {
             XSSFRow row = (XSSFRow) r;
             updateRowFormulas(row, formulashifter);
@@ -110,11 +100,10 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFWorkbook;
     /**
      * Update the formulas in specified row using the formula shifting policy specified by shifter
      *
-     * @param row            the row to update the formulas on
+     * @param row the row to update the formulas on
      * @param formulaShifter the formula shifting policy
      */
-    /*package*/
-    static void updateRowFormulas(XSSFRow row, FormulaShifter formulaShifter) {
+    /*package*/ static void updateRowFormulas(XSSFRow row, FormulaShifter formulaShifter) {
         XSSFSheet sheet = row.getSheet();
         for (Cell c : row) {
             XSSFCell cell = (XSSFCell) c;
@@ -127,7 +116,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFWorkbook;
                     String shiftedFormula = shiftFormula(row, formula, formulaShifter);
                     if (shiftedFormula != null) {
                         f.setStringValue(shiftedFormula);
-                        if (f.getT() == STCellFormulaType.SHARED) {
+                        if(f.getT() == STCellFormulaType.SHARED){
                             int si = Math.toIntExact(f.getSi());
                             CTCellFormula sf = sheet.getSharedFormula(si);
                             sf.setStringValue(shiftedFormula);
@@ -170,7 +159,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFWorkbook;
             return shiftedFmla;
         } catch (FormulaParseException fpe) {
             // Log, but don't change, rather than breaking
-            Log.w(TAG, String.format("Error shifting formula on row %d", row.getRowNum()), fpe);
+            Log.w(TAG, String.format("Error shifting formula on row %s", row.getRowNum()), fpe);
             return formula;
         }
     }
@@ -185,8 +174,8 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFWorkbook;
     }
 
 
-    /*package*/
-    static void updateConditionalFormatting(Sheet sheet, FormulaShifter formulaShifter) {
+
+    /*package*/ static void updateConditionalFormatting(Sheet sheet, FormulaShifter formulaShifter) {
         XSSFSheet xsheet = (XSSFSheet) sheet;
         XSSFWorkbook wb = xsheet.getWorkbook();
         int sheetIndex = wb.getSheetIndex(sheet);
@@ -228,11 +217,11 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFWorkbook;
                     continue;
                 }
                 List<String> refs = new ArrayList<>();
-                for (CellRangeAddress a : temp) refs.add(a.formatAsString());
+                for(CellRangeAddress a : temp) refs.add(a.formatAsString());
                 cf.setSqref(refs);
             }
 
-            for (CTCfRule cfRule : cf.getCfRuleArray()) {
+            for(CTCfRule cfRule : cf.getCfRuleArray()){
                 String[] formulaArray = cfRule.getFormulaArray();
                 for (int i = 0; i < formulaArray.length; i++) {
                     String formula = formulaArray[i];
@@ -247,8 +236,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFWorkbook;
     }
 
 
-    /*package*/
-    static void updateHyperlinks(Sheet sheet, FormulaShifter formulaShifter) {
+    /*package*/ static void updateHyperlinks(Sheet sheet, FormulaShifter formulaShifter) {
         final int sheetIndex = sheet.getWorkbook().getSheetIndex(sheet);
 
         for (Hyperlink hyperlink : sheet.getHyperlinkList()) {

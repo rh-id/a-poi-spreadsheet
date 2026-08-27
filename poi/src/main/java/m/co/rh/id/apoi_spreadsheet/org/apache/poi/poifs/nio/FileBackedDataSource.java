@@ -14,9 +14,12 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.nio;
+
+import android.util.Log;
 
 import java.io.Closeable;
 import java.io.File;
@@ -31,6 +34,7 @@ import java.nio.channels.WritableByteChannel;
 import java.util.IdentityHashMap;
 
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.IOUtils;
+
 
 /**
  * A POIFS {@link DataSource} backed by a File
@@ -50,7 +54,7 @@ public class FileBackedDataSource extends DataSource implements Closeable {
     // therefore we need to keep the list of mapped buffers and do some ugly reflection to try to
     // clean the buffer during close().
     // See https://bz.apache.org/bugzilla/show_bug.cgi?id=58480,
-    private final IdentityHashMap<ByteBuffer, ByteBuffer> buffersToClean = new IdentityHashMap<>();
+    private final IdentityHashMap<ByteBuffer,ByteBuffer> buffersToClean = new IdentityHashMap<>();
 
     public FileBackedDataSource(File file) throws FileNotFoundException {
         this(newSrcFile(file, "r"), true);
@@ -108,7 +112,7 @@ public class FileBackedDataSource extends DataSource implements Closeable {
             dst = channel.map(FileChannel.MapMode.READ_WRITE, position, length);
 
             // remember this buffer for cleanup
-            buffersToClean.put(dst, dst);
+            buffersToClean.put(dst,dst);
         } else {
             channel.position(position);
 
@@ -134,7 +138,7 @@ public class FileBackedDataSource extends DataSource implements Closeable {
         channel.write(src, position);
 
         // we have to re-read size if we write "after" the recorded one
-        if (channelSize != null && position >= channelSize) {
+        if(channelSize != null && position >= channelSize) {
             channelSize = null;
         }
     }
@@ -153,7 +157,7 @@ public class FileBackedDataSource extends DataSource implements Closeable {
         // this is called often and profiling showed that channel.size()
         // was taking a large part of processing-time, so we only read it
         // once
-        if (channelSize == null) {
+        if(channelSize == null) {
             channelSize = channel.size();
         }
         return channelSize;
@@ -170,7 +174,7 @@ public class FileBackedDataSource extends DataSource implements Closeable {
     public void close() throws IOException {
         // also ensure that all buffers are unmapped so we do not keep files locked on Windows
         // We consider it a bug if a Buffer is still in use now!
-        buffersToClean.forEach((k, v) -> unmap(v));
+        buffersToClean.forEach((k,v) -> unmap(v));
         buffersToClean.clear();
 
         if (srcFile != null) {
@@ -197,7 +201,6 @@ public class FileBackedDataSource extends DataSource implements Closeable {
             return;
         }
 
-        /* Android doesn't have this cleaner problem?
         if (CleanerUtil.UNMAP_SUPPORTED) {
             try {
                 CleanerUtil.getCleaner().freeBuffer(buffer);
@@ -205,8 +208,7 @@ public class FileBackedDataSource extends DataSource implements Closeable {
                 Log.w(TAG, "Failed to unmap the buffer", e);
             }
         } else {
-            Log.d(CleanerUtil.UNMAP_NOT_SUPPORTED_REASON);
+            Log.d(TAG, CleanerUtil.UNMAP_NOT_SUPPORTED_REASON);
         }
-         */
     }
 }

@@ -14,12 +14,14 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml;
 
 /**
  * Indicates a generic OOXML error.
  */
-public final class POIXMLException extends RuntimeException{
+public final class POIXMLException extends RuntimeException {
     /**
      * Create a new {@code POIXMLException} with no
      * detail message.

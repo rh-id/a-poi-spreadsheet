@@ -14,28 +14,23 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.usermodel.helpers;
 
+
+
 import android.util.Log;
 
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.usermodel.HSSFCell;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.usermodel.HSSFEvaluationWorkbook;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.usermodel.HSSFRow;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.usermodel.HSSFSheet;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.FormulaParseException;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.FormulaParser;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.FormulaRenderer;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.FormulaShifter;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.FormulaType;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.usermodel.*;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.*;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ptg.Ptg;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Cell;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Row;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Sheet;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Workbook;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.*;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
+
+
+
 
 /**
  * Class for code common to {@link HSSFRowShifter} and {@link HSSFColumnShifter}
@@ -51,21 +46,20 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
     /**
      * Update formulas.
      */
-    /*package*/
-    static void updateFormulas(Sheet sheet, FormulaShifter formulaShifter) {
+    /*package*/ static void updateFormulas(Sheet sheet, FormulaShifter formulaShifter) {
         //update formulas on the parent sheet
-        updateSheetFormulas(sheet, formulaShifter);
+        updateSheetFormulas(sheet,formulaShifter);
 
         //update formulas on other sheets
         Workbook wb = sheet.getWorkbook();
-        for (Sheet sh : wb) {
+        for(Sheet sh : wb)
+        {
             if (sheet == sh) continue;
             updateSheetFormulas(sh, formulaShifter);
         }
     }
 
-    /*package*/
-    static void updateSheetFormulas(Sheet sh, FormulaShifter formulashifter) {
+    /*package*/ static void updateSheetFormulas(Sheet sh, FormulaShifter formulashifter) {
         for (Row r : sh) {
             HSSFRow row = (HSSFRow) r;
             updateRowFormulas(row, formulashifter);
@@ -73,20 +67,19 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
     }
 
     /**
-     * Update the formulas in specified row using the formula shifting policy specified by shifter
+     * Update the formulas in the specified row using the formula shifting policy specified by shifter
      *
-     * @param row            the row to update the formulas on
+     * @param row the row to update the formulas on
      * @param formulaShifter the formula shifting policy
      */
-    /*package*/
-    static void updateRowFormulas(HSSFRow row, FormulaShifter formulaShifter) {
-        HSSFSheet sheet = row.getSheet();
-        for (Cell c : row) {
-            HSSFCell cell = (HSSFCell) c;
-            String formula = cell.getCellFormula();
-            if (formula.length() > 0) {
-                String shiftedFormula = shiftFormula(row, formula, formulaShifter);
-                cell.setCellFormula(shiftedFormula);
+    /*package*/ static void updateRowFormulas(HSSFRow row, FormulaShifter formulaShifter) {
+        for (Cell cell : row) {
+            if (cell.getCellType() == CellType.FORMULA) {
+                String formula = cell.getCellFormula();
+                if (formula != null && !formula.isEmpty()) {
+                    String shiftedFormula = shiftFormula(row, formula, formulaShifter);
+                    cell.setCellFormula(shiftedFormula);
+                }
             }
         }
     }
@@ -119,7 +112,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
             return shiftedFmla;
         } catch (FormulaParseException fpe) {
             // Log, but don't change, rather than breaking
-            Log.w(TAG, String.format("Error shifting formula on row %d", row.getRowNum()), fpe);
+            Log.w(TAG, String.format("Error shifting formula on row %s", row.getRowNum()), fpe);
             return formula;
         }
     }

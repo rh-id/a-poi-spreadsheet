@@ -15,15 +15,19 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record;
 
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
+
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.common.Duplicatable;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.common.usermodel.GenericRecord;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.GenericRecordJsonWriter;
@@ -32,6 +36,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.IOUtils;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndianInput;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndianOutput;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndianOutputStream;
+
 
 /**
  * Subrecords are part of the OBJ class.
@@ -64,8 +69,8 @@ public abstract class SubRecord implements Duplicatable, GenericRecord {
             T apply(LittleEndianInput in, int size, int cmoOt);
         }
 
-        private static final Map<Short,SubRecordTypes> LOOKUP =
-            Arrays.stream(values()).collect(Collectors.toMap(SubRecordTypes::getSid, Function.identity()));
+        private static final Map<Short,SubRecordTypes> LOOKUP = Collections.unmodifiableMap(
+            Arrays.stream(values()).collect(Collectors.toMap(SubRecordTypes::getSid, Function.identity())));
 
         public final short sid;
         public final RecordConstructor<?> recordConstructor;

@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc;
 
@@ -51,6 +52,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.exceptions.OpenXML4J
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.exceptions.PartAlreadyExistsException;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.internal.ContentType;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.internal.ContentTypeManager;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.internal.InvalidZipException;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.internal.PackagePropertiesPart;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.internal.PartMarshaller;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.internal.PartUnmarshaller;
@@ -63,6 +65,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.util.ZipEntrySource;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.IOUtils;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.NotImplemented;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.StringUtil;
+
 
 /**
  * Represents a container that can store multiple data objects.
@@ -141,6 +144,19 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
      * @throws OpenXML4JRuntimeException if there are issues creating properties part
      */
     OPCPackage(PackageAccess access) {
+        this(access, OPCComplianceFlags.enforceAll());
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param access Package access.
+     * @param opcComplianceFlags Enable or disable specific OPC compliance flags.
+     *                           This is useful to allow parsing of certain non-compliant documents.
+     * @throws OpenXML4JRuntimeException if there are issues creating properties part
+     * @since POI 5.4.1
+     */
+    OPCPackage(PackageAccess access, OPCComplianceFlags opcComplianceFlags) {
         if (getClass() != ZipPackage.class) {
             throw new IllegalArgumentException("PackageBase may not be subclassed");
         }
@@ -148,7 +164,7 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
 
         final ContentType contentType = newCorePropertiesPart();
         // TODO Delocalize specialized marshallers
-        this.partUnmarshallers.put(contentType, new PackagePropertiesUnmarshaller());
+        this.partUnmarshallers.put(contentType, new PackagePropertiesUnmarshaller(opcComplianceFlags));
         this.partMarshallers.put(contentType, new ZipPackagePropertiesMarshaller());
     }
 
@@ -158,9 +174,9 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
         } catch (InvalidFormatException e) {
             // Should never happen
             throw new OpenXML4JRuntimeException(
-                    "Package.init() : this exception should never happen, " +
-                            "if you read this message please send a mail to the developers team. : " +
-                            e.getMessage(), e
+                "Package.init() : this exception should never happen, " +
+                "if you read this message please send a mail to the developers team. : " +
+                e.getMessage(), e
             );
         }
     }
@@ -168,40 +184,94 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
     /**
      * Open a package with read/write permission.
      *
-     * @param path The document path.
+     * @param path
+     *            The document path.
      * @return A Package object, else <b>null</b>.
-     * @throws InvalidFormatException If the specified file doesn't exist, and a parsing error
-     *                                occur.
+     * @throws InvalidFormatException
+     *             If the specified file doesn't exist, and a parsing error
+     *             occur.
      */
     public static OPCPackage open(String path) throws InvalidFormatException {
-        return open(path, defaultPackageAccess);
+        return open(path, defaultPackageAccess, OPCComplianceFlags.enforceAll());
     }
 
     /**
      * Open a package with read/write permission.
      *
-     * @param file The file to open.
+     * @param path
+     *            The document path.
+     * @param opcComplianceFlags
+     *            The level of OPC compliance to enforce when reading the package
      * @return A Package object, else <b>null</b>.
-     * @throws InvalidFormatException If the specified file doesn't exist, and a parsing error
-     *                                occur.
+     * @throws InvalidFormatException
+     *             If the specified file doesn't exist, and a parsing error
+     *             occur.
+     * @since POI 5.4.1
      */
-    public static OPCPackage open(File file) throws InvalidFormatException {
-        return open(file, defaultPackageAccess);
+    public static OPCPackage open(String path, OPCComplianceFlags opcComplianceFlags) throws InvalidFormatException {
+        return open(path, defaultPackageAccess, opcComplianceFlags);
     }
 
+   /**
+    * Open a package with read/write permission.
+    *
+    * @param file
+    *            The file to open.
+    * @return A Package object, else <b>null</b>.
+    * @throws InvalidFormatException
+    *             If the specified file doesn't exist, and a parsing error
+    *             occur.
+    */
+   public static OPCPackage open(File file) throws InvalidFormatException {
+      return open(file, defaultPackageAccess);
+   }
+
     /**
-     * Open an user provided {@link ZipEntrySource} with read-only permission.
+     * Open a package with read/write permission.
+     *
+     * @param file
+     *            The file to open.
+     * @param opcComplianceFlags
+     *            The level of OPC compliance to enforce when reading the package
+     * @return A Package object, else <b>null</b>.
+     * @throws InvalidFormatException
+     *             If the specified file doesn't exist, and a parsing error
+     *             occur.
+     * @since POI 5.4.1
+     */
+    public static OPCPackage open(File file, OPCComplianceFlags opcComplianceFlags) throws InvalidFormatException {
+        return open(file, defaultPackageAccess, opcComplianceFlags);
+    }
+
+   /**
+    * Open a user provided {@link ZipEntrySource} with read-only permission.
+    * This method can be used to stream data into POI.
+    * Opposed to other open variants, the data is read as-is, e.g. there aren't
+    * any zip-bomb protection put in place.
+    *
+    * @param zipEntry the custom source
+    * @return A Package object
+    * @throws InvalidFormatException if a parsing error occur.
+    */
+   public static OPCPackage open(ZipEntrySource zipEntry) throws InvalidFormatException {
+       return open(zipEntry, OPCComplianceFlags.enforceAll());
+   }
+
+    /**
+     * Open a user provided {@link ZipEntrySource} with read-only permission.
      * This method can be used to stream data into POI.
      * Opposed to other open variants, the data is read as-is, e.g. there aren't
      * any zip-bomb protection put in place.
      *
      * @param zipEntry the custom source
+     * @param opcComplianceFlags
+     *            The level of OPC compliance to enforce when reading the package
      * @return A Package object
      * @throws InvalidFormatException if a parsing error occur.
+     * @since POI 5.4.1
      */
-    public static OPCPackage open(ZipEntrySource zipEntry)
-            throws InvalidFormatException {
-        OPCPackage pack = new ZipPackage(zipEntry, PackageAccess.READ);
+    public static OPCPackage open(ZipEntrySource zipEntry, OPCComplianceFlags opcComplianceFlags) throws InvalidFormatException {
+        OPCPackage pack = new ZipPackage(zipEntry, PackageAccess.READ, opcComplianceFlags);
         try {
             if (pack.partList == null) {
                 pack.getParts();
@@ -219,15 +289,40 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
     /**
      * Open a package.
      *
-     * @param path   The document path.
-     * @param access PackageBase access.
+     * @param path
+     *            The document path.
+     * @param access
+     *            PackageBase access.
      * @return A PackageBase object, else <b>null</b>.
-     * @throws InvalidFormatException    If the specified file doesn't exist, and a parsing error
-     *                                   occur.
+     * @throws InvalidFormatException
+     *             If the specified file doesn't exist, and a parsing error
+     *             occur.
      * @throws InvalidOperationException If the zip file cannot be opened.
-     * @throws InvalidFormatException    if the package is not valid.
+     * @throws InvalidFormatException if the package is not valid.
      */
     public static OPCPackage open(String path, PackageAccess access)
+            throws InvalidFormatException, InvalidOperationException {
+        return open(path, access, OPCComplianceFlags.enforceAll());
+    }
+
+    /**
+     * Open a package.
+     *
+     * @param path
+     *            The document path.
+     * @param access
+     *            PackageBase access.
+     * @param opcComplianceFlags
+     *            The level of OPC compliance to enforce when reading the package
+     * @return A PackageBase object, else <b>null</b>.
+     * @throws InvalidFormatException
+     *             If the specified file doesn't exist, and a parsing error
+     *             occur.
+     * @throws InvalidOperationException If the zip file cannot be opened.
+     * @throws InvalidFormatException if the package is not valid.
+     * @since POI 5.4.1
+     */
+    public static OPCPackage open(String path, PackageAccess access, OPCComplianceFlags opcComplianceFlags)
             throws InvalidFormatException, InvalidOperationException {
         if (StringUtil.isBlank(path)) {
             throw new IllegalArgumentException("'path' must be given");
@@ -238,14 +333,14 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
             throw new IllegalArgumentException("path must not be a directory");
         }
 
-        OPCPackage pack = new ZipPackage(path, access); // NOSONAR
+        OPCPackage pack = new ZipPackage(path, access, opcComplianceFlags); // NOSONAR
         boolean success = false;
         if (pack.partList == null && access != PackageAccess.WRITE) {
             try {
                 pack.getParts();
                 success = true;
             } finally {
-                if (!success) {
+                if (! success) {
                     IOUtils.closeQuietly(pack);
                 }
             }
@@ -255,16 +350,40 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
         return pack;
     }
 
+   /**
+    * Open a package.
+    *
+    * @param file
+    *            The file to open.
+    * @param access
+    *            PackageBase access.
+    * @return A PackageBase object, else <b>null</b>.
+    * @throws InvalidFormatException
+    *             If the specified file doesn't exist, and a parsing error
+    *             occur.
+    */
+   public static OPCPackage open(File file, PackageAccess access)
+         throws InvalidFormatException {
+       return open(file, access, OPCComplianceFlags.enforceAll());
+   }
+
     /**
      * Open a package.
      *
-     * @param file   The file to open.
-     * @param access PackageBase access.
+     * @param file
+     *            The file to open.
+     * @param access
+     *            PackageBase access.
+     * @param opcComplianceFlags
+     *            The level of OPC compliance to enforce when reading the package
      * @return A PackageBase object, else <b>null</b>.
-     * @throws InvalidFormatException If the specified file doesn't exist, and a parsing error
-     *                                occur.
+     * @throws IllegalArgumentException
+     *             If the specified file doesn't exist or is a directory.
+     * @throws InvalidFormatException
+     *             If a parsing error occurs.
+     * @since POI 5.4.1
      */
-    public static OPCPackage open(File file, PackageAccess access)
+    public static OPCPackage open(File file, PackageAccess access, OPCComplianceFlags opcComplianceFlags)
             throws InvalidFormatException {
         if (file == null) {
             throw new IllegalArgumentException("'file' must be given");
@@ -273,7 +392,12 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
             throw new IllegalArgumentException("file must not be a directory");
         }
 
-        OPCPackage pack = new ZipPackage(file, access); //NOSONAR
+        final OPCPackage pack;
+        try {
+            pack = new ZipPackage(file, access, opcComplianceFlags); //NOSONAR
+        } catch (InvalidOperationException e) {
+            throw new InvalidFormatException(e.getMessage(), e);
+        }
         try {
             if (pack.partList == null && access != PackageAccess.WRITE) {
                 pack.getParts();
@@ -292,19 +416,50 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
 
     /**
      * Open a package.
-     * <p>
+     *
      * Note - uses quite a bit more memory than {@link #open(String)}, which
      * doesn't need to hold the whole zip file in memory, and can take advantage
      * of native methods
      *
-     * @param in The InputStream to read the package from. The stream is closed.
+     * @param in
+     *            The InputStream to read the package from. The stream is closed.
      * @return A PackageBase object
-     * @throws InvalidFormatException Throws if the specified file exist and is not valid.
-     * @throws IOException            If reading the stream fails
+     *
+     * @throws InvalidFormatException
+     *              Throws if the specified file exist and is not valid.
+     * @throws IOException If reading the stream fails
      */
     public static OPCPackage open(InputStream in) throws InvalidFormatException,
             IOException {
-        OPCPackage pack = new ZipPackage(in, PackageAccess.READ_WRITE);
+        return open(in, OPCComplianceFlags.enforceAll());
+    }
+
+    /**
+     * Open a package.
+     *
+     * Note - uses quite a bit more memory than {@link #open(String)}, which
+     * doesn't need to hold the whole zip file in memory, and can take advantage
+     * of native methods
+     *
+     * @param in
+     *            The InputStream to read the package from. The stream is closed.
+     * @param opcComplianceFlags
+     *            The level of OPC compliance to enforce when reading the package
+     * @return A PackageBase object
+     *
+     * @throws InvalidFormatException
+     *              Throws if the specified file exist and is not valid.
+     * @throws IOException If reading the stream fails
+     * @since POI 5.4.1
+     */
+    public static OPCPackage open(InputStream in, OPCComplianceFlags opcComplianceFlags) throws InvalidFormatException,
+            IOException {
+        final OPCPackage pack;
+        try {
+            pack = new ZipPackage(in, PackageAccess.READ_WRITE, opcComplianceFlags);
+        } catch (InvalidZipException e) {
+            throw new InvalidFormatException(e.getMessage(), e);
+        }
         try {
             if (pack.partList == null) {
                 pack.getParts();
@@ -318,21 +473,55 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
 
     /**
      * Open a package.
-     * <p>
+     *
      * Note - uses quite a bit more memory than {@link #open(String)}, which
      * doesn't need to hold the whole zip file in memory, and can take advantage
      * of native methods
      *
-     * @param in          The InputStream to read the package from.
-     * @param closeStream Whether to close the input stream.
+     * @param in
+     *            The InputStream to read the package from.
+     * @param closeStream
+     *            Whether to close the input stream.
      * @return A PackageBase object
-     * @throws InvalidFormatException Throws if the specified file exist and is not valid.
-     * @throws IOException            If reading the stream fails
+     *
+     * @throws InvalidFormatException
+     *              Throws if the specified file exist and is not valid.
+     * @throws IOException If reading the stream fails
      * @since POI 5.2.5
      */
     public static OPCPackage open(InputStream in, boolean closeStream) throws InvalidFormatException,
             IOException {
-        OPCPackage pack = new ZipPackage(in, PackageAccess.READ_WRITE, closeStream);
+        return open(in, closeStream, OPCComplianceFlags.enforceAll());
+    }
+
+    /**
+     * Open a package.
+     *
+     * Note - uses quite a bit more memory than {@link #open(String)}, which
+     * doesn't need to hold the whole zip file in memory, and can take advantage
+     * of native methods
+     *
+     * @param in
+     *            The InputStream to read the package from.
+     * @param closeStream
+     *            Whether to close the input stream.
+     * @param opcComplianceFlags
+     *            The level of OPC compliance to enforce when reading the package
+     * @return A PackageBase object
+     *
+     * @throws InvalidFormatException
+     *              Throws if the specified file exist and is not valid.
+     * @throws IOException If reading the stream fails
+     * @since POI 5.4.1
+     */
+    public static OPCPackage open(InputStream in, boolean closeStream, OPCComplianceFlags opcComplianceFlags) throws InvalidFormatException,
+            IOException {
+        final OPCPackage pack;
+        try {
+            pack = new ZipPackage(in, PackageAccess.READ_WRITE, closeStream, opcComplianceFlags);
+        } catch (InvalidZipException e) {
+            throw new InvalidFormatException(e.getMessage(), e);
+        }
         try {
             if (pack.partList == null) {
                 pack.getParts();
@@ -347,10 +536,12 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
     /**
      * Opens a package if it exists, else it creates one.
      *
-     * @param file The file to open or to create.
+     * @param file
+     *            The file to open or to create.
      * @return A newly created package if the specified file does not exist,
-     * else the package extract from the file.
-     * @throws InvalidFormatException Throws if the specified file exist and is not valid.
+     *         else the package extract from the file.
+     * @throws InvalidFormatException
+     *             Throws if the specified file exist and is not valid.
      */
     public static OPCPackage openOrCreate(File file) throws InvalidFormatException {
         if (file.exists()) {
@@ -363,7 +554,8 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
     /**
      * Creates a new package.
      *
-     * @param path Path of the document.
+     * @param path
+     *            Path of the document.
      * @return A newly created PackageBase ready to use.
      */
     public static OPCPackage create(String path) {
@@ -373,7 +565,8 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
     /**
      * Creates a new package.
      *
-     * @param file Path of the document.
+     * @param file
+     *            Path of the document.
      * @return A newly created PackageBase ready to use.
      */
     public static OPCPackage create(File file) {
@@ -445,13 +638,14 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
 
     /**
      * Close the open, writable package and save its content.
-     * <p>
+     *
      * If your package is open read only, then you should call {@link #revert()}
-     * when finished with the package.
-     * <p>
+     *  when finished with the package.
+     *
      * This method is not thread-safe.
      *
-     * @throws IOException If an IO exception occur during the saving process.
+     * @throws IOException
+     *             If an IO exception occur during the saving process.
      */
     @Override
     public void close() throws IOException {
@@ -474,7 +668,7 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
             File targetFile = new File(this.originalPackagePath);
             if (!targetFile.exists()
                     || !(this.originalPackagePath
-                    .equalsIgnoreCase(targetFile.getAbsolutePath()))) {
+                            .equalsIgnoreCase(targetFile.getAbsolutePath()))) {
                 // Case of a package created from scratch
                 save(targetFile);
             } else {
@@ -490,6 +684,9 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
 
         // ensure all held resources are freed
         revert();
+
+        // ensure resources associated with package parts are closed
+        closeParts();
 
         // Clear
         this.contentTypeManager.clearAll();
@@ -521,14 +718,13 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
             addThumbnail(name, is);
         }
     }
-
     /**
      * Add a thumbnail to the package. This method is provided to make easier
      * the addition of a thumbnail in a package. You can do the same work by
      * using the traditional relationship and part mechanism.
      *
      * @param filename The full path to the image file.
-     * @param data     the image data
+     * @param data the image data
      */
     public void addThumbnail(String filename, InputStream data) throws IOException {
         // Check parameter
@@ -576,7 +772,8 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
      * Throws an exception if the package access mode is in read only mode
      * (PackageAccess.Read).
      *
-     * @throws InvalidOperationException Throws if a writing operation is done on a read only package.
+     * @throws InvalidOperationException
+     *             Throws if a writing operation is done on a read only package.
      * @see PackageAccess
      */
     void throwExceptionIfReadOnly() throws InvalidOperationException {
@@ -620,7 +817,8 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
     /**
      * Retrieve a part identified by its name.
      *
-     * @param partName Part name of the part to retrieve.
+     * @param partName
+     *            Part name of the part to retrieve.
      * @return The part with the specified name, else {@code null}.
      */
     public PackagePart getPart(PackagePartName partName) {
@@ -645,7 +843,8 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
     /**
      * Retrieve parts by content type.
      *
-     * @param contentType The content type criteria.
+     * @param contentType
+     *            The content type criteria.
      * @return All part associated to the specified content type.
      */
     public ArrayList<PackagePart> getPartsByContentType(String contentType) {
@@ -661,11 +860,12 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
     /**
      * Retrieve parts by relationship type.
      *
-     * @param relationshipType Relationship type. Must not be {@code null}.
+     * @param relationshipType
+     *            Relationship type. Must not be {@code null}.
      * @return All parts which are the target of a relationship with the
-     * specified type. If no such parts are found, the list is empty.
+     *         specified type. If no such parts are found, the list is empty.
      * @throws InvalidOperationException If called on a write-only package.
-     * @throws IllegalArgumentException  if relationshipType input param is null.
+     * @throws IllegalArgumentException if relationshipType input param is null.
      */
     public ArrayList<PackagePart> getPartsByRelationshipType(
             String relationshipType) {
@@ -686,7 +886,8 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
     /**
      * Retrieve parts by name
      *
-     * @param namePattern The pattern for matching the names
+     * @param namePattern
+     *            The pattern for matching the names
      * @return All parts associated to the specified content type, sorted
      * in alphanumerically by the part-name
      */
@@ -708,7 +909,8 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
     /**
      * Get the target part from the specified relationship.
      *
-     * @param partRel The part relationship uses to retrieve the part.
+     * @param partRel
+     *            The part relationship uses to retrieve the part.
      */
     public PackagePart getPart(PackageRelationship partRel) {
         PackagePart retPart = null;
@@ -730,11 +932,11 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
     /**
      * Load the parts of the archive if it has not been done yet. The
      * relationships of each part are not loaded.
-     * <p>
+     *
      * Note - Rule M4.1 states that there may only ever be one Core
-     * Properties Part, but Office produced files will sometimes
-     * have multiple! As Office ignores all but the first, we relax
-     * Compliance with Rule M4.1, and ignore all others silently too.
+     *  Properties Part, but Office produced files will sometimes
+     *  have multiple! As Office ignores all but the first, we relax
+     *  Compliance with Rule M4.1, and ignore all others silently too.
      *
      * @return All this package's parts.
      * @throws InvalidFormatException if the package is not valid.
@@ -761,9 +963,9 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
                     if (!hasCorePropertiesPart) {
                         hasCorePropertiesPart = true;
                     } else {
-                        Log.w(TAG, "OPC Compliance error [M4.1]: " +
-                                "there is more than one core properties relationship in the package! " +
-                                "POI will use only the first, but other software may reject this file.");
+                       Log.w(TAG, "OPC Compliance error [M4.1]: " +
+                            "there is more than one core properties relationship in the package! " +
+                            "POI will use only the first, but other software may reject this file.");
                     }
                 }
 
@@ -799,12 +1001,15 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
      * Create and add a part, with the specified name and content type, to the
      * package.
      *
-     * @param partName    Part name.
-     * @param contentType Part content type.
+     * @param partName
+     *            Part name.
+     * @param contentType
+     *            Part content type.
      * @return The newly created part.
-     * @throws PartAlreadyExistsException If rule M1.12 is not verified : Packages shall not contain
-     *                                    equivalent part names and package implementers shall neither
-     *                                    create nor recognize packages with equivalent part names.
+     * @throws PartAlreadyExistsException
+     *             If rule M1.12 is not verified : Packages shall not contain
+     *             equivalent part names and package implementers shall neither
+     *             create nor recognize packages with equivalent part names.
      * @see #createPartImpl(PackagePartName, String, boolean)
      */
     public PackagePart createPart(PackagePartName partName, String contentType) {
@@ -816,18 +1021,22 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
      * package. For general purpose, prefer the overload version of this method
      * without the 'loadRelationships' parameter.
      *
-     * @param partName          Part name.
-     * @param contentType       Part content type.
-     * @param loadRelationships Specify if the existing relationship part, if any, logically
-     *                          associated to the newly created part will be loaded.
+     * @param partName
+     *            Part name.
+     * @param contentType
+     *            Part content type.
+     * @param loadRelationships
+     *            Specify if the existing relationship part, if any, logically
+     *            associated to the newly created part will be loaded.
      * @return The newly created part.
-     * @throws PartAlreadyExistsException If rule M1.12 is not verified : Packages shall not contain
-     *                                    equivalent part names and package implementers shall neither
-     *                                    create nor recognize packages with equivalent part names.
+     * @throws PartAlreadyExistsException
+     *             If rule M1.12 is not verified : Packages shall not contain
+     *             equivalent part names and package implementers shall neither
+     *             create nor recognize packages with equivalent part names.
      * @see #createPartImpl(PackagePartName, String, boolean)
      */
     PackagePart createPart(PackagePartName partName, String contentType,
-                           boolean loadRelationships) {
+            boolean loadRelationships) {
         throwExceptionIfReadOnly();
         if (partName == null) {
             throw new IllegalArgumentException("partName");
@@ -842,8 +1051,8 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
                 && !partList.get(partName).isDeleted()) {
             throw new PartAlreadyExistsException(
                     "A part with the name '" + partName.getName() + "'" +
-                            " already exists : Packages shall not contain equivalent part names and package" +
-                            " implementers shall neither create nor recognize packages with equivalent part names. [M1.12]");
+                    " already exists : Packages shall not contain equivalent part names and package" +
+                    " implementers shall neither create nor recognize packages with equivalent part names. [M1.12]");
         }
 
         /* Check OPC compliance */
@@ -869,9 +1078,9 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
 
         /* check/create default entries - for bug54803 */
         try {
-            PackagePartName ppn = PackagingURIHelper.createPartName("/." + EXTENSION_XML);
+            PackagePartName ppn = PackagingURIHelper.createPartName("/."+EXTENSION_XML);
             contentTypeManager.addContentType(ppn, PLAIN_OLD_XML);
-            ppn = PackagingURIHelper.createPartName("/" + RELATIONSHIP_PART_EXTENSION_NAME);
+            ppn = PackagingURIHelper.createPartName("/"+RELATIONSHIP_PART_EXTENSION_NAME);
             contentTypeManager.addContentType(ppn, RELATIONSHIPS_PART);
         } catch (InvalidFormatException e) {
             throw new InvalidOperationException("unable to create default content-type entries.", e);
@@ -886,16 +1095,20 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
     /**
      * Add a part to the package.
      *
-     * @param partName    Part name of the part to create.
-     * @param contentType type associated with the file
-     * @param content     the contents to add. In order to have faster operation in
-     *                    document merge, the data are stored in memory not on a hard
-     *                    disk
+     * @param partName
+     *            Part name of the part to create.
+     * @param contentType
+     *            type associated with the file
+     * @param content
+     *            the contents to add. In order to have faster operation in
+     *            document merge, the data are stored in memory not on a hard
+     *            disk
+     *
      * @return The new part.
      * @see #createPart(PackagePartName, String)
      */
     public PackagePart createPart(PackagePartName partName, String contentType,
-                                  ByteArrayOutputStream content) {
+            ByteArrayOutputStream content) {
         PackagePart addedPart = this.createPart(partName, contentType);
         if (addedPart == null) {
             return null;
@@ -921,11 +1134,13 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
      * package with the same name as the one specified, then we replace the old
      * part by the specified part.
      *
-     * @param part The part to add (or replace).
+     * @param part
+     *            The part to add (or replace).
      * @return The part added to the package, the same as the one specified.
-     * @throws InvalidOperationException If rule M1.12 is not verified : Packages shall not contain
-     *                                   equivalent part names and package implementers shall neither
-     *                                   create nor recognize packages with equivalent part names.
+     * @throws InvalidOperationException
+     *             If rule M1.12 is not verified : Packages shall not contain
+     *             equivalent part names and package implementers shall neither
+     *             create nor recognize packages with equivalent part names.
      */
     protected PackagePart addPackagePart(PackagePart part) {
         throwExceptionIfReadOnly();
@@ -959,7 +1174,8 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
      * Remove the specified part in this package. If this part is relationship
      * part, then delete all relationships in the source part.
      *
-     * @param part The part to remove. If {@code null}, skip the action.
+     * @param part
+     *            The part to remove. If {@code null}, skip the action.
      * @see #removePart(PackagePartName)
      */
     public void removePart(PackagePart part) {
@@ -972,7 +1188,8 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
      * Remove a part in this package. If this part is relationship part, then
      * delete all relationships in the source part.
      *
-     * @param partName The part name of the part to remove.
+     * @param partName
+     *            The part name of the part to remove.
      */
     public void removePart(PackagePartName partName) {
         throwExceptionIfReadOnly();
@@ -984,7 +1201,6 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
         if (this.partList.containsKey(partName)) {
             this.partList.get(partName).setDeleted(true);
             this.removePartImpl(partName);
-            this.partList.remove(partName);
         } else {
             this.removePartImpl(partName);
         }
@@ -1023,9 +1239,11 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
      * exists, and all parts listed in the relationship part. Be aware that this
      * do not delete relationships which target the specified part.
      *
-     * @param partName The name of the part to delete.
-     * @throws InvalidFormatException Throws if the associated relationship part of the specified
-     *                                part is not valid.
+     * @param partName
+     *            The name of the part to delete.
+     * @throws InvalidFormatException
+     *             Throws if the associated relationship part of the specified
+     *             part is not valid.
      */
     public void removePartRecursive(PackagePartName partName)
             throws InvalidFormatException {
@@ -1059,7 +1277,8 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
      * package, compare to the remove() methods that don't remove associated
      * relationships part.
      *
-     * @param partName Name of the part to delete
+     * @param partName
+     *            Name of the part to delete
      */
     public void deletePart(PackagePartName partName) {
         if (partName == null) {
@@ -1079,7 +1298,8 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
      * Prefer the use of this method to delete a part in the package, compare to
      * the remove() methods that don't remove associated relationships part.
      *
-     * @param partName Name of the part to delete
+     * @param partName
+     *            Name of the part to delete
      */
     public void deletePartRecursive(PackagePartName partName) {
         if (partName == null || !this.containPart(partName)) {
@@ -1099,7 +1319,7 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
                 this.deletePartRecursive(targetPartName);
             }
         } catch (InvalidFormatException e) {
-            Log.w(String.format("An exception occurs while deleting part '%s'. Some parts may remain in the package.", partName.getName()), e);
+            Log.w(TAG, String.format("An exception occurs while deleting part '%s'. Some parts may remain in the package.", partName.getName()), e);
             return;
         }
         // Remove the relationships part
@@ -1113,9 +1333,10 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
     /**
      * Check if a part already exists in this package from its name.
      *
-     * @param partName Part name to check.
+     * @param partName
+     *            Part name to check.
      * @return <i>true</i> if the part is logically added to this package, else
-     * <i>false</i>.
+     *         <i>false</i>.
      */
     public boolean containPart(PackagePartName partName) {
         return (this.getPart(partName) != null);
@@ -1123,27 +1344,31 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
 
     /**
      * Add a relationship to the package (except relationships part).
-     * <p>
+     *
      * Check rule M4.1 : The format designer shall specify and the format
      * producer shall create at most one core properties relationship for a
      * package. A format consumer shall consider more than one core properties
      * relationship for a package to be an error. If present, the relationship
      * shall target the Core Properties part.
-     * <p>
+     *
      * Check rule M1.25: The Relationships part shall not have relationships to
      * any other part. Package implementers shall enforce this requirement upon
      * the attempt to create such a relationship and shall treat any such
      * relationship as invalid.
      *
-     * @param targetPartName   Target part name.
-     * @param targetMode       Target mode, either Internal or External.
-     * @param relationshipType Relationship type.
-     * @param relID            ID of the relationship.
+     * @param targetPartName
+     *            Target part name.
+     * @param targetMode
+     *            Target mode, either Internal or External.
+     * @param relationshipType
+     *            Relationship type.
+     * @param relID
+     *            ID of the relationship.
      * @see PackageRelationshipTypes
      */
     @Override
     public PackageRelationship addRelationship(PackagePartName targetPartName,
-                                               TargetMode targetMode, String relationshipType, String relID) {
+            TargetMode targetMode, String relationshipType, String relID) {
         /* Check OPC compliance */
 
         // Check rule M4.1 : The format designer shall specify and the format
@@ -1181,52 +1406,60 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
     /**
      * Add a package relationship.
      *
-     * @param targetPartName   Target part name.
-     * @param targetMode       Target mode, either Internal or External.
-     * @param relationshipType Relationship type.
+     * @param targetPartName
+     *            Target part name.
+     * @param targetMode
+     *            Target mode, either Internal or External.
+     * @param relationshipType
+     *            Relationship type.
      * @see PackageRelationshipTypes
      */
     @Override
     public PackageRelationship addRelationship(PackagePartName targetPartName,
-                                               TargetMode targetMode, String relationshipType) {
+            TargetMode targetMode, String relationshipType) {
         return this.addRelationship(targetPartName, targetMode,
                 relationshipType, null);
     }
 
     /**
      * Adds an external relationship to a part (except relationships part).
-     * <p>
+     *
      * The targets of external relationships are not subject to the same
      * validity checks that internal ones are, as the contents is potentially
      * any file, URL or similar.
      *
-     * @param target           External target of the relationship
-     * @param relationshipType Type of relationship.
+     * @param target
+     *            External target of the relationship
+     * @param relationshipType
+     *            Type of relationship.
      * @return The newly created and added relationship
      */
     @Override
     public PackageRelationship addExternalRelationship(String target,
-                                                       String relationshipType) {
+            String relationshipType) {
         return addExternalRelationship(target, relationshipType, null);
     }
 
     /**
      * Adds an external relationship to a part (except relationships part).
-     * <p>
+     *
      * The targets of external relationships are not subject to the same
      * validity checks that internal ones are, as the contents is potentially
      * any file, URL or similar.
      *
-     * @param target           External target of the relationship
-     * @param relationshipType Type of relationship.
-     * @param id               Relationship unique id.
+     * @param target
+     *            External target of the relationship
+     * @param relationshipType
+     *            Type of relationship.
+     * @param id
+     *            Relationship unique id.
      * @return The newly created and added relationship
      * @see RelationshipSource#addExternalRelationship(String,
-     * String)
+     *      String)
      */
     @Override
     public PackageRelationship addExternalRelationship(String target,
-                                                       String relationshipType, String id) {
+            String relationshipType, String id) {
         if (target == null) {
             throw new IllegalArgumentException("target");
         }
@@ -1251,7 +1484,8 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
     /**
      * Delete a relationship from this package.
      *
-     * @param id Id of the relationship to delete.
+     * @param id
+     *            Id of the relationship to delete.
      */
     @Override
     public void removeRelationship(String id) {
@@ -1276,7 +1510,8 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
     /**
      * Retrieves all relationships with the specified type.
      *
-     * @param relationshipType The filter specifying the relationship type.
+     * @param relationshipType
+     *            The filter specifying the relationship type.
      * @return All relationships with the specified relationship type.
      */
     @Override
@@ -1293,7 +1528,8 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
      * Retrieves all relationships with specified id (normally just ine because
      * a relationship id is supposed to be unique).
      *
-     * @param id Id of the wanted relationship.
+     * @param id
+     *            Id of the wanted relationship.
      */
     private PackageRelationshipCollection getRelationshipsHelper(String id) {
         throwExceptionIfWriteOnly();
@@ -1348,8 +1584,10 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
     /**
      * Add a marshaller.
      *
-     * @param contentType The content type to bind to the specified marshaller.
-     * @param marshaller  The marshaller to register with the specified content type.
+     * @param contentType
+     *            The content type to bind to the specified marshaller.
+     * @param marshaller
+     *            The marshaller to register with the specified content type.
      */
     public void addMarshaller(String contentType, PartMarshaller marshaller) {
         try {
@@ -1362,11 +1600,13 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
     /**
      * Add an unmarshaller.
      *
-     * @param contentType  The content type to bind to the specified unmarshaller.
-     * @param unmarshaller The unmarshaller to register with the specified content type.
+     * @param contentType
+     *            The content type to bind to the specified unmarshaller.
+     * @param unmarshaller
+     *            The unmarshaller to register with the specified content type.
      */
     public void addUnmarshaller(String contentType,
-                                PartUnmarshaller unmarshaller) {
+            PartUnmarshaller unmarshaller) {
         try {
             partUnmarshallers.put(new ContentType(contentType), unmarshaller);
         } catch (InvalidFormatException e) {
@@ -1377,7 +1617,8 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
     /**
      * Remove a marshaller by its content type.
      *
-     * @param contentType The content type associated with the marshaller to remove.
+     * @param contentType
+     *            The content type associated with the marshaller to remove.
      */
     public void removeMarshaller(String contentType) {
         try {
@@ -1390,7 +1631,8 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
     /**
      * Remove an unmarshaller by its content type.
      *
-     * @param contentType The content type associated with the unmarshaller to remove.
+     * @param contentType
+     *            The content type associated with the unmarshaller to remove.
      */
     public void removeUnmarshaller(String contentType) {
         try {
@@ -1425,8 +1667,10 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
     /**
      * Save the document in the specified file.
      *
-     * @param targetFile Destination file.
-     * @throws IOException Throws if an IO exception occur.
+     * @param targetFile
+     *            Destination file.
+     * @throws IOException
+     *             Throws if an IO exception occur.
      * @see #save(OutputStream)
      */
     public void save(File targetFile) throws IOException {
@@ -1437,11 +1681,11 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
         this.throwExceptionIfReadOnly();
 
         // You shouldn't save the same file, do a close instead
-        if (targetFile.exists() &&
+        if(targetFile.exists() &&
                 targetFile.getAbsolutePath().equals(this.originalPackagePath)) {
             throw new InvalidOperationException(
                     "You can't call save(File) to save to the currently open " +
-                            "file. To save to the current file, please just call close()"
+                    "file. To save to the current file, please just call close()"
             );
         }
 
@@ -1454,7 +1698,8 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
     /**
      * Save the document in the specified output stream.
      *
-     * @param outputStream The stream to save the package.
+     * @param outputStream
+     *            The stream to save the package.
      * @see #saveImpl(OutputStream)
      */
     public void save(OutputStream outputStream) throws IOException {
@@ -1466,20 +1711,31 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
      * Core method to create a package part. This method must be implemented by
      * the subclass.
      *
-     * @param partName    URI of the part to create.
-     * @param contentType Content type of the part to create.
+     * @param partName
+     *            URI of the part to create.
+     * @param contentType
+     *            Content type of the part to create.
      * @return The newly created package part.
      */
     protected abstract PackagePart createPartImpl(PackagePartName partName,
-                                                  String contentType, boolean loadRelationships);
+            String contentType, boolean loadRelationships);
 
     /**
      * Core method to delete a package part. This method must be implemented by
      * the subclass.
      *
-     * @param partName The URI of the part to delete.
+     * @param partName
+     *            The URI of the part to delete.
+     * @throws IllegalArgumentException if the partName is null.
+     * @throws InvalidOperationException if the package is in read-only mode.
      */
-    protected abstract void removePartImpl(PackagePartName partName);
+    protected void removePartImpl(PackagePartName partName) {
+        if (partName == null) {
+            throw new IllegalArgumentException("partName cannot be null");
+        }
+        throwExceptionIfReadOnly();
+        this.partList.remove(partName);
+    }
 
     /**
      * Flush the package but not save.
@@ -1488,6 +1744,7 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
 
     /**
      * Close the package and cause a save of the package.
+     *
      */
     protected abstract void closeImpl() throws IOException;
 
@@ -1500,7 +1757,8 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
     /**
      * Save the package into the specified output stream.
      *
-     * @param outputStream The output stream use to save this package.
+     * @param outputStream
+     *            The output stream use to save this package.
      */
     protected abstract void saveImpl(OutputStream outputStream)
             throws IOException;
@@ -1538,12 +1796,12 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
      *
      * }</pre>
      *
-     * @param oldContentType the content type to be replaced
-     * @param newContentType the replacement
+     * @param oldContentType  the content type to be replaced
+     * @param newContentType  the replacement
      * @return whether replacement was successful
      * @since POI-3.8
      */
-    public boolean replaceContentType(String oldContentType, String newContentType) {
+    public boolean replaceContentType(String oldContentType, String newContentType){
         boolean success = false;
         ArrayList<PackagePart> list = getPartsByContentType(oldContentType);
         for (PackagePart packagePart : list) {
@@ -1553,7 +1811,7 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
                 try {
                     packagePart.setContentType(newContentType);
                 } catch (InvalidFormatException e) {
-                    throw new OpenXML4JRuntimeException("invalid content type - " + newContentType, e);
+                    throw new OpenXML4JRuntimeException("invalid content type - "+newContentType, e);
                 }
                 success = true;
                 this.isDirty = true;
@@ -1563,11 +1821,12 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
     }
 
     /**
-     * Add the specified part, and register its content type with the content
-     * type manager.
-     *
-     * @param part The part to add.
-     */
+    * Add the specified part, and register its content type with the content
+    * type manager.
+    *
+    * @param part
+    *            The part to add.
+    */
     public void registerPartAndContentType(PackagePart part) {
         addPackagePart(part);
         this.contentTypeManager.addContentType(part.getPartName(), part.getContentType());
@@ -1578,7 +1837,8 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
      * Remove the specified part, and clear its content type from the content
      * type manager.
      *
-     * @param partName The part name of the part to remove.
+     * @param partName
+     *            The part name of the part to remove.
      */
     public void unregisterPartAndContentType(PackagePartName partName) {
         removePart(partName);
@@ -1591,11 +1851,12 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
      * Get an unused part index based on the namePattern, which doesn't exist yet
      * and has the lowest positive index
      *
-     * @param nameTemplate The template for new part names containing a {@code '#'} for the index,
-     *                     e.g. "/ppt/slides/slide#.xml"
+     * @param nameTemplate
+     *      The template for new part names containing a {@code '#'} for the index,
+     *      e.g. "/ppt/slides/slide#.xml"
      * @return the next available part name index
      * @throws InvalidFormatException if the nameTemplate is null or doesn't contain
-     *                                the index char (#) or results in an invalid part name
+     *      the index char (#) or results in an invalid part name
      */
     public int getUnusedPartIndex(final String nameTemplate) throws InvalidFormatException {
         return partList.getUnusedPartIndex(nameTemplate);
@@ -1615,6 +1876,10 @@ public abstract class OPCPackage implements RelationshipSource, Closeable {
      * Has close been called already?
      */
     public abstract boolean isClosed();
+
+    protected void closeParts() {
+        partList.closeParts();
+    }
 
     @Override
     public String toString() {

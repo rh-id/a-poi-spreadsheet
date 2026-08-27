@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.extractor;
 
 import android.util.Log;
@@ -40,6 +41,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.eventusermodel.XSSFSheetX
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.model.SharedStrings;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFRelation;
 
+
 /**
  * Implementation of a text extractor or xlsb Excel
  * files that uses SAX-like binary parsing.
@@ -48,7 +50,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFRelation;
  */
 public class XSSFBEventBasedExcelExtractor extends XSSFEventBasedExcelExtractor {
 
-    private static final String TAG = "XSSFBEventBasedExcelExtractor";
+    private static final String LOGGER_TAG = "XSSFBEventBasedExcelExtractor";
 
     public static final List<XSSFRelation> SUPPORTED_TYPES = Collections.singletonList(
             XSSFRelation.XLSB_BINARY_WORKBOOK
@@ -143,7 +145,7 @@ public class XSSFBEventBasedExcelExtractor extends XSSFEventBasedExcelExtractor 
 
             return text.toString();
         } catch (IOException | OpenXML4JException | SAXException e) {
-            Log.w(TAG, "Failed to load text", e);
+            Log.w(LOGGER_TAG, "Failed to load text", e);
             return "";
         }
     }

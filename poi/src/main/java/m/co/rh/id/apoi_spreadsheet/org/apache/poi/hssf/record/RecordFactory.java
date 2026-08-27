@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record;
 
@@ -26,17 +27,18 @@ import java.util.List;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.IOUtils;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.RecordFormatException;
 
+
 /**
  * Title:  Record Factory<p>
  * Description:  Takes a stream and outputs an array of Record objects.
  *
- * @see m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.eventmodel.EventRecordFactory
+ * @see org.apache.poi.hssf.eventmodel.EventRecordFactory
  */
 public final class RecordFactory {
     private static final int NUM_RECORDS = 512;
 
-    // how many records we read at max by default (can be adjusted via IOUtils)
-    //increased to 5 million due to https://bz.apache.org/bugzilla/show_bug.cgi?id=65887
+    // how many records we read at max by default (can be adjusted via the static setters)
+    // increased to 5 million due to https://bz.apache.org/bugzilla/show_bug.cgi?id=65887
     private static final int DEFAULT_MAX_NUMBER_OF_RECORDS = 5_000_000;
     private static int MAX_NUMBER_OF_RECORDS = DEFAULT_MAX_NUMBER_OF_RECORDS;
 
@@ -174,9 +176,9 @@ public final class RecordFactory {
      *
      * @param in the InputStream from which the records will be obtained
      *
-     * @return an array of Records created from the InputStream
+     * @return a list of Records created from the InputStream
      *
-     * @throws m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.RecordFormatException on error processing the InputStream
+     * @throws org.apache.poi.util.RecordFormatException on error processing the InputStream
      */
     public static List<Record> createRecords(InputStream in) throws RecordFormatException {
 

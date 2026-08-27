@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.internal;
 
@@ -41,6 +42,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackageNamespace
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackagePart;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackagePartName;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackagingURIHelper;
+
 
 /**
  * Manage package content types ([Content_Types].xml part).
@@ -89,9 +91,11 @@ public abstract class ContentTypeManager {
     /**
      * Constructor. Parses the content of the specified input stream.
      *
-     * @param in If different of <i>null</i> then the content types part is
-     *           retrieve and parse.
-     * @throws InvalidFormatException If the content types part content is not valid.
+     * @param in
+     *            If different of <i>null</i> then the content types part is
+     *            retrieve and parse.
+     * @throws InvalidFormatException
+     *             If the content types part content is not valid.
      */
     public ContentTypeManager(InputStream in, OPCPackage pkg)
             throws InvalidFormatException {
@@ -151,7 +155,7 @@ public abstract class ContentTypeManager {
     public void addContentType(PackagePartName partName, String contentType) {
         boolean defaultCTExists = this.defaultContentType.containsValue(contentType);
         String extension = partName.getExtension().toLowerCase(Locale.ROOT);
-        if ((extension.length() == 0) ||
+        if (extension.isEmpty() ||
                 // check if content-type and extension do match in both directions
                 // some applications create broken files, e.g. extension "jpg" instead of "jpeg"
                 (this.defaultContentType.containsKey(extension) && !defaultCTExists) ||
@@ -165,11 +169,13 @@ public abstract class ContentTypeManager {
     /**
      * Add an override content type for a specific part.
      *
-     * @param partName    Name of the part.
-     * @param contentType Content type of the part.
+     * @param partName
+     *            Name of the part.
+     * @param contentType
+     *            Content type of the part.
      */
     private void addOverrideContentType(PackagePartName partName,
-                                        String contentType) {
+            String contentType) {
         if (overrideContentType == null) {
             overrideContentType = new TreeMap<>();
         }
@@ -179,8 +185,10 @@ public abstract class ContentTypeManager {
     /**
      * Add a content type associated with the specified extension.
      *
-     * @param extension   The part name extension to bind to a content type.
-     * @param contentType The content type associated with the specified extension.
+     * @param extension
+     *            The part name extension to bind to a content type.
+     * @param contentType
+     *            The content type associated with the specified extension.
      */
     private void addDefaultContentType(String extension, String contentType) {
         // Remark : Originally the latest parameter was :
@@ -201,10 +209,11 @@ public abstract class ContentTypeManager {
      * matching Default element and a matching Override element, in which case
      * the Override element takes precedence.
      * </p>
-     *
-     * @param partName The part URI associated with the override content type to
-     *                 delete.
-     * @throws InvalidOperationException Throws if
+     * @param partName
+     *            The part URI associated with the override content type to
+     *            delete.
+     * @throws InvalidOperationException
+     *                Throws if
      */
     public void removeContentType(PackagePartName partName)
             throws InvalidOperationException {
@@ -228,7 +237,7 @@ public abstract class ContentTypeManager {
                 for (PackagePart part : this.container.getParts()) {
                     if (!part.getPartName().equals(partName)
                             && part.getPartName().getExtension()
-                            .equalsIgnoreCase(extensionToDelete)) {
+                                    .equalsIgnoreCase(extensionToDelete)) {
                         deleteDefaultContentTypeFlag = false;
                         break;
                     }
@@ -269,9 +278,10 @@ public abstract class ContentTypeManager {
     /**
      * Check if the specified content type is already register.
      *
-     * @param contentType The content type to check.
+     * @param contentType
+     *            The content type to check.
      * @return <code>true</code> if the specified content type is already
-     * register, then <code>false</code>.
+     *         register, then <code>false</code>.
      */
     public boolean isContentTypeRegister(String contentType) {
         if (contentType == null) {
@@ -311,13 +321,15 @@ public abstract class ContentTypeManager {
      * found for the specified part name, the implementation shall not map this
      * part name to a part.
      * </p>
-     *
-     * @param partName The URI part to check.
+     * @param partName
+     *            The URI part to check.
      * @return The content type associated with the URI (in case of an override
-     * content type) or the extension (in case of default content type),
-     * else <code>null</code>.
-     * @throws OpenXML4JRuntimeException Throws if the content type manager is not able to find the
-     *                                   content from an existing part.
+     *         content type) or the extension (in case of default content type),
+     *         else <code>null</code>.
+     *
+     * @throws OpenXML4JRuntimeException
+     *                Throws if the content type manager is not able to find the
+     *                content from an existing part.
      */
     public String getContentType(PackagePartName partName) {
         if (partName == null) {
@@ -343,11 +355,11 @@ public abstract class ContentTypeManager {
          */
         if (this.container != null && this.container.getPart(partName) != null) {
             throw new OpenXML4JRuntimeException(
-                    "Rule M2.4 exception : Part \'"
-                            + partName
-                            + "\' not found - this error should NEVER happen!\n"
-                            + "Check that your code is closing the open resources in the correct order prior to filing a bug report.\n"
-                            + "If you can provide the triggering file, then please raise a bug at https://bz.apache.org/bugzilla/enter_bug.cgi?product=POI and attach the file that triggers it, thanks!");
+                "Rule M2.4 exception : Part \'"
+                + partName
+                + "\' not found - this error should NEVER happen!\n"
+                + "Check that your code is closing the open resources in the correct order prior to filing a bug report.\n"
+                + "If you can provide the triggering file, then please raise a bug at https://bz.apache.org/bugzilla/enter_bug.cgi?product=POI and attach the file that triggers it, thanks!");
         }
         return null;
     }
@@ -364,6 +376,7 @@ public abstract class ContentTypeManager {
 
     /**
      * Clear all override content types.
+     *
      */
     public void clearOverrideContentTypes() {
         if (this.overrideContentType != null) {
@@ -374,8 +387,9 @@ public abstract class ContentTypeManager {
     /**
      * Parse the content types part.
      *
-     * @throws InvalidFormatException Throws if the content type doesn't exist or the XML format is
-     *                                invalid.
+     * @throws InvalidFormatException
+     *             Throws if the content type doesn't exist or the XML format is
+     *             invalid.
      */
     private void parseContentTypesFile(InputStream in)
             throws InvalidFormatException {
@@ -410,8 +424,9 @@ public abstract class ContentTypeManager {
     /**
      * Save the contents type part.
      *
-     * @param outStream The output stream use to save the XML content of the content
-     *                  types part.
+     * @param outStream
+     *            The output stream use to save the XML content of the content
+     *            types part.
      * @return <b>true</b> if the operation success, else <b>false</b>.
      */
     public boolean save(OutputStream outStream) {
@@ -442,12 +457,14 @@ public abstract class ContentTypeManager {
     /**
      * Use to append specific type XML elements, use by the save() method.
      *
-     * @param root  XML parent element use to append this override type element.
-     * @param entry The values to append.
-     * @see #save(OutputStream)
+     * @param root
+     *            XML parent element use to append this override type element.
+     * @param entry
+     *            The values to append.
+     * @see #save(java.io.OutputStream)
      */
     private void appendSpecificTypes(Element root,
-                                     Entry<PackagePartName, String> entry) {
+            Entry<PackagePartName, String> entry) {
         Element specificType = root.getOwnerDocument().createElementNS(TYPES_NAMESPACE_URI, OVERRIDE_TAG_NAME);
         specificType.setAttribute(PART_NAME_ATTRIBUTE_NAME, entry.getKey().getName());
         specificType.setAttribute(CONTENT_TYPE_ATTRIBUTE_NAME, entry.getValue());
@@ -457,9 +474,11 @@ public abstract class ContentTypeManager {
     /**
      * Use to append default types XML elements, use by the save() method.
      *
-     * @param root  XML parent element use to append this default type element.
-     * @param entry The values to append.
-     * @see #save(OutputStream)
+     * @param root
+     *            XML parent element use to append this default type element.
+     * @param entry
+     *            The values to append.
+     * @see #save(java.io.OutputStream)
      */
     private void appendDefaultType(Element root, Entry<String, String> entry) {
         Element defaultType = root.getOwnerDocument().createElementNS(TYPES_NAMESPACE_URI, DEFAULT_TAG_NAME);
@@ -472,7 +491,8 @@ public abstract class ContentTypeManager {
      * Specific implementation of the save method. Call by the save() method,
      * call before exiting.
      *
-     * @param out The output stream use to write the content type XML.
+     * @param out
+     *            The output stream use to write the content type XML.
      */
     public abstract boolean saveImpl(Document content, OutputStream out);
 }

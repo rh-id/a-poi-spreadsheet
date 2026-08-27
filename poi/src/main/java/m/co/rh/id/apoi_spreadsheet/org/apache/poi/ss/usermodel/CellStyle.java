@@ -15,9 +15,14 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel;
 
+import java.util.EnumMap;
+
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Removal;
+
 
 public interface CellStyle {
 
@@ -313,7 +318,7 @@ public interface CellStyle {
 
     /**
      * Set the background fill color.
-     * Uses a {@link m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Color} instead of an indexed color.
+     * Uses a {@link org.apache.poi.ss.usermodel.Color} instead of an indexed color.
      *
      * @param color org.apache.poi.ss.usermodel.Color to set
      * @since POI 5.2.3
@@ -345,7 +350,7 @@ public interface CellStyle {
 
     /**
      * Set the foreground fill color.
-     * Uses a {@link m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Color} instead of an indexed color.
+     * Uses a {@link org.apache.poi.ss.usermodel.Color} instead of an indexed color.
      *
      * @param color org.apache.poi.ss.usermodel.Color to set
      * @since POI 5.2.3
@@ -397,4 +402,29 @@ public interface CellStyle {
      *  it to fit if this text is too long?
      */
     boolean getShrinkToFit();
+
+    /**
+     * Get a map of format properties.
+     * The implementations try to cache the result and
+     * return the cached value on subsequent calls. The cached value
+     * is invalidated when the CellStyle is modified. Thread-safety
+     * of the caching is not guaranteed. If you have another thread updating
+     * the CellStyle while one thread is reading the format properties, the
+     * results may be inconsistent.
+     *
+     * @return map of format properties
+     * @see org.apache.poi.ss.util.CellUtil#getFormatProperties(CellStyle)
+     * @since POI 5.5.0
+     */
+    EnumMap<CellPropertyType, Object> getFormatProperties();
+
+    /**
+     * Invalidate any cached properties. The CellStyle implementations
+     * should call this method whenever a property is changed.
+     * The API is public just in case users find that the CellStyle implementations
+     * are not calling this method when they should.
+     * 
+     * @since POI 5.5.0
+     */
+    void invalidateCachedProperties();
 }

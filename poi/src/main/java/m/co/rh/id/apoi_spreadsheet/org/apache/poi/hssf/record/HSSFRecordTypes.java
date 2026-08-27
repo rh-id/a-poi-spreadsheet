@@ -1,26 +1,9 @@
-/*
- *  ====================================================================
- *    Licensed to the Apache Software Foundation (ASF) under one or more
- *    contributor license agreements.  See the NOTICE file distributed with
- *    this work for additional information regarding copyright ownership.
- *    The ASF licenses this file to You under the Apache License, Version 2.0
- *    (the "License"); you may not use this file except in compliance with
- *    the License.  You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
- * ====================================================================
- */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -33,6 +16,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.pivottable.StreamI
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.pivottable.ViewDefinitionRecord;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.pivottable.ViewFieldsRecord;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.pivottable.ViewSourceRecord;
+
 
 public enum HSSFRecordTypes {
     UNKNOWN(-1, UnknownRecord.class, UnknownRecord::new, false),
@@ -212,8 +196,8 @@ public enum HSSFRecordTypes {
         T apply(RecordInputStream in);
     }
 
-    private static final Map<Short,HSSFRecordTypes> LOOKUP =
-        Arrays.stream(values()).collect(Collectors.toMap(HSSFRecordTypes::getSid, Function.identity()));
+    private static final Map<Short,HSSFRecordTypes> LOOKUP = Collections.unmodifiableMap(
+        Arrays.stream(values()).collect(Collectors.toMap(HSSFRecordTypes::getSid, Function.identity())));
 
     public final short sid;
     public final Class<? extends Record> clazz;

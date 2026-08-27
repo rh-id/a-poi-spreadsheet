@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions;
 
@@ -28,6 +29,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.OperandResolve
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.ValueEval;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.DateUtil;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.StringUtil;
+
 
 /**
  * Implementation for Excel VALUE() function.<p>
@@ -153,7 +155,7 @@ public final class Value extends Fixed1ArgFunction implements ArrayFunction {
                         foundPercentage = true;
                         break;
                     }
-                    if (remainingTextTrimmed.length() > 0) {
+                    if (!remainingTextTrimmed.isEmpty()) {
                         // intervening spaces not allowed once the digits start
                         return null;
                     }

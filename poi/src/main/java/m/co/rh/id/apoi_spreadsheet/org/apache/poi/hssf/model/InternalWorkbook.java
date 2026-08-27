@@ -14,19 +14,17 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.model;
+
+
 
 import android.util.Log;
 
 import java.security.AccessControlException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ddf.EscherBSERecord;
@@ -42,49 +40,8 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ddf.EscherSimpleProperty;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ddf.EscherSpRecord;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ddf.EscherSplitMenuColorsRecord;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.extractor.OldExcelExtractor;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.BOFRecord;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.BackupRecord;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.BookBoolRecord;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.BoundSheetRecord;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.CodepageRecord;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.CountryRecord;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.DSFRecord;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.DateWindow1904Record;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.DrawingGroupRecord;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.EOFRecord;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.EscherAggregate;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.ExtSSTRecord;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.ExtendedFormatRecord;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.ExternSheetRecord;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.FileSharingRecord;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.FnGroupCountRecord;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.FontRecord;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.FormatRecord;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.HideObjRecord;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.HyperlinkRecord;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.InterfaceEndRecord;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.InterfaceHdrRecord;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.MMSRecord;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.NameCommentRecord;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.NameRecord;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.PaletteRecord;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.PasswordRecord;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.PasswordRev4Record;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.PrecisionRecord;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.ProtectRecord;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.ProtectionRev4Record;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.RecalcIdRecord;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.*;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.Record;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.RefreshAllRecord;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.SSTRecord;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.StyleRecord;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.SupBookRecord;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.TabIdRecord;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.UseSelFSRecord;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.WindowOneRecord;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.WindowProtectRecord;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.WriteAccessRecord;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.WriteProtectRecord;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.common.UnicodeString;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.util.HSSFColor.HSSFColorPredefined;
@@ -106,13 +63,14 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LocaleUtil;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.RecordFormatException;
 
+
 /**
  * Low level model implementation of a Workbook.  Provides creational methods
  * for settings and objects contained in the workbook object.
- * <p>
+ * <P>
  * This file contains the low level binary records starting at the workbook's BOF and
  * ending with the workbook's EOF.  Use HSSFWorkbook for a high level representation.
- * <p>
+ * <P>
  * The structures of the highlevel API use references to this to perform most of their
  * operations.  Its probably unwise to use these low level structures directly unless you
  * really know what you're doing.  I recommend you read the Microsoft Excel 97 Developer's
@@ -131,8 +89,8 @@ public final class InternalWorkbook {
 
     /**
      * Normally, the Workbook will be in a POIFS Stream called
-     * "Workbook". However, some weird XLS generators use "WORKBOOK"
-     * or "BOOK". This includes common case sensitive variations.
+     *  "Workbook". However, some weird XLS generators use "WORKBOOK"
+     *  or "BOOK". This includes common case sensitive variations.
      */
     public static final List<String> WORKBOOK_DIR_ENTRY_NAMES = Collections.unmodifiableList(
             Arrays.asList(
@@ -144,8 +102,8 @@ public final class InternalWorkbook {
     );
 
     /**
-     * Crystal exports may use this for a regular .xls file. This
-     * needs to be distinguished case sensitively from {@link #OLD_WORKBOOK_DIR_ENTRY_NAME}.
+     *     Crystal exports may use this for a regular .xls file. This
+     *     needs to be distinguished case sensitively from {@link #OLD_WORKBOOK_DIR_ENTRY_NAME}.
      */
     public static final String BOOK = "BOOK";
 
@@ -154,12 +112,12 @@ public final class InternalWorkbook {
     public static final List<String> WORKBOOK_DIR_ENTRY_NAMES_CASE_INSENSITIVE =
             Collections.unmodifiableList(
                     Arrays.asList(WORKBOOK, BOOK)
-            );
+    );
 
     /**
      * Name of older (pre-Excel 97) Workbook streams, which
-     * aren't supported by HSSFWorkbook, only by
-     * {@link OldExcelExtractor}
+     *  aren't supported by HSSFWorkbook, only by
+     *  {@link OldExcelExtractor}
      */
     public static final String OLD_WORKBOOK_DIR_ENTRY_NAME = "Book";
 
@@ -193,21 +151,13 @@ public final class InternalWorkbook {
     private final List<FormatRecord> formats;
     private final List<HyperlinkRecord> hyperlinks;
 
-    /**
-     * the number of extended format records
-     */
+    /** the number of extended format records */
     private int numxfs;
-    /**
-     * the number of font records
-     */
+    /** the number of font records */
     private int numfonts;
-    /**
-     * holds the max format id
-     */
+    /** holds the max format id */
     private int maxformatid;
-    /**
-     * whether 1904 date windowing is being used
-     */
+    /** whether 1904 date windowing is being used */
     private boolean uses1904datewindowing;
     private DrawingManager2 drawingManager;
     private final List<EscherBSERecord> escherBSERecords;
@@ -222,7 +172,7 @@ public final class InternalWorkbook {
     private final Map<String, NameCommentRecord> commentRecords;
 
     private InternalWorkbook() {
-        records = new WorkbookRecordList();
+        records     = new WorkbookRecordList();
 
         boundsheets = new ArrayList<>();
         formats = new ArrayList<>();
@@ -259,74 +209,74 @@ public final class InternalWorkbook {
             String logObj;
             switch (rec.getSid()) {
 
-                case EOFRecord.sid:
+                case EOFRecord.sid :
                     logObj = "workbook eof";
                     break;
 
-                case BoundSheetRecord.sid:
+                case BoundSheetRecord.sid :
                     logObj = "boundsheet";
                     retval.boundsheets.add((BoundSheetRecord) rec);
-                    retval.records.setBspos(k);
+                    retval.records.setBspos( k );
                     break;
 
-                case SSTRecord.sid:
+                case SSTRecord.sid :
                     logObj = "sst";
-                    retval.sst = (SSTRecord) rec;
+                    retval.sst = ( SSTRecord ) rec;
                     break;
 
-                case FontRecord.sid:
+                case FontRecord.sid :
                     logObj = "font";
-                    retval.records.setFontpos(k);
+                    retval.records.setFontpos( k );
                     retval.numfonts++;
                     break;
 
-                case ExtendedFormatRecord.sid:
+                case ExtendedFormatRecord.sid :
                     logObj = "XF";
-                    retval.records.setXfpos(k);
+                    retval.records.setXfpos( k );
                     retval.numxfs++;
                     break;
 
-                case TabIdRecord.sid:
+                case TabIdRecord.sid :
                     logObj = "tabid";
-                    retval.records.setTabpos(k);
+                    retval.records.setTabpos( k );
                     break;
 
-                case ProtectRecord.sid:
+                case ProtectRecord.sid :
                     logObj = "protect";
-                    retval.records.setProtpos(k);
+                    retval.records.setProtpos( k );
                     break;
 
-                case BackupRecord.sid:
+                case BackupRecord.sid :
                     logObj = "backup";
-                    retval.records.setBackuppos(k);
+                    retval.records.setBackuppos( k );
                     break;
 
-                case ExternSheetRecord.sid:
+                case ExternSheetRecord.sid :
                     throw new RecordFormatException("Extern sheet is part of LinkTable");
 
-                case NameRecord.sid:
-                case SupBookRecord.sid:
+                case NameRecord.sid :
+                case SupBookRecord.sid :
                     // LinkTable can start with either of these
-                    Log.d(TAG, String.format("found SupBook record at %d", k));
+                    Log.d(TAG, String.format("found SupBook record at %s", k));
                     retval.linkTable = new LinkTable(recs, k, retval.records, retval.commentRecords);
-                    k += retval.linkTable.getRecordCount() - 1;
+                    k+=retval.linkTable.getRecordCount() - 1;
                     continue;
 
-                case FormatRecord.sid:
+                case FormatRecord.sid :
                     logObj = "format";
                     FormatRecord fr = (FormatRecord) rec;
                     retval.formats.add(fr);
                     retval.maxformatid = Math.max(retval.maxformatid, fr.getIndexCode());
                     break;
 
-                case DateWindow1904Record.sid:
+                case DateWindow1904Record.sid :
                     logObj = "datewindow1904";
-                    retval.uses1904datewindowing = ((DateWindow1904Record) rec).getWindowing() == 1;
+                    retval.uses1904datewindowing = ((DateWindow1904Record)rec).getWindowing() == 1;
                     break;
 
                 case PaletteRecord.sid:
                     logObj = "palette";
-                    retval.records.setPalettepos(k);
+                    retval.records.setPalettepos( k );
                     break;
 
                 case WindowOneRecord.sid:
@@ -358,7 +308,7 @@ public final class InternalWorkbook {
                 case HyperlinkRecord.sid:
                     // Look for other interesting values that follow the EOFRecord
                     logObj = "Hyperlink";
-                    retval.hyperlinks.add((HyperlinkRecord) rec);
+                    retval.hyperlinks.add((HyperlinkRecord)rec);
                     break;
 
                 default:
@@ -368,7 +318,7 @@ public final class InternalWorkbook {
             if (!eofPassed) {
                 records.add(rec);
             }
-            Log.i(TAG, String.format("found %s record at %d", logObj, k));
+            Log.v(TAG, String.format("found %s record at %s", logObj, k));
             if (rec.getSid() == EOFRecord.sid) {
                 eofPassed = true;
             }
@@ -430,7 +380,7 @@ public final class InternalWorkbook {
         records.add(createFont());
         records.add(createFont());
         records.add(createFont());
-        retval.records.setFontpos(records.size() - 1);   // last font record position
+        retval.records.setFontpos( records.size() - 1 );   // last font record position
         retval.numfonts = 4;
 
         // set up format records
@@ -445,7 +395,7 @@ public final class InternalWorkbook {
             records.add(InternalWorkbook.createExtendedFormat(k));
             retval.numxfs++;
         }
-        retval.records.setXfpos(records.size() - 1);
+        retval.records.setXfpos( records.size() - 1 );
         for (int k = 0; k < 6; k++) {
             records.add(InternalWorkbook.createStyle(k));
         }
@@ -459,8 +409,8 @@ public final class InternalWorkbook {
             retval.boundsheets.add(bsr);
             retval.records.setBspos(records.size() - 1);
         }
-        records.add(InternalWorkbook.createCountry());
-        for (int k = 0; k < nBoundSheets; k++) {
+        records.add( InternalWorkbook.createCountry() );
+        for ( int k = 0; k < nBoundSheets; k++ ) {
             retval.getOrCreateLinkTable().checkExternSheet(k);
         }
         retval.sst = new SSTRecord();
@@ -474,22 +424,20 @@ public final class InternalWorkbook {
     }
 
 
-    /**
-     * Retrieves the Builtin NameRecord that matches the name and index
+    /**Retrieves the Builtin NameRecord that matches the name and index
      * There shouldn't be too many names to make the sequential search too slow
-     *
-     * @param name        byte representation of the builtin name to match
+     * @param name byte representation of the builtin name to match
      * @param sheetNumber 1-based sheet number
      * @return null if no builtin NameRecord matches
      */
-    public NameRecord getSpecificBuiltinRecord(byte name, int sheetNumber) {
+    public NameRecord getSpecificBuiltinRecord(byte name, int sheetNumber)
+    {
         return getOrCreateLinkTable().getSpecificBuiltinRecord(name, sheetNumber);
     }
 
     /**
      * Removes the specified Builtin NameRecord that matches the name and index
-     *
-     * @param name       byte representation of the builtin to match
+     * @param name byte representation of the builtin to match
      * @param sheetIndex zero-based sheet reference
      */
     public void removeBuiltinRecord(byte name, int sheetIndex) {
@@ -518,30 +466,32 @@ public final class InternalWorkbook {
         }
         if (index > (numfonts - 1)) {
             throw new ArrayIndexOutOfBoundsException(
-                    "There are only " + numfonts + " font records, but you asked for index " + idx);
+            "There are only " + numfonts + " font records, but you asked for index " + idx);
         }
 
         Record record = records.get((records.getFontpos() - (numfonts - 1)) + index);
         if (!(record instanceof FontRecord)) {
             throw new IllegalStateException("Did not have the expected record-type FontRecord: " + record.getClass());
         }
-        return (FontRecord) record;
+        return ( FontRecord ) record;
     }
 
     /**
      * Retrieves the index of the given font
      *
      * @param font the font
+     *
      * @return the font index
+     *
      * @throws IllegalArgumentException if the font index can't be determined
      */
     public int getFontIndex(FontRecord font) {
-        for (int i = 0; i <= numfonts; i++) {
+        for(int i=0; i<=numfonts; i++) {
             FontRecord thisFont =
-                    (FontRecord) records.get((records.getFontpos() - (numfonts - 1)) + i);
-            if (thisFont == font) {
+                ( FontRecord ) records.get((records.getFontpos() - (numfonts - 1)) + i);
+            if(thisFont == font) {
                 // There is no 4!
-                return (i > 3) ? i + 1 : i;
+                return (i > 3) ? i+1 : i;
             }
         }
         throw new IllegalArgumentException("Could not find that font!");
@@ -558,17 +508,17 @@ public final class InternalWorkbook {
     public FontRecord createNewFont() {
         FontRecord rec = createFont();
 
-        records.add(records.getFontpos() + 1, rec);
-        records.setFontpos(records.getFontpos() + 1);
+        records.add(records.getFontpos()+1, rec);
+        records.setFontpos( records.getFontpos() + 1 );
         numfonts++;
         return rec;
     }
 
     /**
      * Removes the given font record from the
-     * file's list. This will make all
-     * subsequent font indicies drop by one,
-     * so you'll need to update those yourself!
+     *  file's list. This will make all
+     *  subsequent font indicies drop by one,
+     *  so you'll need to update those yourself!
      *
      * @param rec the font record
      */
@@ -580,7 +530,7 @@ public final class InternalWorkbook {
     /**
      * gets the number of font records
      *
-     * @return number of font records in the "font table"
+     * @return   number of font records in the "font table"
      */
 
     public int getNumberOfFontRecords() {
@@ -591,15 +541,15 @@ public final class InternalWorkbook {
      * Sets the BOF for a given sheet
      *
      * @param sheetIndex the number of the sheet to set the positing of the bof for
-     * @param pos        the actual bof position
+     * @param pos the actual bof position
      */
 
     public void setSheetBof(int sheetIndex, int pos) {
-        Log.d(TAG, String.format("setting bof for sheetnum =%d at pos=%d", sheetIndex, pos));
+        Log.d(TAG, String.format("setting bof for sheetnum =%s at pos=%s", sheetIndex, pos));
 
         checkSheets(sheetIndex);
         getBoundSheetRec(sheetIndex)
-                .setPositionOfBof(pos);
+        .setPositionOfBof(pos);
     }
 
     private BoundSheetRecord getBoundSheetRec(int sheetIndex) {
@@ -612,7 +562,7 @@ public final class InternalWorkbook {
      * @return the position of the backup record
      */
     public BackupRecord getBackupRecord() {
-        return (BackupRecord) records.get(records.getBackuppos());
+        return ( BackupRecord ) records.get(records.getBackuppos());
     }
 
 
@@ -621,7 +571,7 @@ public final class InternalWorkbook {
      * its only one more than we have, go ahead and create it.  If it's &gt; 1 more than
      * we have, except
      *
-     * @param sheetnum  the sheet number (0 based)
+     * @param sheetnum the sheet number (0 based)
      * @param sheetname the name for the sheet
      */
     public void setSheetName(int sheetnum, final String sheetname) {
@@ -638,7 +588,7 @@ public final class InternalWorkbook {
      * Determines whether a workbook contains the provided sheet name.  For the purpose of
      * comparison, long names are truncated to 31 chars.
      *
-     * @param name            the name to test (case insensitive match)
+     * @param name the name to test (case insensitive match)
      * @param excludeSheetIdx the sheet to exclude from the check or -1 to include all sheets in the check.
      * @return true if the sheet contains the name, false otherwise.
      */
@@ -647,7 +597,7 @@ public final class InternalWorkbook {
         if (aName.length() > MAX_SENSITIVE_SHEET_NAME_LEN) {
             aName = aName.substring(0, MAX_SENSITIVE_SHEET_NAME_LEN);
         }
-        int i = 0;
+        int i=0;
         for (BoundSheetRecord boundSheetRecord : boundsheets) {
             if (excludeSheetIdx == i++) {
                 continue;
@@ -667,9 +617,9 @@ public final class InternalWorkbook {
      * sets the order of appearance for a given sheet.
      *
      * @param sheetname the name of the sheet to reorder
-     * @param pos       the position that we want to insert the sheet into (0 based)
+     * @param pos the position that we want to insert the sheet into (0 based)
      */
-    public void setSheetOrder(String sheetname, int pos) {
+    public void setSheetOrder(String sheetname, int pos ) {
         int sheetNumber = getSheetIndex(sheetname);
         //remove the sheet that needs to be reordered and place it in the spot we want
         boundsheets.add(pos, boundsheets.remove(sheetNumber));
@@ -696,8 +646,8 @@ public final class InternalWorkbook {
     /**
      * Gets the hidden flag for a given sheet.
      * Note that a sheet could instead be
-     * set to be very hidden, which is different
-     * ({@link #isSheetVeryHidden(int)})
+     *  set to be very hidden, which is different
+     *  ({@link #isSheetVeryHidden(int)})
      *
      * @param sheetnum the sheet number (0 based)
      * @return True if sheet is hidden
@@ -709,8 +659,8 @@ public final class InternalWorkbook {
     /**
      * Gets the very hidden flag for a given sheet.
      * This is different from the normal
-     * hidden flag
-     * ({@link #isSheetHidden(int)})
+     *  hidden flag
+     *  ({@link #isSheetHidden(int)})
      *
      * @param sheetnum the sheet number (0 based)
      * @return True if sheet is very hidden
@@ -722,8 +672,8 @@ public final class InternalWorkbook {
     /**
      * Gets the hidden flag for a given sheet.
      * Note that a sheet could instead be
-     * set to be very hidden, which is different
-     * ({@link #isSheetVeryHidden(int)})
+     *  set to be very hidden, which is different
+     *  ({@link #isSheetVeryHidden(int)})
      *
      * @param sheetnum the sheet number (0 based)
      * @return True if sheet is hidden
@@ -744,7 +694,7 @@ public final class InternalWorkbook {
      * Hide or unhide a sheet
      *
      * @param sheetnum The sheet number
-     * @param hidden   True to mark the sheet as hidden, false otherwise
+     * @param hidden True to mark the sheet as hidden, false otherwise
      */
     public void setSheetHidden(int sheetnum, boolean hidden) {
         setSheetHidden(sheetnum, hidden ? SheetVisibility.HIDDEN : SheetVisibility.VISIBLE);
@@ -768,8 +718,7 @@ public final class InternalWorkbook {
 
     /**
      * get the sheet's index
-     *
-     * @param name sheet name
+     * @param name  sheet name
      * @return sheet index or -1 if it was not found.
      */
     public int getSheetIndex(String name) {
@@ -798,8 +747,8 @@ public final class InternalWorkbook {
             }
             BoundSheetRecord bsr = createBoundSheet(sheetnum);
 
-            records.add(records.getBspos() + 1, bsr);
-            records.setBspos(records.getBspos() + 1);
+            records.add(records.getBspos()+1, bsr);
+            records.setBspos( records.getBspos() + 1 );
             boundsheets.add(bsr);
             getOrCreateLinkTable().checkExternSheet(sheetnum);
             fixTabIdRecord();
@@ -824,16 +773,16 @@ public final class InternalWorkbook {
         //  excel will break. (Sheet index is either 0 for
         //  global, or 1 based index to sheet)
         int sheetNum1Based = sheetIndex + 1;
-        for (int i = 0; i < getNumNames(); i++) {
+        for(int i=0; i<getNumNames(); i++) {
             NameRecord nr = getNameRecord(i);
 
-            if (nr.getSheetNumber() == sheetNum1Based) {
+            if(nr.getSheetNumber() == sheetNum1Based) {
                 // Excel re-writes these to point to no sheet
                 nr.setSheetNumber(0);
-            } else if (nr.getSheetNumber() > sheetNum1Based) {
+            } else if(nr.getSheetNumber() > sheetNum1Based) {
                 // Bump down by one, so still points
                 //  at the same sheet
-                nr.setSheetNumber(nr.getSheetNumber() - 1);
+                nr.setSheetNumber(nr.getSheetNumber()-1);
             }
         }
 
@@ -852,17 +801,17 @@ public final class InternalWorkbook {
         // see bug 55982, quite a number of documents do not have a TabIdRecord and
         // thus there is no way to do the fixup here,
         // we use the same check on Tabpos as done in other places
-        if (records.getTabpos() <= 0) {
+        if(records.getTabpos() <= 0) {
             return;
         }
 
         Record rec = records.get(records.getTabpos());
 
-        TabIdRecord tir = (TabIdRecord) rec;
-        short[] tia = new short[boundsheets.size()];
+        TabIdRecord tir = ( TabIdRecord ) rec;
+        short[]     tia = new short[ boundsheets.size() ];
 
         for (short k = 0; k < tia.length; k++) {
-            tia[k] = k;
+            tia[ k ] = k;
         }
         tir.setTabIdArray(tia);
     }
@@ -874,7 +823,7 @@ public final class InternalWorkbook {
      */
 
     public int getNumSheets() {
-        Log.d(TAG, String.format("getNumSheets={}", boundsheets.size()));
+        Log.d(TAG, String.format("getNumSheets=%d", boundsheets.size()));
         return boundsheets.size();
     }
 
@@ -885,7 +834,7 @@ public final class InternalWorkbook {
      */
 
     public int getNumExFormats() {
-        Log.d(TAG, String.format("getXF=%d", numxfs));
+        Log.d(TAG, String.format("getXF=%s", numxfs));
         return numxfs;
     }
 
@@ -910,9 +859,9 @@ public final class InternalWorkbook {
 
     /**
      * Removes the given ExtendedFormatRecord record from the
-     * file's list. This will make all
-     * subsequent font indicies drop by one,
-     * so you'll need to update those yourself!
+     *  file's list. This will make all
+     *  subsequent font indicies drop by one,
+     *  so you'll need to update those yourself!
      *
      * @param rec the ExtendedFormatRecord
      */
@@ -923,11 +872,10 @@ public final class InternalWorkbook {
 
     /**
      * Removes ExtendedFormatRecord record with given index from the
-     * file's list. This will make all
-     * subsequent font indicies drop by one,
-     * so you'll need to update those yourself!
-     *
-     * @param index of the Extended format record (0-based)
+     *  file's list. This will make all
+     *  subsequent font indicies drop by one,
+     *  so you'll need to update those yourself!
+     *  @param index of the Extended format record (0-based)
      */
     public void removeExFormatRecord(int index) {
         int xfptr = records.getXfpos() - (numxfs - 1) + index;
@@ -938,7 +886,7 @@ public final class InternalWorkbook {
 
     /**
      * creates a new Cell-type Extended Format Record and adds it to the end of
-     * ExtendedFormatRecords collection
+     *  ExtendedFormatRecords collection
      *
      * @return ExtendedFormatRecord that was created
      */
@@ -946,27 +894,28 @@ public final class InternalWorkbook {
     public ExtendedFormatRecord createCellXF() {
         ExtendedFormatRecord xf = createExtendedFormat();
 
-        records.add(records.getXfpos() + 1, xf);
-        records.setXfpos(records.getXfpos() + 1);
+        records.add(records.getXfpos()+1, xf);
+        records.setXfpos( records.getXfpos() + 1 );
         numxfs++;
         return xf;
     }
 
     /**
      * Returns the StyleRecord for the given
-     * xfIndex, or null if that ExtendedFormat doesn't
-     * have a Style set.
+     *  xfIndex, or null if that ExtendedFormat doesn't
+     *  have a Style set.
      *
      * @param xfIndex the extended format index
+     *
      * @return the StyleRecord, {@code null} if it that ExtendedFormat doesn't have a Style set.
      */
     public StyleRecord getStyleRecord(int xfIndex) {
         // Style records always follow after
         //  the ExtendedFormat records
-        for (int i = records.getXfpos(); i < records.size(); i++) {
+        for(int i=records.getXfpos(); i<records.size(); i++) {
             Record r = records.get(i);
             if (r instanceof StyleRecord) {
-                StyleRecord sr = (StyleRecord) r;
+                StyleRecord sr = (StyleRecord)r;
                 if (sr.getXFIndex() == xfIndex) {
                     return sr;
                 }
@@ -985,10 +934,10 @@ public final class InternalWorkbook {
     public void updateStyleRecord(int oldXf, int newXf) {
         // Style records always follow after
         //  the ExtendedFormat records
-        for (int i = records.getXfpos(); i < records.size(); i++) {
+        for(int i=records.getXfpos(); i<records.size(); i++) {
             Record r = records.get(i);
             if (r instanceof StyleRecord) {
-                StyleRecord sr = (StyleRecord) r;
+                StyleRecord sr = (StyleRecord)r;
                 if (sr.getXFIndex() == oldXf) {
                     sr.setXFIndex(newXf);
                 }
@@ -998,10 +947,11 @@ public final class InternalWorkbook {
 
     /**
      * Creates a new StyleRecord, for the given Extended
-     * Format index, and adds it onto the end of the
-     * records collection
+     *  Format index, and adds it onto the end of the
+     *  records collection
      *
      * @param xfIndex the extended format index
+     *
      * @return a new StyleRecord
      */
     public StyleRecord createStyleRecord(int xfIndex) {
@@ -1012,17 +962,17 @@ public final class InternalWorkbook {
 
         // Find the spot
         int addAt = -1;
-        for (int i = records.getXfpos(); i < records.size() &&
+        for(int i=records.getXfpos(); i<records.size() &&
                 addAt == -1; i++) {
             Record r = records.get(i);
-            if (r instanceof ExtendedFormatRecord ||
+            if(r instanceof ExtendedFormatRecord ||
                     r instanceof StyleRecord) {
                 // Keep going
             } else {
                 addAt = i;
             }
         }
-        if (addAt == -1) {
+        if(addAt == -1) {
             throw new IllegalStateException("No XF Records found!");
         }
         records.add(addAt, newSR);
@@ -1036,6 +986,7 @@ public final class InternalWorkbook {
      * (meaning 8bit)
      *
      * @param string the string to be added to the SSTRecord
+     *
      * @return index of the string within the SSTRecord
      */
 
@@ -1044,12 +995,11 @@ public final class InternalWorkbook {
         if (sst == null) {
             insertSST();
         }
-        return sst.addString(string);
+      return sst.addString(string);
     }
 
     /**
      * given an index into the SST table, this function returns the corresponding String value
-     *
      * @param str the index into the SST table
      * @return String containing the SST String
      */
@@ -1059,14 +1009,13 @@ public final class InternalWorkbook {
         }
         UnicodeString retval = sst.getString(str);
 
-        Log.i(TAG, String.format("Returning SST for index=%d String= %s", str, retval));
+        Log.v(TAG, String.format("Returning SST for index=%s String= %s", str, retval));
         return retval;
     }
 
     /**
      * use this function to add a Shared String Table to an existing sheet (say
      * generated by a different java api) without an sst....
-     *
      * @see #createExtendedSST()
      * @see SSTRecord
      */
@@ -1082,12 +1031,11 @@ public final class InternalWorkbook {
     /**
      * Serializes all records int the worksheet section into a big byte array. Use
      * this to write the Workbook out.
-     *
      * @param offset of the data to be written
-     * @param data   array of bytes to write this to
+     * @param data array of bytes to write this to
      * @return the length of serialized bytes
      */
-    public int serialize(int offset, byte[] data) {
+    public int serialize( int offset, byte[] data ) {
         Log.d(TAG, "Serializing Workbook with offsets");
 
         int pos = 0;
@@ -1095,24 +1043,24 @@ public final class InternalWorkbook {
         SSTRecord lSST = null;
         int sstPos = 0;
         boolean wroteBoundSheets = false;
-        for (Record record : records.getRecords()) {
+        for ( Record record : records.getRecords() ) {
             int len = 0;
             if (record instanceof SSTRecord) {
-                lSST = (SSTRecord) record;
+                lSST = (SSTRecord)record;
                 sstPos = pos;
             }
             if (record.getSid() == ExtSSTRecord.sid && lSST != null) {
                 record = lSST.createExtSSTRecord(sstPos + offset);
             }
             if (record instanceof BoundSheetRecord) {
-                if (!wroteBoundSheets) {
+                 if(!wroteBoundSheets) {
                     for (BoundSheetRecord bsr : boundsheets) {
-                        len += bsr.serialize(pos + offset + len, data);
+                        len += bsr.serialize(pos+offset+len, data);
                     }
                     wroteBoundSheets = true;
-                }
+                 }
             } else {
-                len = record.serialize(pos + offset, data);
+               len = record.serialize( pos + offset, data );
             }
             pos += len;
         }
@@ -1123,16 +1071,19 @@ public final class InternalWorkbook {
 
     /**
      * Perform any work necessary before the workbook is about to be serialized.
-     * <p>
+     *
      * Include in it ant code that modifies the workbook record stream and affects its size.
      */
     public void preSerialize() {
         // Ensure we have enough tab IDs
         // Can be a few short if new sheets were added
         if (records.getTabpos() > 0) {
-            TabIdRecord tir = (TabIdRecord) records.get(records.getTabpos());
-            if (tir.getTabIdSize() < boundsheets.size()) {
-                fixTabIdRecord();
+            Record rec = records.get(records.getTabpos());
+            if (rec instanceof TabIdRecord) {
+                TabIdRecord tir = ( TabIdRecord ) rec;
+                if(tir.getTabIdSize() < boundsheets.size()) {
+                    fixTabIdRecord();
+                }
             }
         }
     }
@@ -1141,9 +1092,9 @@ public final class InternalWorkbook {
         int retval = 0;
 
         SSTRecord lSST = null;
-        for (Record record : records.getRecords()) {
+        for ( Record record : records.getRecords() ) {
             if (record instanceof SSTRecord) {
-                lSST = (SSTRecord) record;
+                lSST = (SSTRecord)record;
             }
 
             if (record.getSid() == ExtSSTRecord.sid && lSST != null) {
@@ -1159,10 +1110,10 @@ public final class InternalWorkbook {
     private static BOFRecord createBOF() {
         BOFRecord retval = new BOFRecord();
 
-        retval.setVersion((short) 0x600);
+        retval.setVersion(( short ) 0x600);
         retval.setType(BOFRecord.TYPE_WORKBOOK);
-        retval.setBuild((short) 0x10d3);
-        retval.setBuildYear((short) 1996);
+        retval.setBuild(( short ) 0x10d3);
+        retval.setBuildYear(( short ) 1996);
         // was c1 before verify
         retval.setHistoryBitMask(0x41);
         retval.setRequiredVersion(0x6);
@@ -1173,8 +1124,8 @@ public final class InternalWorkbook {
     private static MMSRecord createMMS() {
         MMSRecord retval = new MMSRecord();
 
-        retval.setAddMenuCount((byte) 0);
-        retval.setDelMenuCount((byte) 0);
+        retval.setAddMenuCount(( byte ) 0);
+        retval.setDelMenuCount(( byte ) 0);
         return retval;
     }
 
@@ -1188,7 +1139,7 @@ public final class InternalWorkbook {
         try {
             String username = System.getProperty("user.name");
             // Google App engine returns null for user.name, see Bug 53974
-            if (username == null) {
+            if(username == null) {
                 username = defaultUserName;
             }
 
@@ -1226,7 +1177,7 @@ public final class InternalWorkbook {
     private static FnGroupCountRecord createFnGroupCount() {
         FnGroupCountRecord retval = new FnGroupCountRecord();
 
-        retval.setCount((short) 14);
+        retval.setCount(( short ) 14);
         return retval;
     }
 
@@ -1284,15 +1235,15 @@ public final class InternalWorkbook {
     private static WindowOneRecord createWindowOne() {
         WindowOneRecord retval = new WindowOneRecord();
 
-        retval.setHorizontalHold((short) 0x168);
-        retval.setVerticalHold((short) 0x10e);
-        retval.setWidth((short) 0x3a5c);
-        retval.setHeight((short) 0x23be);
-        retval.setOptions((short) 0x38);
-        retval.setActiveSheetIndex(0x0);
+        retval.setHorizontalHold(( short ) 0x168);
+        retval.setVerticalHold(( short ) 0x10e);
+        retval.setWidth(( short ) 0x3a5c);
+        retval.setHeight(( short ) 0x23be);
+        retval.setOptions(( short ) 0x38);
+        retval.setActiveSheetIndex( 0x0);
         retval.setFirstVisibleTab(0x0);
-        retval.setNumSelectedTabs((short) 1);
-        retval.setTabWidthRatio((short) 0x258);
+        retval.setNumSelectedTabs(( short ) 1);
+        retval.setTabWidthRatio(( short ) 0x258);
         return retval;
     }
 
@@ -1302,7 +1253,7 @@ public final class InternalWorkbook {
     private static BackupRecord createBackup() {
         BackupRecord retval = new BackupRecord();
 
-        retval.setBackup((short) 0);   // by default DONT save backups of files...just loose data
+        retval.setBackup(( short ) 0);   // by default DONT save backups of files...just loose data
         return retval;
     }
 
@@ -1311,7 +1262,7 @@ public final class InternalWorkbook {
      */
     private static HideObjRecord createHideObj() {
         HideObjRecord retval = new HideObjRecord();
-        retval.setHideObj((short) 0);   // by default set hide object off
+        retval.setHideObj(( short ) 0);   // by default set hide object off
         return retval;
     }
 
@@ -1321,7 +1272,7 @@ public final class InternalWorkbook {
     private static DateWindow1904Record createDateWindow1904() {
         DateWindow1904Record retval = new DateWindow1904Record();
 
-        retval.setWindowing((short) 0);   // don't EVER use 1904 date windowing...tick tock..
+        retval.setWindowing(( short ) 0);   // don't EVER use 1904 date windowing...tick tock..
         return retval;
     }
 
@@ -1346,7 +1297,7 @@ public final class InternalWorkbook {
      */
     private static BookBoolRecord createBookBool() {
         BookBoolRecord retval = new BookBoolRecord();
-        retval.setSaveLinkValues((short) 0);
+        retval.setSaveLinkValues(( short ) 0);
         return retval;
     }
 
@@ -1362,121 +1313,102 @@ public final class InternalWorkbook {
     private static FontRecord createFont() {
         FontRecord retval = new FontRecord();
 
-        retval.setFontHeight((short) 0xc8);
-        retval.setAttributes((short) 0x0);
-        retval.setColorPaletteIndex((short) 0x7fff);
-        retval.setBoldWeight((short) 0x190);
+        retval.setFontHeight(( short ) 0xc8);
+        retval.setAttributes(( short ) 0x0);
+        retval.setColorPaletteIndex(( short ) 0x7fff);
+        retval.setBoldWeight(( short ) 0x190);
         retval.setFontName("Arial");
         return retval;
     }
 
     /**
      * Creates a FormatRecord object
-     *
-     * @param id the number of the format record to create (meaning its position in
-     *           a file as M$ Excel would create it.)
+     * @param id    the number of the format record to create (meaning its position in
+     *        a file as M$ Excel would create it.)
      */
     private static FormatRecord createFormat(int id) {
         // we'll need multiple editions for the different formats
         final int[] mappings = {5, 6, 7, 8, 0x2a, 0x29, 0x2c, 0x2b};
         if (id < 0 || id >= mappings.length) {
-            throw new IllegalArgumentException("Unexpected id " + id);
+            throw new  IllegalArgumentException("Unexpected id " + id);
         }
         return new FormatRecord(mappings[id], BuiltinFormats.getBuiltinFormat(mappings[id]));
     }
 
     /**
      * Creates an ExtendedFormatRecord object
-     *
-     * @param id the number of the extended format record to create (meaning its position in
-     *           a file as MS Excel would create it.)
+     * @param id    the number of the extended format record to create (meaning its position in
+     *        a file as MS Excel would create it.)
      */
     private static ExtendedFormatRecord createExtendedFormat(int id) {
         // we'll need multiple editions
         switch (id) {
-            case 0:
-                return createExtendedFormat(0, 0, 0xfffffff5, 0);
-            case 1:
-            case 2:
-                return createExtendedFormat(1, 0, 0xfffffff5, 0xfffff400);
-            case 3:
-            case 4:
-                return createExtendedFormat(2, 0, 0xfffffff5, 0xfffff400);
-            case 5:
-            case 6:
-            case 7:
-            case 8:
-            case 9:
+            case  0: return createExtendedFormat(0,    0, 0xfffffff5,          0);
+            case  1:
+            case  2: return createExtendedFormat(1,    0, 0xfffffff5, 0xfffff400);
+            case  3:
+            case  4: return createExtendedFormat(2,    0, 0xfffffff5, 0xfffff400);
+            case  5:
+            case  6:
+            case  7:
+            case  8:
+            case  9:
             case 10:
             case 11:
             case 12:
             case 13:
-            case 14:
-                return createExtendedFormat(0, 0, 0xfffffff5, 0xfffff400);
+            case 14: return createExtendedFormat(0,    0, 0xfffffff5, 0xfffff400);
             // cell records
-            case 15:
-                return createExtendedFormat(0, 0, 1, 0);
+            case 15: return createExtendedFormat(0,    0,          1,          0);
             // style
-            case 16:
-                return createExtendedFormat(1, 0x2b, 0xfffffff5, 0xfffff800);
-            case 17:
-                return createExtendedFormat(1, 0x29, 0xfffffff5, 0xfffff800);
-            case 18:
-                return createExtendedFormat(1, 0x2c, 0xfffffff5, 0xfffff800);
-            case 19:
-                return createExtendedFormat(1, 0x2a, 0xfffffff5, 0xfffff800);
-            case 20:
-                return createExtendedFormat(1, 0x09, 0xfffffff5, 0xfffff800);
+            case 16: return createExtendedFormat(1, 0x2b, 0xfffffff5, 0xfffff800);
+            case 17: return createExtendedFormat(1, 0x29, 0xfffffff5, 0xfffff800);
+            case 18: return createExtendedFormat(1, 0x2c, 0xfffffff5, 0xfffff800);
+            case 19: return createExtendedFormat(1, 0x2a, 0xfffffff5, 0xfffff800);
+            case 20: return createExtendedFormat(1, 0x09, 0xfffffff5, 0xfffff800);
             // unused from this point down
-            case 21:
-                return createExtendedFormat(5, 0, 1, 0x800);
-            case 22:
-                return createExtendedFormat(6, 0, 1, 0x5c00);
-            case 23:
-                return createExtendedFormat(0, 0x31, 1, 0x5c00);
-            case 24:
-                return createExtendedFormat(0, 8, 1, 0x5c00);
-            case 25:
-                return createExtendedFormat(6, 8, 1, 0x5c00);
+            case 21: return createExtendedFormat(5,    0,          1,      0x800);
+            case 22: return createExtendedFormat(6,    0,          1,     0x5c00);
+            case 23: return createExtendedFormat(0, 0x31,          1,     0x5c00);
+            case 24: return createExtendedFormat(0,    8,          1,     0x5c00);
+            case 25: return createExtendedFormat(6,    8,          1,     0x5c00);
 
-            default:
-                throw new IllegalStateException("Unrecognized format id: " + id);
+            default: throw new IllegalStateException("Unrecognized format id: " + id);
         }
     }
 
     private static ExtendedFormatRecord createExtendedFormat(
-            int fontIndex, int formatIndex, int cellOptions, int indentionOptions
+        int fontIndex, int formatIndex, int cellOptions, int indentionOptions
     ) {
         ExtendedFormatRecord retval = new ExtendedFormatRecord();
-        retval.setFontIndex((short) fontIndex);
-        retval.setFormatIndex((short) formatIndex);
-        retval.setCellOptions((short) cellOptions);
-        retval.setAlignmentOptions((short) 0x20);
-        retval.setIndentionOptions((short) indentionOptions);
-        retval.setBorderOptions((short) 0);
-        retval.setPaletteOptions((short) 0);
-        retval.setAdtlPaletteOptions((short) 0);
-        retval.setFillPaletteOptions((short) 0x20c0);
+        retval.setFontIndex(( short ) fontIndex);
+        retval.setFormatIndex(( short ) formatIndex);
+        retval.setCellOptions(( short ) cellOptions);
+        retval.setAlignmentOptions(( short ) 0x20);
+        retval.setIndentionOptions(( short ) indentionOptions);
+        retval.setBorderOptions(( short ) 0);
+        retval.setPaletteOptions(( short ) 0);
+        retval.setAdtlPaletteOptions(( short ) 0);
+        retval.setFillPaletteOptions(( short ) 0x20c0);
         return retval;
     }
 
     /**
      * creates an default cell type ExtendedFormatRecord object.
-     *
      * @return ExtendedFormatRecord with initial defaults (cell-type)
      */
     private static ExtendedFormatRecord createExtendedFormat() {
         ExtendedFormatRecord retval = new ExtendedFormatRecord();
 
-        retval.setFontIndex((short) 0);
-        retval.setFormatIndex((short) 0x0);
-        retval.setCellOptions((short) 0x1);
-        retval.setAlignmentOptions((short) 0x20);
-        retval.setIndentionOptions((short) 0);
-        retval.setBorderOptions((short) 0);
-        retval.setPaletteOptions((short) 0);
-        retval.setAdtlPaletteOptions((short) 0);
-        retval.setFillPaletteOptions((short) 0x20c0);
+        retval.setFontIndex(( short ) 0);
+        retval.setFormatIndex(( short ) 0x0);
+        retval.setCellOptions(( short ) 0x1);
+        retval.setAlignmentOptions(( short ) 0x20);
+        retval.setIndentionOptions(( short ) 0);
+        retval.setBorderOptions(( short ) 0);
+        retval.setPaletteOptions(( short ) 0);
+        retval.setAdtlPaletteOptions(( short ) 0);
+        retval.setFillPaletteOptions(( short ) 0x20c0);
         retval.setTopBorderPaletteIdx(HSSFColorPredefined.BLACK.getIndex());
         retval.setBottomBorderPaletteIdx(HSSFColorPredefined.BLACK.getIndex());
         retval.setLeftBorderPaletteIdx(HSSFColorPredefined.BLACK.getIndex());
@@ -1486,9 +1418,8 @@ public final class InternalWorkbook {
 
     /**
      * Creates a StyleRecord object
-     *
-     * @param id the number of the style record to create (meaning its position in
-     *           a file as MS Excel would create it.
+     * @param id        the number of the style record to create (meaning its position in
+     *                  a file as MS Excel would create it.
      */
     private static StyleRecord createStyle(int id) {
         // we'll need multiple editions
@@ -1496,11 +1427,11 @@ public final class InternalWorkbook {
                 {0x010, 3}, {0x011, 6}, {0x012, 4}, {0x013, 7}, {0x000, 0}, {0x014, 5}
         };
         if (id < 0 || id >= mappings.length) {
-            throw new IllegalArgumentException("Unexpected style id " + id);
+            throw new  IllegalArgumentException("Unexpected style id " + id);
         }
 
         StyleRecord retval = new StyleRecord();
-        retval.setOutlineStyleLevel((byte) 0xffffffff);
+        retval.setOutlineStyleLevel(( byte ) 0xffffffff);
         retval.setXFIndex(mappings[id][0]);
         retval.setBuiltinStyle(mappings[id][1]);
         return retval;
@@ -1523,14 +1454,13 @@ public final class InternalWorkbook {
     /**
      * create a "bound sheet" or "bundlesheet" (depending who you ask) record
      * Always sets the sheet's bof to 0.  You'll need to set that yourself.
-     *
      * @param id either sheet 0,1 or 2.
      * @return record containing a BoundSheetRecord
      * @see BoundSheetRecord
      * @see Record
      */
     private static BoundSheetRecord createBoundSheet(int id) {
-        return new BoundSheetRecord("Sheet" + (id + 1));
+        return new BoundSheetRecord("Sheet" + (id+1));
     }
 
     /**
@@ -1540,13 +1470,13 @@ public final class InternalWorkbook {
     private static CountryRecord createCountry() {
         CountryRecord retval = new CountryRecord();
 
-        retval.setDefaultCountry((short) 1);
+        retval.setDefaultCountry(( short ) 1);
 
         // from Russia with love ;)
-        if ("ru_RU".equals(LocaleUtil.getUserLocale().toString())) {
-            retval.setCurrentCountry((short) 7);
+        if ( "ru_RU".equals( LocaleUtil.getUserLocale().toString() ) ) {
+            retval.setCurrentCountry(( short ) 7);
         } else {
-            retval.setCurrentCountry((short) 1);
+            retval.setCurrentCountry(( short ) 1);
         }
 
         return retval;
@@ -1559,7 +1489,7 @@ public final class InternalWorkbook {
      */
     private static ExtSSTRecord createExtendedSST() {
         ExtSSTRecord retval = new ExtSSTRecord();
-        retval.setNumStringsPerBucket((short) 0x8);
+        retval.setNumStringsPerBucket(( short ) 0x8);
         return retval;
     }
 
@@ -1568,7 +1498,7 @@ public final class InternalWorkbook {
      * Note - creating the link table causes creation of 1 EXTERNALBOOK and 1 EXTERNALSHEET record
      */
     private LinkTable getOrCreateLinkTable() {
-        if (linkTable == null) {
+        if(linkTable == null) {
             linkTable = new LinkTable((short) getNumSheets(), records);
         }
         return linkTable;
@@ -1580,20 +1510,17 @@ public final class InternalWorkbook {
 
     /**
      * Finds the first sheet name by his extern sheet index
-     *
      * @param externSheetIndex extern sheet index
      * @return first sheet name.
      */
-    public String findSheetFirstNameFromExternSheet(int externSheetIndex) {
+    public String findSheetFirstNameFromExternSheet(int externSheetIndex){
         int indexToSheet = linkTable.getFirstInternalSheetIndexForExtIndex(externSheetIndex);
         return findSheetNameFromIndex(indexToSheet);
     }
-
-    public String findSheetLastNameFromExternSheet(int externSheetIndex) {
+    public String findSheetLastNameFromExternSheet(int externSheetIndex){
         int indexToSheet = linkTable.getLastInternalSheetIndexForExtIndex(externSheetIndex);
         return findSheetNameFromIndex(indexToSheet);
     }
-
     private String findSheetNameFromIndex(int internalSheetIndex) {
         if (internalSheetIndex < 0) {
             // TODO - what does '-1' mean here?
@@ -1618,76 +1545,69 @@ public final class InternalWorkbook {
             return new ExternalSheetRange(extNames[0], extNames[1], extNames[2]);
         }
     }
-
     public ExternalName getExternalName(int externSheetIndex, int externNameIndex) {
-        String nameName = linkTable.resolveNameXText(externSheetIndex, externNameIndex, this);
-        if (nameName == null) {
-            return null;
-        }
-        int ix = linkTable.resolveNameXIx(externSheetIndex, externNameIndex);
-        return new ExternalName(nameName, externNameIndex, ix);
+       String nameName = linkTable.resolveNameXText(externSheetIndex, externNameIndex, this);
+       if(nameName == null) {
+          return null;
+       }
+       int ix = linkTable.resolveNameXIx(externSheetIndex, externNameIndex);
+       return new ExternalName(nameName, externNameIndex, ix);
     }
 
     /**
      * Finds the (first) sheet index for a particular external sheet number.
-     *
-     * @param externSheetNumber The external sheet number to convert
-     * @return The index to the sheet found.
+     * @param externSheetNumber     The external sheet number to convert
+     * @return  The index to the sheet found.
      */
-    public int getFirstSheetIndexFromExternSheetIndex(int externSheetNumber) {
+    public int getFirstSheetIndexFromExternSheetIndex(int externSheetNumber)
+    {
         return linkTable.getFirstInternalSheetIndexForExtIndex(externSheetNumber);
     }
 
     /**
      * Finds the last sheet index for a particular external sheet number,
-     * which may be the same as the first (except for multi-sheet references)
-     *
-     * @param externSheetNumber The external sheet number to convert
-     * @return The index to the sheet found.
+     *  which may be the same as the first (except for multi-sheet references)
+     * @param externSheetNumber     The external sheet number to convert
+     * @return  The index to the sheet found.
      */
-    public int getLastSheetIndexFromExternSheetIndex(int externSheetNumber) {
+    public int getLastSheetIndexFromExternSheetIndex(int externSheetNumber)
+    {
         return linkTable.getLastInternalSheetIndexForExtIndex(externSheetNumber);
     }
 
     /**
      * Returns the extern sheet number for specific sheet number.
      * If this sheet doesn't exist in extern sheet, add it
-     *
      * @param sheetNumber local sheet number
      * @return index to extern sheet
      */
-    public short checkExternSheet(int sheetNumber) {
-        return (short) getOrCreateLinkTable().checkExternSheet(sheetNumber);
+    public short checkExternSheet(int sheetNumber){
+        return (short)getOrCreateLinkTable().checkExternSheet(sheetNumber);
     }
-
     /**
      * Returns the extern sheet number for specific range of sheets.
      * If this sheet range doesn't exist in extern sheet, add it
-     *
      * @param firstSheetNumber first local sheet number
-     * @param lastSheetNumber  last local sheet number
+     * @param lastSheetNumber last local sheet number
      * @return index to extern sheet
      */
-    public short checkExternSheet(int firstSheetNumber, int lastSheetNumber) {
-        return (short) getOrCreateLinkTable().checkExternSheet(firstSheetNumber, lastSheetNumber);
+    public short checkExternSheet(int firstSheetNumber, int lastSheetNumber){
+        return (short)getOrCreateLinkTable().checkExternSheet(firstSheetNumber, lastSheetNumber);
     }
 
     public int getExternalSheetIndex(String workbookName, String sheetName) {
         return getOrCreateLinkTable().getExternalSheetIndex(workbookName, sheetName, sheetName);
     }
-
     public int getExternalSheetIndex(String workbookName, String firstSheetName, String lastSheetName) {
         return getOrCreateLinkTable().getExternalSheetIndex(workbookName, firstSheetName, lastSheetName);
     }
 
 
-    /**
-     * gets the total number of names
-     *
+    /** gets the total number of names
      * @return number of names
      */
-    public int getNumNames() {
-        if (linkTable == null) {
+    public int getNumNames(){
+        if(linkTable == null) {
             return 0;
         }
         return linkTable.getNumNames();
@@ -1695,30 +1615,27 @@ public final class InternalWorkbook {
 
     /**
      * gets the name record
-     *
      * @param index name index
      * @return name record
      */
-    public NameRecord getNameRecord(int index) {
+    public NameRecord getNameRecord(int index){
         return linkTable.getNameRecord(index);
     }
 
     /**
      * gets the name comment record
-     *
      * @param nameRecord name record who's comment is required.
      * @return name comment record or <code>null</code> if there isn't one for the given name.
      */
-    public NameCommentRecord getNameCommentRecord(final NameRecord nameRecord) {
+    public NameCommentRecord getNameCommentRecord(final NameRecord nameRecord){
         return commentRecords.get(nameRecord.getNameText());
     }
 
     /**
      * creates new name
-     *
      * @return new name record
      */
-    public NameRecord createName() {
+    public NameRecord createName(){
         return addName(new NameRecord());
     }
 
@@ -1739,16 +1656,17 @@ public final class InternalWorkbook {
      *
      * @param builtInName the built-in name
      * @param sheetNumber the sheet number
+     *
      * @return a new NameRecord
      */
     public NameRecord createBuiltInName(byte builtInName, int sheetNumber) {
-        if (sheetNumber < 0 || sheetNumber + 1 > Short.MAX_VALUE) {
-            throw new IllegalArgumentException("Sheet number [" + sheetNumber + "]is not valid ");
+        if (sheetNumber < 0 || sheetNumber+1 > Short.MAX_VALUE) {
+            throw new IllegalArgumentException("Sheet number ["+sheetNumber+"]is not valid ");
         }
 
         NameRecord name = new NameRecord(builtInName, sheetNumber);
 
-        if (linkTable.nameAlreadyExists(name)) {
+        if(linkTable.nameAlreadyExists(name)) {
             throw new IllegalStateException("Builtin (" + builtInName
                     + ") already exists for sheet (" + sheetNumber + ")");
         }
@@ -1757,12 +1675,10 @@ public final class InternalWorkbook {
     }
 
 
-    /**
-     * removes the name
-     *
+    /** removes the name
      * @param nameIndex name index
      */
-    public void removeName(int nameIndex) {
+    public void removeName(int nameIndex){
 
         if (linkTable.getNumNames() > nameIndex) {
             int idx = findFirstRecordLocBySid(NameRecord.sid);
@@ -1773,55 +1689,52 @@ public final class InternalWorkbook {
 
     /**
      * If a {@link NameCommentRecord} is added or the name it references
-     * is renamed, then this will update the lookup cache for it.
+     *  is renamed, then this will update the lookup cache for it.
      *
      * @param commentRecord the comment record
      */
     public void updateNameCommentRecordCache(final NameCommentRecord commentRecord) {
-        if (commentRecords.containsValue(commentRecord)) {
-            for (Entry<String, NameCommentRecord> entry : commentRecords.entrySet()) {
-                if (entry.getValue().equals(commentRecord)) {
-                    commentRecords.remove(entry.getKey());
-                    break;
-                }
-            }
-        }
-        commentRecords.put(commentRecord.getNameText(), commentRecord);
+       if(commentRecords.containsValue(commentRecord)) {
+          for(Entry<String,NameCommentRecord> entry : commentRecords.entrySet()) {
+             if(entry.getValue().equals(commentRecord)) {
+                commentRecords.remove(entry.getKey());
+                break;
+             }
+          }
+       }
+       commentRecords.put(commentRecord.getNameText(), commentRecord);
     }
 
     /**
      * Returns a format index that matches the passed in format.  It does not tie into HSSFDataFormat.
-     *
-     * @param format           the format string
+     * @param format the format string
      * @param createIfNotFound creates a new format if format not found
      * @return the format id of a format that matches or -1 if none found and createIfNotFound
      */
     public short getFormat(String format, boolean createIfNotFound) {
-        for (FormatRecord r : formats) {
-            if (r.getFormatString().equals(format)) {
-                return (short) r.getIndexCode();
-            }
+      for (FormatRecord r : formats) {
+        if (r.getFormatString().equals(format)) {
+        return (short)r.getIndexCode();
         }
+      }
 
-        if (createIfNotFound) {
-            return (short) createFormat(format);
-        }
+      if (createIfNotFound) {
+        return (short)createFormat(format);
+      }
 
-        return -1;
+      return -1;
     }
 
     /**
      * Returns the list of FormatRecords in the workbook.
-     *
      * @return ArrayList of FormatRecords in the notebook
      */
     public List<FormatRecord> getFormats() {
-        return formats;
+      return formats;
     }
 
     /**
      * Creates a FormatRecord, inserts it, and returns the index code.
-     *
      * @param formatString the format string
      * @return the index code of the format record.
      * @see FormatRecord
@@ -1833,24 +1746,26 @@ public final class InternalWorkbook {
         FormatRecord rec = new FormatRecord(maxformatid, formatString);
 
         int pos = 0;
-        while (pos < records.size() && records.get(pos).getSid() != FormatRecord.sid) {
+        while ( pos < records.size() && records.get( pos ).getSid() != FormatRecord.sid ) {
             pos++;
         }
         pos += formats.size();
-        formats.add(rec);
-        records.add(pos, rec);
+        formats.add( rec );
+        records.add( pos, rec );
         return maxformatid;
     }
+
 
 
     /**
      * Returns the first occurance of a record matching a particular sid.
      *
      * @param sid the sid
+     *
      * @return the matching record or {@code null} if it wasn't found
      */
     public Record findFirstRecordBySid(short sid) {
-        for (Record record : records.getRecords()) {
+        for (Record record : records.getRecords() ) {
             if (record.getSid() == sid) {
                 return record;
             }
@@ -1860,17 +1775,16 @@ public final class InternalWorkbook {
 
     /**
      * Returns the index of a record matching a particular sid.
-     *
-     * @param sid The sid of the record to match
-     * @return The index of -1 if no match made.
+     * @param sid   The sid of the record to match
+     * @return      The index of -1 if no match made.
      */
     public int findFirstRecordLocBySid(short sid) {
         int index = 0;
-        for (Record record : records.getRecords()) {
+        for (Record record : records.getRecords() ) {
             if (record.getSid() == sid) {
                 return index;
             }
-            index++;
+            index ++;
         }
         return -1;
     }
@@ -1880,11 +1794,12 @@ public final class InternalWorkbook {
      *
      * @param sid the sid
      * @param pos specifies the n-th matching sid
+     *
      * @return the matching record or {@code null} if it wasn't found
      */
     public Record findNextRecordBySid(short sid, int pos) {
         int matches = 0;
-        for (Record record : records.getRecords()) {
+        for (Record record : records.getRecords() ) {
             if (record.getSid() == sid && matches++ == pos) {
                 return record;
             }
@@ -1892,7 +1807,8 @@ public final class InternalWorkbook {
         return null;
     }
 
-    public List<HyperlinkRecord> getHyperlinks() {
+    public List<HyperlinkRecord> getHyperlinks()
+    {
         return hyperlinks;
     }
 
@@ -1901,11 +1817,11 @@ public final class InternalWorkbook {
     }
 
     /**
-     * Whether date windowing is based on 1/2/1904 or 1/1/1900.
-     * Some versions of Excel (Mac) can save workbooks using 1904 date windowing.
-     *
-     * @return true if using 1904 date windowing
-     */
+    * Whether date windowing is based on 1/2/1904 or 1/1/1900.
+    * Some versions of Excel (Mac) can save workbooks using 1904 date windowing.
+    *
+    * @return true if using 1904 date windowing
+    */
     public boolean isUsing1904DateWindowing() {
         return uses1904datewindowing;
     }
@@ -1924,7 +1840,7 @@ public final class InternalWorkbook {
             if (rec instanceof PaletteRecord) {
                 palette = (PaletteRecord) rec;
             } else {
-                throw new IllegalStateException("InternalError: Expected PaletteRecord but got a '" + rec + "'");
+                throw new IllegalStateException("InternalError: Expected PaletteRecord but got a '"+rec+"'");
             }
         } else {
             palette = createPalette();
@@ -1941,17 +1857,17 @@ public final class InternalWorkbook {
      * @return the primary drawing group
      */
     public DrawingManager2 findDrawingGroup() {
-        if (drawingManager != null) {
-            // We already have it!
-            return drawingManager;
+        if(drawingManager != null) {
+           // We already have it!
+           return drawingManager;
         }
 
         // Need to find a DrawingGroupRecord that contains a EscherDggRecord
-        for (Record r : records.getRecords()) {
+        for(Record r : records.getRecords() ) {
             if (!(r instanceof DrawingGroupRecord)) {
                 continue;
             }
-            DrawingGroupRecord dg = (DrawingGroupRecord) r;
+            DrawingGroupRecord dg = (DrawingGroupRecord)r;
             dg.decode();
             drawingManager = findDrawingManager(dg, escherBSERecords);
             if (drawingManager != null) {
@@ -1961,7 +1877,7 @@ public final class InternalWorkbook {
 
         // TODO: we've already scanned the records, why should this work any better now?
         // Look for the DrawingGroup record
-        DrawingGroupRecord dg = (DrawingGroupRecord) findFirstRecordBySid(DrawingGroupRecord.sid);
+        DrawingGroupRecord dg = (DrawingGroupRecord)findFirstRecordBySid(DrawingGroupRecord.sid);
         drawingManager = findDrawingManager(dg, escherBSERecords);
         return drawingManager;
     }
@@ -1978,7 +1894,7 @@ public final class InternalWorkbook {
 
         EscherDggRecord dgg = null;
         EscherContainerRecord bStore = null;
-        for (EscherRecord er : cr) {
+        for(EscherRecord er : cr) {
             if (er instanceof EscherDggRecord) {
                 dgg = (EscherDggRecord) er;
             } else if (er.getRecordId() == EscherContainerRecord.BSTORE_CONTAINER) {
@@ -1986,15 +1902,15 @@ public final class InternalWorkbook {
             }
         }
 
-        if (dgg == null) {
+        if(dgg == null) {
             return null;
         }
 
         DrawingManager2 dm = new DrawingManager2(dgg);
-        if (bStore != null) {
+        if(bStore != null){
             for (EscherRecord bs : bStore) {
-                if (bs instanceof EscherBSERecord) {
-                    escherBSERecords.add((EscherBSERecord) bs);
+                if(bs instanceof EscherBSERecord) {
+                    escherBSERecords.add((EscherBSERecord)bs);
                 }
             }
         }
@@ -2003,7 +1919,7 @@ public final class InternalWorkbook {
 
     /**
      * Creates a primary drawing group record.  If it already
-     * exists then it's modified.
+     *  exists then it's modified.
      */
     public void createDrawingGroup() {
         if (drawingManager == null) {
@@ -2015,26 +1931,27 @@ public final class InternalWorkbook {
             dggContainer.setRecordId((short) 0xF000);
             dggContainer.setOptions((short) 0x000F);
             dgg.setRecordId(EscherDggRecord.RECORD_ID);
-            dgg.setOptions((short) 0x0000);
+            dgg.setOptions((short)0x0000);
             dgg.setShapeIdMax(1024);
             dgg.setNumShapesSaved(0);
             dgg.setDrawingsSaved(0);
-            dgg.setFileIdClusters(new EscherDggRecord.FileIdCluster[]{});
+            dgg.setFileIdClusters(new EscherDggRecord.FileIdCluster[] {} );
             drawingManager = new DrawingManager2(dgg);
             EscherContainerRecord bstoreContainer = null;
-            if (!escherBSERecords.isEmpty()) {
+            if (!escherBSERecords.isEmpty())
+            {
                 bstoreContainer = new EscherContainerRecord();
-                bstoreContainer.setRecordId(EscherContainerRecord.BSTORE_CONTAINER);
-                bstoreContainer.setOptions((short) ((escherBSERecords.size() << 4) | 0xF));
+                bstoreContainer.setRecordId( EscherContainerRecord.BSTORE_CONTAINER );
+                bstoreContainer.setOptions( (short) ( (escherBSERecords.size() << 4) | 0xF ) );
                 for (EscherRecord escherRecord : escherBSERecords) {
-                    bstoreContainer.addChildRecord(escherRecord);
+                    bstoreContainer.addChildRecord( escherRecord );
                 }
             }
             opt.setRecordId((short) 0xF00B);
             opt.setOptions((short) 0x0033);
-            opt.addEscherProperty(new EscherBoolProperty(EscherPropertyTypes.TEXT__SIZE_TEXT_TO_FIT_SHAPE, 524296));
-            opt.addEscherProperty(new EscherRGBProperty(EscherPropertyTypes.FILL__FILLCOLOR, 0x08000041));
-            opt.addEscherProperty(new EscherRGBProperty(EscherPropertyTypes.LINESTYLE__COLOR, 134217792));
+            opt.addEscherProperty( new EscherBoolProperty(EscherPropertyTypes.TEXT__SIZE_TEXT_TO_FIT_SHAPE, 524296) );
+            opt.addEscherProperty( new EscherRGBProperty(EscherPropertyTypes.FILL__FILLCOLOR, 0x08000041) );
+            opt.addEscherProperty( new EscherRGBProperty(EscherPropertyTypes.LINESTYLE__COLOR, 134217792) );
             splitMenuColors.setRecordId((short) 0xF11E);
             splitMenuColors.setOptions((short) 0x0040);
             splitMenuColors.setColor1(0x0800000D);
@@ -2044,7 +1961,7 @@ public final class InternalWorkbook {
 
             dggContainer.addChildRecord(dgg);
             if (bstoreContainer != null) {
-                dggContainer.addChildRecord(bstoreContainer);
+                dggContainer.addChildRecord( bstoreContainer );
             }
             dggContainer.addChildRecord(opt);
             dggContainer.addChildRecord(splitMenuColors);
@@ -2055,7 +1972,7 @@ public final class InternalWorkbook {
                 drawingGroup.addEscherRecord(dggContainer);
                 int loc = findFirstRecordLocBySid(CountryRecord.sid);
 
-                getRecords().add(loc + 1, drawingGroup);
+                getRecords().add(loc+1, drawingGroup);
             } else {
                 DrawingGroupRecord drawingGroup = new DrawingGroupRecord();
                 drawingGroup.addEscherRecord(dggContainer);
@@ -2070,63 +1987,65 @@ public final class InternalWorkbook {
     }
 
     public EscherBSERecord getBSERecord(int pictureIndex) {
-        return escherBSERecords.get(pictureIndex - 1);
+        return escherBSERecords.get(pictureIndex-1);
     }
 
     public int addBSERecord(EscherBSERecord e) {
         createDrawingGroup();
 
         // maybe we don't need that as an instance variable anymore
-        escherBSERecords.add(e);
+        escherBSERecords.add( e );
 
         int dgLoc = findFirstRecordLocBySid(DrawingGroupRecord.sid);
-        DrawingGroupRecord drawingGroup = (DrawingGroupRecord) getRecords().get(dgLoc);
+        DrawingGroupRecord drawingGroup = (DrawingGroupRecord) getRecords().get( dgLoc );
 
-        EscherContainerRecord dggContainer = (EscherContainerRecord) drawingGroup.getEscherRecord(0);
+        EscherContainerRecord dggContainer = (EscherContainerRecord) drawingGroup.getEscherRecord( 0 );
         EscherContainerRecord bstoreContainer;
-        if (dggContainer.getChild(1).getRecordId() == EscherContainerRecord.BSTORE_CONTAINER) {
-            bstoreContainer = (EscherContainerRecord) dggContainer.getChild(1);
+        if (dggContainer.getChild( 1 ).getRecordId() == EscherContainerRecord.BSTORE_CONTAINER )
+        {
+            bstoreContainer = (EscherContainerRecord) dggContainer.getChild( 1 );
         } else {
             bstoreContainer = new EscherContainerRecord();
-            bstoreContainer.setRecordId(EscherContainerRecord.BSTORE_CONTAINER);
+            bstoreContainer.setRecordId( EscherContainerRecord.BSTORE_CONTAINER );
             List<EscherRecord> childRecords = dggContainer.getChildRecords();
             childRecords.add(1, bstoreContainer);
             dggContainer.setChildRecords(childRecords);
         }
-        bstoreContainer.setOptions((short) ((escherBSERecords.size() << 4) | 0xF));
+        bstoreContainer.setOptions( (short) ( (escherBSERecords.size() << 4) | 0xF ) );
 
-        bstoreContainer.addChildRecord(e);
+        bstoreContainer.addChildRecord( e );
 
         return escherBSERecords.size();
     }
 
-    public DrawingManager2 getDrawingManager() {
+    public DrawingManager2 getDrawingManager()
+    {
         return drawingManager;
     }
 
     public WriteProtectRecord getWriteProtect() {
         if (writeProtect == null) {
-            writeProtect = new WriteProtectRecord();
-            int i = findFirstRecordLocBySid(BOFRecord.sid);
-            records.add(i + 1, writeProtect);
+           writeProtect = new WriteProtectRecord();
+           int i = findFirstRecordLocBySid(BOFRecord.sid);
+           records.add(i+1, writeProtect);
         }
         return this.writeProtect;
     }
 
     public WriteAccessRecord getWriteAccess() {
         if (writeAccess == null) {
-            writeAccess = createWriteAccess();
-            int i = findFirstRecordLocBySid(InterfaceEndRecord.sid);
-            records.add(i + 1, writeAccess);
+           writeAccess = createWriteAccess();
+           int i = findFirstRecordLocBySid(InterfaceEndRecord.sid);
+           records.add(i+1, writeAccess);
         }
         return writeAccess;
     }
 
     public FileSharingRecord getFileSharing() {
         if (fileShare == null) {
-            fileShare = new FileSharingRecord();
-            int i = findFirstRecordLocBySid(WriteAccessRecord.sid);
-            records.add(i + 1, fileShare);
+           fileShare = new FileSharingRecord();
+           int i = findFirstRecordLocBySid(WriteAccessRecord.sid);
+           records.add(i+1, fileShare);
         }
         return fileShare;
     }
@@ -2151,13 +2070,12 @@ public final class InternalWorkbook {
      * @param password the password
      * @param username the username
      */
-    public void writeProtectWorkbook(String password, String username) {
+    public void writeProtectWorkbook( String password, String username ) {
         FileSharingRecord frec = getFileSharing();
         WriteAccessRecord waccess = getWriteAccess();
-        /* WriteProtectRecord wprotect =*/
-        getWriteProtect();
-        frec.setReadOnly((short) 1);
-        frec.setPassword((short) CryptoFunctions.createXorVerifier1(password));
+        /* WriteProtectRecord wprotect =*/ getWriteProtect();
+        frec.setReadOnly((short)1);
+        frec.setPassword((short)CryptoFunctions.createXorVerifier1(password));
         frec.setUsername(username);
         waccess.setUsername(username);
     }
@@ -2173,7 +2091,7 @@ public final class InternalWorkbook {
     }
 
     /**
-     * @param refIndex         Index to REF entry in EXTERNSHEET record in the Link Table
+     * @param refIndex Index to REF entry in EXTERNSHEET record in the Link Table
      * @param definedNameIndex zero-based to DEFINEDNAME or EXTERNALNAME record
      * @return the string representation of the defined or external name
      */
@@ -2182,23 +2100,23 @@ public final class InternalWorkbook {
     }
 
     /**
-     * @param name          the  name of an external function, typically a name of a UDF
+     *
+     * @param name the  name of an external function, typically a name of a UDF
      * @param sheetRefIndex the sheet ref index, or -1 if not known
-     * @param udf           locator of user-defined functions to resolve names of VBA and Add-In functions
+     * @param udf  locator of user-defined functions to resolve names of VBA and Add-In functions
      * @return the external name or null
      */
     public NameXPtg getNameXPtg(String name, int sheetRefIndex, UDFFinder udf) {
         LinkTable lnk = getOrCreateLinkTable();
         NameXPtg xptg = lnk.getNameXPtg(name, sheetRefIndex);
 
-        if (xptg == null && udf.findFunction(name) != null) {
+        if(xptg == null && udf.findFunction(name) != null) {
             // the name was not found in the list of external names
             // check if the Workbook's UDFFinder is aware about it and register the name if it is
             xptg = lnk.addNameXPtg(name);
         }
         return xptg;
     }
-
     public NameXPtg getNameXPtg(String name, UDFFinder udf) {
         return getNameXPtg(name, -1, udf);
     }
@@ -2209,18 +2127,18 @@ public final class InternalWorkbook {
      *
      * @param sheet the cloned sheet
      */
-    public void cloneDrawings(InternalSheet sheet) {
+    public void cloneDrawings(InternalSheet sheet){
 
         findDrawingGroup();
 
-        if (drawingManager == null) {
+        if(drawingManager == null) {
             //this workbook does not have drawings
             return;
         }
 
         //check if the cloned sheet has drawings
         int aggLoc = sheet.aggregateDrawingRecords(drawingManager, false);
-        if (aggLoc == -1) {
+        if(aggLoc == -1) {
             return;
         }
 
@@ -2234,34 +2152,34 @@ public final class InternalWorkbook {
 
         //register a new drawing group for the cloned sheet
         int dgId = drawingManager.findNewDrawingGroupId();
-        dgg.addCluster(dgId, 0);
+        dgg.addCluster( dgId, 0 );
         dgg.setDrawingsSaved(dgg.getDrawingsSaved() + 1);
 
         EscherDgRecord dg = null;
-        for (EscherRecord er : escherContainer) {
-            if (er instanceof EscherDgRecord) {
-                dg = (EscherDgRecord) er;
+        for(EscherRecord er : escherContainer) {
+            if(er instanceof EscherDgRecord) {
+                dg = (EscherDgRecord)er;
                 //update id of the drawing in the cloned sheet
-                dg.setOptions((short) (dgId << 4));
-            } else if (er instanceof EscherContainerRecord) {
+                dg.setOptions( (short) ( dgId << 4 ) );
+            } else if (er instanceof EscherContainerRecord){
                 // iterate over shapes and re-generate shapeId
-                for (EscherRecord er2 : (EscherContainerRecord) er) {
-                    for (EscherRecord shapeChildRecord : (EscherContainerRecord) er2) {
+                for(EscherRecord er2 : (EscherContainerRecord)er) {
+                    for(EscherRecord shapeChildRecord : (EscherContainerRecord)er2) {
                         int recordId = shapeChildRecord.getRecordId();
-                        if (recordId == EscherSpRecord.RECORD_ID) {
+                        if (recordId == EscherSpRecord.RECORD_ID){
                             if (dg == null) {
                                 throw new RecordFormatException("EscherDgRecord wasn't set/processed before.");
                             }
-                            EscherSpRecord sp = (EscherSpRecord) shapeChildRecord;
+                            EscherSpRecord sp = (EscherSpRecord)shapeChildRecord;
                             int shapeId = drawingManager.allocateShapeId(dg);
                             //allocateShapeId increments the number of shapes. roll back to the previous value
-                            dg.setNumShapes(dg.getNumShapes() - 1);
+                            dg.setNumShapes(dg.getNumShapes()-1);
                             sp.setShapeId(shapeId);
-                        } else if (recordId == EscherOptRecord.RECORD_ID) {
-                            EscherOptRecord opt = (EscherOptRecord) shapeChildRecord;
+                        } else if (recordId == EscherOptRecord.RECORD_ID){
+                            EscherOptRecord opt = (EscherOptRecord)shapeChildRecord;
                             EscherSimpleProperty prop = opt.lookup(
-                                    EscherPropertyTypes.BLIP__BLIPTODISPLAY);
-                            if (prop != null) {
+                                    EscherPropertyTypes.BLIP__BLIPTODISPLAY );
+                            if (prop != null){
                                 int pictureIndex = prop.getPropertyValue();
                                 // increment reference count for pictures
                                 EscherBSERecord bse = getBSERecord(pictureIndex);
@@ -2275,12 +2193,12 @@ public final class InternalWorkbook {
         }
     }
 
-    public NameRecord cloneFilter(int filterDbNameIndex, int newSheetIndex) {
+    public NameRecord cloneFilter(int filterDbNameIndex, int newSheetIndex){
         NameRecord origNameRecord = getNameRecord(filterDbNameIndex);
         // copy original formula but adjust 3D refs to the new external sheet index
         int newExtSheetIx = checkExternSheet(newSheetIndex);
         Ptg[] ptgs = origNameRecord.getNameDefinition();
-        for (int i = 0; i < ptgs.length; i++) {
+        for (int i=0; i< ptgs.length; i++) {
             Ptg ptg = ptgs[i];
 
             if (ptg instanceof Area3DPtg) {
@@ -2293,20 +2211,19 @@ public final class InternalWorkbook {
                 ptgs[i] = r3p;
             }
         }
-        NameRecord newNameRecord = createBuiltInName(NameRecord.BUILTIN_FILTER_DB, newSheetIndex + 1);
+        NameRecord newNameRecord = createBuiltInName(NameRecord.BUILTIN_FILTER_DB, newSheetIndex+1);
         newNameRecord.setNameDefinition(ptgs);
         newNameRecord.setHidden(true);
         return newNameRecord;
 
     }
-
     /**
      * Updates named ranges due to moving of cells
      *
      * @param shifter the formula shifter
      */
     public void updateNamesAfterCellShift(FormulaShifter shifter) {
-        for (int i = 0; i < getNumNames(); ++i) {
+        for (int i = 0 ; i < getNumNames() ; ++i){
             NameRecord nr = getNameRecord(i);
             Ptg[] ptgs = nr.getNameDefinition();
             if (shifter.adjustFormula(ptgs, nr.getSheetNumber())) {
@@ -2319,11 +2236,12 @@ public final class InternalWorkbook {
      * Get or create RecalcIdRecord
      *
      * @return a new RecalcIdRecord
+     *
      * @see HSSFWorkbook#setForceFormulaRecalculation(boolean)
      */
-    public RecalcIdRecord getRecalcId() {
-        RecalcIdRecord record = (RecalcIdRecord) findFirstRecordBySid(RecalcIdRecord.sid);
-        if (record == null) {
+    public RecalcIdRecord getRecalcId(){
+        RecalcIdRecord record = (RecalcIdRecord)findFirstRecordBySid(RecalcIdRecord.sid);
+        if(record == null){
             record = new RecalcIdRecord();
             // typically goes after the Country record
             int pos = findFirstRecordLocBySid(CountryRecord.sid);
@@ -2338,7 +2256,6 @@ public final class InternalWorkbook {
      * A formular in Excel which refers a cell in another file is saved in two parts:
      * The referenced file is stored in an reference table. the row/cell information is saved separate.
      * This method invokation will only change the reference in the lookup-table itself.
-     *
      * @param oldUrl The old URL to search for and which is to be replaced
      * @param newUrl The URL replacement
      * @return true if the oldUrl was found and replaced with newUrl. Otherwise false

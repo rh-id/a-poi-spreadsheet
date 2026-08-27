@@ -79,7 +79,6 @@ public class TestXSSFSheetShiftRowsAndColumns {
             final XSSFRow row = sheet.createRow(nRow);
             for (int nCol = 0; nCol < numCols; ++nCol) {
                 final XSSFCell cell = row.createCell(nCol);
-                cell.setCellType(CellType.STRING);
                 cell.setCellValue(String.format(Locale.US, "Row %d col %d", nRow, nCol));
             }
         }

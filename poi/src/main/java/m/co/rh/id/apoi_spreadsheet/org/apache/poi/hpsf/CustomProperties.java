@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.hpsf;
 
@@ -38,6 +39,9 @@ import java.util.Set;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hpsf.wellknown.PropertyIDMap;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.CodePageUtil;
 
+
+
+
 /**
  * Maintains the instances of {@link CustomProperty} that belong to a
  * {@link DocumentSummaryInformation}. The class maintains the names of the
@@ -46,7 +50,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.CodePageUtil;
  * name is the key that maps to a typed value. This implementation hides
  * property IDs from the developer and regards the property names as keys to
  * typed values.<p>
- * <p>
+ *
  * While this class provides a simple API to custom properties, it ignores
  * the fact that not names, but IDs are the real keys to properties. Under the
  * hood this class maintains a 1:1 relationship between IDs and names. Therefore
@@ -54,30 +58,30 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.CodePageUtil;
  * mapping to the same name or with properties without a name: the result will
  * contain only a subset of the original properties. If you really need to deal
  * such property sets, use HPSF's low-level access methods.<p>
- * <p>
+ *
  * An application can call the {@link #isPure} method to check whether a
  * property set parsed by {@link CustomProperties} is still pure (i.e.
  * unmodified) or whether one or more properties have been dropped.<p>
- * <p>
+ *
  * This class is not thread-safe; concurrent access to instances of this
  * class must be synchronized.<p>
- * <p>
+ *
  * While this class is roughly HashMap&lt;Long,CustomProperty&gt;, that's the
  * internal representation. To external calls, it should appear as
  * HashMap&lt;String,Object&gt; mapping between Names and Custom Property Values.
  */
-public class CustomProperties implements Map<String, Object> {
+public class CustomProperties implements Map<String,Object> {
     private static final String TAG = "CustomProperties";
 
     /**
      * The custom properties
      */
-    private final HashMap<Long, CustomProperty> props = new HashMap<>();
+    private final HashMap<Long,CustomProperty> props = new HashMap<>();
 
     /**
      * Maps property IDs to property names and vice versa.
      */
-    private final TreeBidiMap<Long, String> dictionary = new TreeBidiMap<>();
+    private final TreeBidiMap<Long,String> dictionary = new TreeBidiMap<>();
 
     /**
      * Tells whether this object is pure or not.
@@ -92,7 +96,8 @@ public class CustomProperties implements Map<String, Object> {
      * {@link #put(CustomProperty)}.
      *
      * @param name the property name
-     * @param cp   the property
+     * @param cp the property
+     *
      * @return the previous property stored under this name
      */
     public CustomProperty put(final String name, final CustomProperty cp) {
@@ -121,10 +126,10 @@ public class CustomProperties implements Map<String, Object> {
     /**
      * Adds a named property.
      *
-     * @param key   The property's name.
+     * @param key The property's name.
      * @param value The property's value.
      * @return the property that was stored under the specified name before, or
-     * {@code null} if there was no such property before.
+     *         {@code null} if there was no such property before.
      */
     @Override
     public Object put(String key, Object value) {
@@ -144,8 +149,8 @@ public class CustomProperties implements Map<String, Object> {
         } else if (value instanceof Boolean) {
             variantType = Variant.VT_BOOL;
         } else if (value instanceof BigInteger
-                && ((BigInteger) value).bitLength() <= 64
-                && ((BigInteger) value).compareTo(BigInteger.ZERO) >= 0) {
+            && ((BigInteger)value).bitLength() <= 64
+            && ((BigInteger)value).compareTo(BigInteger.ZERO) >= 0) {
             variantType = Variant.VT_UI8;
         } else if (value instanceof Date) {
             variantType = Variant.VT_FILETIME;
@@ -161,7 +166,7 @@ public class CustomProperties implements Map<String, Object> {
      *
      * @param key the name of the value to get
      * @return the value or {@code null} if a value with the specified
-     * name is not found in the custom properties.
+     *         name is not found in the custom properties.
      */
     @Override
     public Object get(final Object key) {
@@ -172,7 +177,6 @@ public class CustomProperties implements Map<String, Object> {
 
     /**
      * Removes a custom property - only works for keys of type String
-     *
      * @param key The name of the custom property to remove
      * @return The removed property or {@code null} if the specified property was not found.
      */
@@ -237,7 +241,7 @@ public class CustomProperties implements Map<String, Object> {
 
     @Override
     public Set<Entry<String, Object>> entrySet() {
-        Map<String, Object> set = new LinkedHashMap<>(props.size());
+        Map<String,Object> set = new LinkedHashMap<>(props.size());
         for (CustomProperty property : props.values()) {
             set.put(property.getName(), property.getValue());
         }
@@ -298,7 +302,7 @@ public class CustomProperties implements Map<String, Object> {
      *
      * @return the dictionary.
      */
-    Map<Long, String> getDictionary() {
+    Map<Long,String> getDictionary() {
         return dictionary;
     }
 
@@ -316,12 +320,12 @@ public class CustomProperties implements Map<String, Object> {
      */
     @Override
     public boolean containsValue(Object value) {
-        if (value instanceof CustomProperty) {
+        if(value instanceof CustomProperty) {
             return props.containsValue(value);
         }
 
-        for (CustomProperty cp : props.values()) {
-            if (cp.getValue() == value) {
+        for(CustomProperty cp : props.values()) {
+            if(cp.getValue() == value) {
                 return true;
             }
         }
@@ -335,7 +339,7 @@ public class CustomProperties implements Map<String, Object> {
      * dropped.
      *
      * @return {@code true} if the {@link CustomProperties} is pure, else
-     * {@code false}.
+     *         {@code false}.
      */
     public boolean isPure() {
         return isPure;
@@ -369,12 +373,12 @@ public class CustomProperties implements Map<String, Object> {
         final String name = customProperty.getName();
 
         /* Check whether a property with this name is in the map already. */
-        final Long oldId = (name == null) ? null : dictionary.getKey(name);
+        final Long oldId = (name == null) ? null :  dictionary.getKey(name);
         if (oldId != null) {
             customProperty.setID(oldId);
         } else {
             long lastKey = (dictionary.isEmpty()) ? 0 : dictionary.lastKey();
-            long nextKey = Math.max(lastKey, PropertyIDMap.PID_MAX) + 1;
+            long nextKey = Math.max(lastKey,PropertyIDMap.PID_MAX)+1;
             customProperty.setID(nextKey);
         }
         return this.put(name, customProperty);
@@ -392,7 +396,7 @@ public class CustomProperties implements Map<String, Object> {
         try {
             cps = CodePageUtil.codepageToEncoding(cp, false);
         } catch (UnsupportedEncodingException e) {
-            Log.e(TAG, String.format("Codepage '%d' can't be found.", cp));
+            Log.e(TAG, String.format("Codepage '%s' can't be found.", cp));
         }
         if (!cps.isEmpty() && Charset.forName(cps).newEncoder().canEncode(value)) {
             return;

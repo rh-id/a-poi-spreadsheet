@@ -15,6 +15,8 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.storage;
 
 import java.io.IOException;
@@ -27,6 +29,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.common.POIFSBigBlockSize
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.common.POIFSConstants;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndian;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndianConsts;
+
 
 /**
  * A block of block allocation table entries. BATBlocks are created
@@ -202,15 +205,12 @@ public final class BATBlock implements BlockWritable {
      * @since POI 5.0.0
      */
     public int getOccupiedSize() {
-        int usedSectors = _values.length;
         for (int k = _values.length - 1; k >= 0; k--) {
-            if(_values[k] == POIFSConstants.UNUSED_BLOCK) {
-                usedSectors--;
-            } else {
-                break;
+            if (_values[k] != POIFSConstants.UNUSED_BLOCK) {
+                return k + 1;
             }
         }
-        return usedSectors;
+        return 0;
     }
 
     public int getValueAt(int relativeOffset) {

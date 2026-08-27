@@ -15,7 +15,12 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel;
+
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTCell;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTRow;
 
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -41,8 +46,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Beta;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.model.StylesTable;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.helpers.XSSFRowShifter;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTCell;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTRow;
+
 
 /**
  * High level representation of a row of a spreadsheet.
@@ -187,7 +191,7 @@ public class XSSFRow implements Row, Comparable<XSSFRow> {
      * Use this to create new cells within the row and return it.
      * <p>
      * The cell that is returned is a {@link CellType#BLANK}. The type can be changed
-     * either through calling {@code setCellValue} or {@code setCellType}.
+     * either through calling {@code setCellValue} or {@code setCellFormula}.
      * </p>
      * @param columnIndex - the column number this cell represents
      * @return Cell a high level representation of the created cell.
@@ -259,7 +263,7 @@ public class XSSFRow implements Row, Comparable<XSSFRow> {
 
     /**
      * Returns the cell at the given (0 based) index,
-     *  with the {@link m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Row.MissingCellPolicy} from the parent Workbook.
+     *  with the {@link org.apache.poi.ss.usermodel.Row.MissingCellPolicy} from the parent Workbook.
      *
      * @return the cell at the given (0 based) index
      */
@@ -269,7 +273,7 @@ public class XSSFRow implements Row, Comparable<XSSFRow> {
     }
 
     /**
-     * Returns the cell at the given (0 based) index, with the specified {@link m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Row.MissingCellPolicy}
+     * Returns the cell at the given (0 based) index, with the specified {@link org.apache.poi.ss.usermodel.Row.MissingCellPolicy}
      *
      * @return the cell at the given (0 based) index
      * @throws IllegalArgumentException if cellnum &lt; 0 or the specified MissingCellPolicy is invalid
@@ -333,7 +337,7 @@ public class XSSFRow implements Row, Comparable<XSSFRow> {
 
     /**
      * Get the row's height measured in twips (1/20th of a point). If the height is not set, the default worksheet value is returned,
-     * See {@link m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFSheet#getDefaultRowHeightInPoints()}
+     * See {@link org.apache.poi.xssf.usermodel.XSSFSheet#getDefaultRowHeightInPoints()}
      *
      * @return row height measured in twips (1/20th of a point)
      */
@@ -344,10 +348,10 @@ public class XSSFRow implements Row, Comparable<XSSFRow> {
 
     /**
      * Returns row height measured in point size. If the height is not set, the default worksheet value is returned,
-     * See {@link m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFSheet#getDefaultRowHeightInPoints()}
+     * See {@link org.apache.poi.xssf.usermodel.XSSFSheet#getDefaultRowHeightInPoints()}
      *
      * @return row height measured in point size
-     * @see m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFSheet#getDefaultRowHeightInPoints()
+     * @see org.apache.poi.xssf.usermodel.XSSFSheet#getDefaultRowHeightInPoints()
      */
     @Override
     public float getHeightInPoints() {
@@ -549,7 +553,7 @@ public class XSSFRow implements Row, Comparable<XSSFRow> {
     /**
      * Fired when the document is written to an output stream.
      *
-     * @see m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFSheet#write(java.io.OutputStream) ()
+     * @see org.apache.poi.xssf.usermodel.XSSFSheet#write(java.io.OutputStream) ()
      */
     protected void onDocumentWrite() {
         // _row.cArray and _cells.getCTCell might be out of sync after adding/removing cells,
@@ -608,7 +612,7 @@ public class XSSFRow implements Row, Comparable<XSSFRow> {
         }
 
         // remove any remaining illegal references in _rows.cArray
-        while(_row.getCArray().length > _cells.size()) {
+        while(_row.sizeOfCArray() > _cells.size()) {
             _row.removeC(_cells.size());
         }
     }

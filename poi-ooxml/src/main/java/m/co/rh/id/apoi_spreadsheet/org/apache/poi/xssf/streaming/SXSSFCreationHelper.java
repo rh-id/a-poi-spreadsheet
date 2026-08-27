@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.streaming;
 
@@ -30,12 +31,14 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFCreationHelper;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFRichTextString;
 
+
 /**
  * Streaming Creation Helper, which performs some actions
- * based on the Streaming Workbook, and some on the related
- * regular XSSF Workbook
+ *  based on the Streaming Workbook, and some on the related
+ *  regular XSSF Workbook
  */
 public class SXSSFCreationHelper implements CreationHelper {
+
     private final SXSSFWorkbook wb;
     private final XSSFCreationHelper helper;
 
@@ -65,17 +68,14 @@ public class SXSSFCreationHelper implements CreationHelper {
     public DataFormat createDataFormat() {
         return helper.createDataFormat();
     }
-
     @Override
     public Hyperlink createHyperlink(HyperlinkType type) {
         return helper.createHyperlink(type);
     }
-
     @Override
     public ExtendedColor createExtendedColor() {
         return helper.createExtendedColor();
     }
-
     @Override
     public ClientAnchor createClientAnchor() {
         return helper.createClientAnchor();

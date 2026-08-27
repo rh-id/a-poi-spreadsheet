@@ -15,7 +15,11 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc;
+
+import com.zaxxer.sparsebits.SparseBitSet;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -27,9 +31,9 @@ import java.util.function.ToIntFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.zaxxer.sparsebits.SparseBitSet;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.exceptions.InvalidOperationException;
+
 
 /**
  * A package part collection.
@@ -112,8 +116,6 @@ public final class PackagePartCollection implements Serializable {
         return packagePartLookup.size();
     }
 
-
-
     /**
      * Get an unused part index based on the namePattern, which doesn't exist yet
      * and has the lowest positive index
@@ -140,5 +142,12 @@ public final class PackagePartCollection implements Serializable {
         return packagePartLookup.keySet().stream()
             .mapToInt(indexFromName)
             .collect(SparseBitSet::new, SparseBitSet::set, (s1,s2) -> s1.or(s2)).nextClearBit(1);
+    }
+
+    // used to ensure resources are closed when they are no longer needed
+    void closeParts() {
+        for (PackagePart part : packagePartLookup.values()) {
+            part.close();
+        }
     }
 }

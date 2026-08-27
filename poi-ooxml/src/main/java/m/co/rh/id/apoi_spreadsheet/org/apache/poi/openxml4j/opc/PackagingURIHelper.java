@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc;
 
@@ -28,6 +29,7 @@ import java.util.regex.Pattern;
 
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.exceptions.InvalidOperationException;
+
 
 /**
  * Helper for part and pack URI.
@@ -158,14 +160,17 @@ public final class PackagingURIHelper {
     /**
      * Know if the specified URI is a relationship part name.
      *
-     * @param partUri URI to check.
+     * @param partUri
+     *            URI to check.
      * @return <i>true</i> if the URI <i>false</i>.
      */
     public static boolean isRelationshipPartURI(URI partUri) {
         if (partUri == null)
             throw new IllegalArgumentException("partUri");
 
-        return partUri.getPath().matches(
+        final String path = partUri.getPath();
+
+        return path != null && path.matches(
                 ".*" + RELATIONSHIP_PART_SEGMENT_NAME + ".*"
                         + RELATIONSHIP_PART_EXTENSION_NAME + "$");
     }
@@ -224,6 +229,7 @@ public final class PackagingURIHelper {
      *
      * @param prefix the prefix URI
      * @param suffix the suffix URI
+     *
      * @return the combined URI
      */
     public static URI combine(URI prefix, URI suffix) {
@@ -252,14 +258,16 @@ public final class PackagingURIHelper {
     /**
      * Fully relativize the source part URI against the target part URI.
      *
-     * @param sourceURI    The source part URI.
-     * @param targetURI    The target part URI.
-     * @param msCompatible if true then remove leading slash from the relativized URI.
-     *                     This flag violates [M1.4]: A part name shall start with a forward slash ('/') character, but
-     *                     allows generating URIs compatible with MS Office and OpenOffice.
+     * @param sourceURI
+     *            The source part URI.
+     * @param targetURI
+     *            The target part URI.
+     * @param  msCompatible if true then remove leading slash from the relativized URI.
+     *         This flag violates [M1.4]: A part name shall start with a forward slash ('/') character, but
+     *         allows generating URIs compatible with MS Office and OpenOffice.
      * @return A fully relativize part name URI ('word/media/image1.gif',
-     * '/word/document.xml' =&gt; 'media/image1.gif') else
-     * {@code null}.
+     *         '/word/document.xml' =&gt; 'media/image1.gif') else
+     *         {@code null}.
      */
     public static URI relativizeURI(URI sourceURI, URI targetURI, boolean msCompatible) {
         StringBuilder retVal = new StringBuilder();
@@ -280,9 +288,9 @@ public final class PackagingURIHelper {
 
         // If the source is the root, then the relativized
         //  form must actually be an absolute URI
-        if (sourceURI.toString().equals("/")) {
+        if(sourceURI.toString().equals("/")) {
             String path = targetURI.getPath();
-            if (msCompatible && path.length() > 0 && path.charAt(0) == '/') {
+            if(msCompatible && !path.isEmpty() && path.charAt(0) == '/') {
                 try {
                     targetURI = new URI(path.substring(1));
                 } catch (Exception e) {
@@ -332,7 +340,7 @@ public final class PackagingURIHelper {
         // Special case for where the two are the same
         if (segmentsTheSame == segmentsSource.length
                 && segmentsTheSame == segmentsTarget.length) {
-            if (sourceURI.equals(targetURI)) {
+            if(sourceURI.equals(targetURI)){
                 // if source and target are the same they should be resolved to the last segment,
                 // Example: if a slide references itself, e.g. the source URI is
                 // "/ppt/slides/slide1.xml" and the targetURI is "slide1.xml" then
@@ -381,11 +389,13 @@ public final class PackagingURIHelper {
     /**
      * Fully relativize the source part URI against the target part URI.
      *
-     * @param sourceURI The source part URI.
-     * @param targetURI The target part URI.
+     * @param sourceURI
+     *            The source part URI.
+     * @param targetURI
+     *            The target part URI.
      * @return A fully relativize part name URI ('word/media/image1.gif',
-     * '/word/document.xml' =&gt; 'media/image1.gif') else
-     * {@code null}.
+     *         '/word/document.xml' =&gt; 'media/image1.gif') else
+     *         {@code null}.
      */
     public static URI relativizeURI(URI sourceURI, URI targetURI) {
         return relativizeURI(sourceURI, targetURI, false);
@@ -394,8 +404,10 @@ public final class PackagingURIHelper {
     /**
      * Resolve a source uri against a target.
      *
-     * @param sourcePartUri The source URI.
-     * @param targetUri     The target URI.
+     * @param sourcePartUri
+     *            The source URI.
+     * @param targetUri
+     *            The target URI.
      * @return The resolved URI.
      */
     public static URI resolvePartUri(URI sourcePartUri, URI targetUri) {
@@ -428,7 +440,8 @@ public final class PackagingURIHelper {
     /**
      * Get the source part URI from a specified relationships part.
      *
-     * @param relationshipPartUri The relationship part use to retrieve the source part.
+     * @param relationshipPartUri
+     *            The relationship part use to retrieve the source part.
      * @return The source part URI from the specified relationships part.
      */
     public static URI getSourcePartUriFromRelationshipPartUri(
@@ -459,9 +472,11 @@ public final class PackagingURIHelper {
      * Create an OPC compliant part name by throwing an exception if the URI is
      * not valid.
      *
-     * @param partUri The part name URI to validate.
+     * @param partUri
+     *            The part name URI to validate.
      * @return A valid part name object, else <code>null</code>.
-     * @throws InvalidFormatException Throws if the specified URI is not OPC compliant.
+     * @throws InvalidFormatException
+     *             Throws if the specified URI is not OPC compliant.
      */
     public static PackagePartName createPartName(URI partUri)
             throws InvalidFormatException {
@@ -474,9 +489,11 @@ public final class PackagingURIHelper {
     /**
      * Create an OPC compliant part name.
      *
-     * @param partName The part name to validate.
+     * @param partName
+     *            The part name to validate.
      * @return The correspondent part name if valid, else <code>null</code>.
-     * @throws InvalidFormatException Throws if the specified part name is not OPC compliant.
+     * @throws InvalidFormatException
+     *             Throws if the specified part name is not OPC compliant.
      * @see #createPartName(URI)
      */
     public static PackagePartName createPartName(String partName)
@@ -493,14 +510,17 @@ public final class PackagingURIHelper {
     /**
      * Create an OPC compliant part name by resolving it using a base part.
      *
-     * @param partName     The part name to validate.
-     * @param relativePart The relative base part.
+     * @param partName
+     *            The part name to validate.
+     * @param relativePart
+     *            The relative base part.
      * @return The correspondent part name if valid, else <code>null</code>.
-     * @throws InvalidFormatException Throws if the specified part name is not OPC compliant.
+     * @throws InvalidFormatException
+     *             Throws if the specified part name is not OPC compliant.
      * @see #createPartName(URI)
      */
     public static PackagePartName createPartName(String partName,
-                                                 PackagePart relativePart) throws InvalidFormatException {
+            PackagePart relativePart) throws InvalidFormatException {
         URI newPartNameURI;
         try {
             newPartNameURI = resolvePartUri(
@@ -514,14 +534,17 @@ public final class PackagingURIHelper {
     /**
      * Create an OPC compliant part name by resolving it using a base part.
      *
-     * @param partName     The part name URI to validate.
-     * @param relativePart The relative base part.
+     * @param partName
+     *            The part name URI to validate.
+     * @param relativePart
+     *            The relative base part.
      * @return The correspondent part name if valid, else <code>null</code>.
-     * @throws InvalidFormatException Throws if the specified part name is not OPC compliant.
+     * @throws InvalidFormatException
+     *             Throws if the specified part name is not OPC compliant.
      * @see #createPartName(URI)
      */
     public static PackagePartName createPartName(URI partName,
-                                                 PackagePart relativePart) throws InvalidFormatException {
+            PackagePart relativePart) throws InvalidFormatException {
         URI newPartNameURI = resolvePartUri(
                 relativePart.getPartName().getURI(), partName);
         return createPartName(newPartNameURI);
@@ -530,23 +553,25 @@ public final class PackagingURIHelper {
     /**
      * Validate a part URI by returning a boolean.
      * ([M1.1],[M1.3],[M1.4],[M1.5],[M1.6])
-     * <p>
+     *
      * (OPC Specifications 8.1.1 Part names) :
-     * <p>
+     *
      * Part Name Syntax
-     * <p>
+     *
      * The part name grammar is defined as follows:
      *
      * <i>part_name = 1*( "/" segment )
-     * <p>
+     *
      * segment = 1*( pchar )</i>
-     * <p>
-     * <p>
+     *
+     *
      * (pchar is defined in RFC 3986)
      *
-     * @param partUri The URI to validate.
+     * @param partUri
+     *            The URI to validate.
      * @return <b>true</b> if the URI is valid to the OPC Specifications, else
-     * <b>false</b>
+     *         <b>false</b>
+     *
      * @see #createPartName(URI)
      */
     public static boolean isValidPartName(URI partUri) {
@@ -565,9 +590,10 @@ public final class PackagingURIHelper {
      * Decode a URI by converting all percent encoded character into a String
      * character.
      *
-     * @param uri The URI to decode.
+     * @param uri
+     *            The URI to decode.
      * @return The specified URI in a String with converted percent encoded
-     * characters.
+     *         characters.
      */
     public static String decodeURI(URI uri) {
         StringBuilder retVal = new StringBuilder(64);
@@ -600,9 +626,11 @@ public final class PackagingURIHelper {
      * Build a part name where the relationship should be stored ((ex
      * /word/document.xml -&gt; /word/_rels/document.xml.rels)
      *
-     * @param partName Source part URI
+     * @param partName
+     *            Source part URI
      * @return the full path (as URI) of the relation file
-     * @throws InvalidOperationException Throws if the specified URI is a relationship part.
+     * @throws InvalidOperationException
+     *             Throws if the specified URI is a relationship part.
      */
     public static PackagePartName getRelationshipPartName(
             PackagePartName partName) {
@@ -610,7 +638,7 @@ public final class PackagingURIHelper {
             throw new IllegalArgumentException("partName");
 
         if (PackagingURIHelper.PACKAGE_ROOT_URI.getPath().equals(
-                partName.getURI().getPath()))
+                partName.getURI().getPath()) )
             return PackagingURIHelper.PACKAGE_RELATIONSHIPS_ROOT_PART_NAME;
 
         if (partName.isRelationshipPartURI())
@@ -638,7 +666,7 @@ public final class PackagingURIHelper {
 
     /**
      * Convert a string to {@link URI}
-     * <p>
+     *
      * If  part name is not a valid URI, it is resolved as follows:
      * <p>
      * 1. Percent-encode each open bracket ([) and close bracket (]).
@@ -652,23 +680,23 @@ public final class PackagingURIHelper {
      * 9. Remove complete segments that consist of three or more dots.
      * 10. Resolve the relative reference against the base URI of the part holding the Unicode string, as it is defined
      * in ?5.2 of RFC 3986. The path component of the resulting absolute URI is the part name.
-     * </p>
+     *</p>
      *
-     * @param value the string to be parsed into a URI
-     * @return the resolved part name that should be OK to construct a URI
-     * <p>
+     * @param   value   the string to be parsed into a URI
+     * @return  the resolved part name that should be OK to construct a URI
+     *
      * TODO YK: for now this method does only (5). Finish the rest.
      */
-    public static URI toURI(String value) throws URISyntaxException {
+    public static URI toURI(String value) throws URISyntaxException  {
         //5. Convert all back slashes to forward slashes
         if (value.contains("\\")) {
-            value = value.replace('\\', '/');
+             value = value.replace('\\', '/');
         }
 
         // URI fragments (those starting with '#') are not encoded
         // and may contain white spaces and raw unicode characters
         int fragmentIdx = value.indexOf('#');
-        if (fragmentIdx != -1) {
+        if(fragmentIdx != -1){
             String path = value.substring(0, fragmentIdx);
             String fragment = value.substring(fragmentIdx + 1);
 
@@ -676,25 +704,25 @@ public final class PackagingURIHelper {
         }
 
         // trailing white spaces must be url-encoded, see Bugzilla 53282
-        if (value.length() > 0) {
+        if(!value.isEmpty()){
             StringBuilder b = new StringBuilder();
             int idx = value.length() - 1;
-            for (; idx >= 0; idx--) {
+            for(; idx >= 0; idx--){
                 char c = value.charAt(idx);
-                if (Character.isWhitespace(c) || c == '\u00A0') {
+                if(Character.isWhitespace(c) || c == '\u00A0') {
                     b.append(c);
                 } else {
                     break;
                 }
             }
-            if (b.length() > 0) {
-                value = value.substring(0, idx + 1) + encode(b.reverse().toString());
+            if(b.length() > 0){
+                value = value.substring(0, idx+1) + encode(b.reverse().toString());
             }
         }
 
         // MS Office can insert URIs with missing authority, e.g. "http://" or "javascript://"
         // append a forward slash to avoid parse exception
-        if (missingAuthPattern.matcher(value).matches()) {
+        if(missingAuthPattern.matcher(value).matches()){
             value += "/";
         }
         return new URI(value);
@@ -703,20 +731,19 @@ public final class PackagingURIHelper {
     /**
      * percent-encode white spaces and characters above 0x80.
      * <p>
-     * Examples:
-     * <pre>{@code
+     *   Examples:
+     *   <pre>{@code
      *   'Apache POI' --> 'Apache%20POI'
      *   'Apache\u0410POI' --> 'Apache%04%10POI'
      *   }</pre>
-     *
      * @param s the string to encode
-     * @return the encoded string
+     * @return  the encoded string
      */
     public static String encode(String s) {
         int n = s.length();
         if (n == 0) return s;
 
-        ByteBuffer bb = ByteBuffer.wrap(s.getBytes(StandardCharsets.UTF_8));
+        ByteBuffer bb  = ByteBuffer.wrap(s.getBytes(StandardCharsets.UTF_8));
         StringBuilder sb = new StringBuilder();
         while (bb.hasRemaining()) {
             int b = bb.get() & 0xff;
@@ -725,15 +752,15 @@ public final class PackagingURIHelper {
                 sb.append(hexDigits[(b >> 4) & 0x0F]);
                 sb.append(hexDigits[(b >> 0) & 0x0F]);
             } else {
-                sb.append((char) b);
+                sb.append((char)b);
             }
         }
         return sb.toString();
     }
 
     private static final char[] hexDigits = {
-            '0', '1', '2', '3', '4', '5', '6', '7',
-            '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
+        '0', '1', '2', '3', '4', '5', '6', '7',
+        '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
     };
 
     private static boolean isUnsafe(int ch) {

@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.extractor;
 
 import static m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.crypto.Biff8EncryptionKey.getCurrentUserPassword;
@@ -41,17 +42,18 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.filesystem.POIFSFileSyst
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.IOUtils;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.ThreadLocalUtil;
 
+
 /**
  * Figures out the correct POIOLE2TextExtractor for your supplied
- * document, and returns it.
+ *  document, and returns it.
  *
  * <p>Note 1 - will fail for many file formats if the POI Scratchpad jar is
- * not present on the runtime classpath</p>
+ *  not present on the runtime classpath</p>
  * <p>Note 2 - for text extractor creation across all formats, use
- * {@link org.apache.poi.ooxml.extractor.POIXMLExtractorFactory} contained within
- * the OOXML jar.</p>
+ *  {@link org.apache.poi.ooxml.extractor.POIXMLExtractorFactory} contained within
+ *  the OOXML jar.</p>
  * <p>Note 3 - rather than using this, for most cases you would be better
- * off switching to <a href="http://tika.apache.org">Apache Tika</a> instead!</p>
+ *  off switching to <a href="http://tika.apache.org">Apache Tika</a> instead!</p>
  */
 @SuppressWarnings({"WeakerAccess", "JavadocReference"})
 public final class ExtractorFactory {
@@ -62,21 +64,16 @@ public final class ExtractorFactory {
      */
     public static final String OOXML_PACKAGE = "Package";
 
-    private static final String TAG = "ExtractorFactory";
+    private static final String LOGGER_TAG = "ExtractorFactory";
 
-    /**
-     * Should this thread prefer event based over usermodel based extractors?
-     */
+    /** Should this thread prefer event based over usermodel based extractors? */
     private static final ThreadLocal<Boolean> threadPreferEventExtractors = ThreadLocal.withInitial(() -> Boolean.FALSE);
-
     static {
         // allow to clear all thread-locals via ThreadLocalUtil
         ThreadLocalUtil.registerCleaner(threadPreferEventExtractors::remove);
     }
 
-    /**
-     * Should all threads prefer event based over usermodel based extractors?
-     */
+    /** Should all threads prefer event based over usermodel based extractors? */
     private static Boolean allPreferEventExtractors;
 
 
@@ -138,9 +135,9 @@ public final class ExtractorFactory {
      * Will only be used if the All Threads setting is null.
      *
      * <p>
-     * This uses ThreadLocals and these can leak resources when you have a lot of threads.
+     *     This uses ThreadLocals and these can leak resources when you have a lot of threads.
      * </p>
-     * <p>
+     *
      * You should always try to call {@link #removeThreadPrefersEventExtractorsSetting()}.
      *
      * @param preferEventExtractors If this threads should prefer event based extractors.
@@ -193,7 +190,7 @@ public final class ExtractorFactory {
     /**
      * Create an extractor that can be used to read text from the given file.
      *
-     * @param fs       The file-system which wraps the data of the file.
+     * @param fs The file-system which wraps the data of the file.
      * @param password The password that is necessary to open the file
      * @return A POITextExtractor that can be used to fetch text-content of the file.
      * @throws IOException If reading the file-data fails
@@ -207,7 +204,7 @@ public final class ExtractorFactory {
      *
      * @param input A stream which wraps the data of the file.
      * @return A POITextExtractor that can be used to fetch text-content of the file.
-     * @throws IOException        If reading the file-data fails
+     * @throws IOException If reading the file-data fails
      * @throws EmptyFileException If the given file is empty
      */
     public static POITextExtractor createExtractor(InputStream input) throws IOException {
@@ -217,10 +214,10 @@ public final class ExtractorFactory {
     /**
      * Create an extractor that can be used to read text from the given file.
      *
-     * @param input    A stream which wraps the data of the file.
+     * @param input A stream which wraps the data of the file.
      * @param password The password that is necessary to open the file
      * @return A POITextExtractor that can be used to fetch text-content of the file.
-     * @throws IOException        If reading the file-data fails
+     * @throws IOException If reading the file-data fails
      * @throws EmptyFileException If the given file is empty
      */
     public static POITextExtractor createExtractor(InputStream input, String password) throws IOException {
@@ -238,7 +235,7 @@ public final class ExtractorFactory {
         }
 
         if (FileMagic.OLE2 != fm) {
-            throw new IOException("Can't create extractor - unsupported file type: " + fm);
+            throw new IOException("Can't create extractor - unsupported file type: "+fm);
         }
 
         POIFSFileSystem poifs = new POIFSFileSystem(is);
@@ -253,7 +250,7 @@ public final class ExtractorFactory {
      *
      * @param file The file to read
      * @return A POITextExtractor that can be used to fetch text-content of the file.
-     * @throws IOException        If reading the file-data fails
+     * @throws IOException If reading the file-data fails
      * @throws EmptyFileException If the given file is empty
      */
     public static POITextExtractor createExtractor(File file) throws IOException {
@@ -263,10 +260,10 @@ public final class ExtractorFactory {
     /**
      * Create an extractor that can be used to read text from the given file.
      *
-     * @param file     The file to read
+     * @param file The file to read
      * @param password The password that is necessary to open the file
      * @return A POITextExtractor that can be used to fetch text-content of the file.
-     * @throws IOException        If reading the file-data fails
+     * @throws IOException If reading the file-data fails
      * @throws EmptyFileException If the given file is empty
      */
     @SuppressWarnings({"java:S2095"})
@@ -281,7 +278,7 @@ public final class ExtractorFactory {
         }
 
         if (FileMagic.OLE2 != fm) {
-            throw new IOException("Can't create extractor - unsupported file type: " + fm);
+            throw new IOException("Can't create extractor - unsupported file type: "+fm);
         }
 
         POIFSFileSystem poifs = null;
@@ -300,15 +297,17 @@ public final class ExtractorFactory {
     /**
      * Create the Extractor, if possible. Generally needs the Scratchpad jar.
      * Note that this won't check for embedded OOXML resources either, use
-     * {@link org.apache.poi.ooxml.extractor.POIXMLExtractorFactory} for that.
+     *  {@link org.apache.poi.ooxml.extractor.POIXMLExtractorFactory} for that.
      *
      * @param root The {@link DirectoryNode} pointing to a document.
+     *
      * @return The resulting {@link POITextExtractor}, an exception is thrown if
-     * no TextExtractor can be created for some reason.
-     * @throws IOException                           If converting the {@link DirectoryNode} into a HSSFWorkbook fails
+     *      no TextExtractor can be created for some reason.
+     *
+     * @throws IOException If converting the {@link DirectoryNode} into a HSSFWorkbook fails
      * @throws org.apache.poi.OldFileFormatException If the {@link DirectoryNode} points to a format of
-     *                                               an unsupported version of Excel.
-     * @throws IllegalArgumentException              If creating the Extractor fails
+     *      an unsupported version of Excel.
+     * @throws IllegalArgumentException If creating the Extractor fails
      */
     public static POITextExtractor createExtractor(DirectoryNode root) throws IOException {
         return createExtractor(root, getCurrentUserPassword());
@@ -317,39 +316,43 @@ public final class ExtractorFactory {
     /**
      * Create the Extractor, if possible. Generally needs the Scratchpad jar.
      * Note that this won't check for embedded OOXML resources either, use
-     * {@link org.apache.poi.ooxml.extractor.POIXMLExtractorFactory} for that.
+     *  {@link org.apache.poi.ooxml.extractor.POIXMLExtractorFactory} for that.
      *
-     * @param root     The {@link DirectoryNode} pointing to a document.
+     * @param root The {@link DirectoryNode} pointing to a document.
      * @param password The password that is necessary to open the file
+     *
      * @return The resulting {@link POITextExtractor}, an exception is thrown if
-     * no TextExtractor can be created for some reason.
-     * @throws IOException                           If converting the {@link DirectoryNode} into a HSSFWorkbook fails
+     *      no TextExtractor can be created for some reason.
+     *
+     * @throws IOException If converting the {@link DirectoryNode} into a HSSFWorkbook fails
      * @throws org.apache.poi.OldFileFormatException If the {@link DirectoryNode} points to a format of
-     *                                               an unsupported version of Excel.
-     * @throws IllegalArgumentException              If creating the Extractor fails
+     *      an unsupported version of Excel.
+     * @throws IllegalArgumentException If creating the Extractor fails
      */
     public static POITextExtractor createExtractor(final DirectoryNode root, String password) throws IOException {
         // Encrypted OOXML files go inside OLE2 containers, is this one?
         if (root.hasEntryCaseInsensitive(DEFAULT_POIFS_ENTRY) || root.hasEntryCaseInsensitive(OOXML_PACKAGE)) {
             return wp(FileMagic.OOXML, w -> w.create(root, password));
         } else {
-            return wp(FileMagic.OLE2, w -> w.create(root, password));
+            return wp(FileMagic.OLE2, w ->  w.create(root, password));
         }
     }
 
     /**
      * Returns an array of text extractors, one for each of
-     * the embedded documents in the file (if there are any).
+     *  the embedded documents in the file (if there are any).
      * If there are no embedded documents, you'll get back an
-     * empty array. Otherwise, you'll get one open
-     * {@link POITextExtractor} for each embedded file.
+     *  empty array. Otherwise, you'll get one open
+     *  {@link POITextExtractor} for each embedded file.
      *
      * @param ext The extractor to look at for embedded documents
+     *
      * @return An array of resulting extractors. Empty if no embedded documents are found.
-     * @throws IOException                           If converting the {@link DirectoryNode} into a HSSFWorkbook fails
+     *
+     * @throws IOException If converting the {@link DirectoryNode} into a HSSFWorkbook fails
      * @throws org.apache.poi.OldFileFormatException If the {@link DirectoryNode} points to a format of
-     *                                               an unsupported version of Excel.
-     * @throws IllegalArgumentException              If creating the Extractor fails
+     *      an unsupported version of Excel.
+     * @throws IllegalArgumentException If creating the Extractor fails
      */
     public static POITextExtractor[] getEmbeddedDocsTextExtractors(POIOLE2TextExtractor ext) throws IOException {
         if (ext == null) {
@@ -363,15 +366,15 @@ public final class ExtractorFactory {
 
         // Find all the embedded directories
         DirectoryEntry root = ext.getRoot();
-        if (root == null) {
+        if(root == null) {
             throw new IllegalStateException("The extractor didn't know which POIFS it came from!");
         }
 
-        if (ext instanceof ExcelExtractor) {
+        if(ext instanceof ExcelExtractor) {
             // These are in MBD... under the root
             StreamSupport.stream(root.spliterator(), false)
-                    .filter(entry -> entry.getName().startsWith("MBD"))
-                    .forEach(dirs::add);
+                .filter(entry -> entry.getName().startsWith("MBD"))
+                .forEach(dirs::add);
         } else {
             for (ExtractorProvider prov : Singleton.INSTANCE.provider) {
                 if (prov.accepts(FileMagic.OLE2)) {
@@ -382,7 +385,7 @@ public final class ExtractorFactory {
         }
 
         // Create the extractors
-        if (dirs.isEmpty() && nonPOIFS.isEmpty()) {
+        if(dirs.isEmpty() && nonPOIFS.isEmpty()){
             return new POITextExtractor[0];
         }
 
@@ -397,7 +400,7 @@ public final class ExtractorFactory {
                 textExtractors.add(createExtractor(stream));
             } catch (IOException e) {
                 // Ignore, just means it didn't contain a format we support as yet
-                Log.i(TAG, String.format("Format not supported yet (%s)", e.getLocalizedMessage()));
+                Log.i(LOGGER_TAG, String.format("Format not supported yet (%s)", e.getLocalizedMessage()));
             }
         }
         return textExtractors.toArray(new POITextExtractor[0]);
@@ -413,16 +416,16 @@ public final class ExtractorFactory {
             }
         }
         throw new IOException(
-                "Your InputStream was neither an OLE2 stream, nor an OOXML stream " +
-                        "or you haven't provide the poi-ooxml*.jar and/or poi-scratchpad*.jar in the classpath/modulepath - FileMagic: " + fm +
-                        ", providers: " + Singleton.INSTANCE.provider);
+            "Your InputStream was neither an OLE2 stream, nor an OOXML stream " +
+            "or you haven't provide the poi-ooxml*.jar and/or poi-scratchpad*.jar in the classpath/modulepath - FileMagic: " + fm +
+            ", providers: " + Singleton.INSTANCE.provider);
     }
 
-    public static void addProvider(ExtractorProvider provider) {
+    public static void addProvider(ExtractorProvider provider){
         Singleton.INSTANCE.provider.add(provider);
     }
 
-    public static void removeProvider(Class<? extends ExtractorProvider> provider) {
+    public static void removeProvider(Class<? extends ExtractorProvider> provider){
         Singleton.INSTANCE.provider.removeIf(p -> p.getClass().isAssignableFrom(provider));
     }
 }

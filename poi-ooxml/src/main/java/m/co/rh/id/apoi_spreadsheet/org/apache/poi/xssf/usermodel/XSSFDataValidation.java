@@ -14,69 +14,78 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel;
 
+import org.apache.commons.collections4.MapUtils;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTDataValidation;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.STDataValidationErrorStyle;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.STDataValidationOperator;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.STDataValidationOperator.Enum;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.STDataValidationType;
+
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.collections4.MapUtils;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.DataValidation;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.DataValidationConstraint;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.DataValidationConstraint.ValidationType;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.CellRangeAddress;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.CellRangeAddressList;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTDataValidation;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.STDataValidationErrorStyle;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.STDataValidationOperator;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.STDataValidationType;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.STDataValidationOperator.Enum;
+
 
 public class XSSFDataValidation implements DataValidation {
     private static final int MAX_TEXT_LENGTH = 255;
 
-    private CTDataValidation ctDataValidation;
-    private XSSFDataValidationConstraint validationConstraint;
-    private CellRangeAddressList regions;
+    private final CTDataValidation ctDataValidation;
+    private final XSSFDataValidationConstraint validationConstraint;
+    private final CellRangeAddressList regions;
 
-    static Map<Integer, STDataValidationOperator.Enum> operatorTypeMappings = new HashMap<>();
-    static Map<STDataValidationOperator.Enum, Integer> operatorTypeReverseMappings = new HashMap<>();
-    static Map<Integer, STDataValidationType.Enum> validationTypeMappings = new HashMap<>();
-    static Map<STDataValidationType.Enum, Integer> validationTypeReverseMappings = new HashMap<>();
-    static Map<Integer, STDataValidationErrorStyle.Enum> errorStyleMappings = new HashMap<>();
-    static Map<STDataValidationErrorStyle.Enum, Integer> reverseErrorStyleMappings;
+    static final Map<Integer, STDataValidationOperator.Enum> operatorTypeMappings;
+    static final Map<STDataValidationOperator.Enum, Integer> operatorTypeReverseMappings;
+    static final Map<Integer, STDataValidationType.Enum> validationTypeMappings;
+    static final Map<STDataValidationType.Enum, Integer> validationTypeReverseMappings;
+    static final Map<Integer, STDataValidationErrorStyle.Enum> errorStyleMappings;
+    static final Map<STDataValidationErrorStyle.Enum, Integer> reverseErrorStyleMappings;
 
     static {
-        errorStyleMappings.put(DataValidation.ErrorStyle.INFO, STDataValidationErrorStyle.INFORMATION);
-        errorStyleMappings.put(DataValidation.ErrorStyle.STOP, STDataValidationErrorStyle.STOP);
-        errorStyleMappings.put(DataValidation.ErrorStyle.WARNING, STDataValidationErrorStyle.WARNING);
 
-        reverseErrorStyleMappings = MapUtils.invertMap(errorStyleMappings);
+        final HashMap<Integer, STDataValidationErrorStyle.Enum> esMappings = new HashMap<>();
+        esMappings.put(DataValidation.ErrorStyle.INFO, STDataValidationErrorStyle.INFORMATION);
+        esMappings.put(DataValidation.ErrorStyle.STOP, STDataValidationErrorStyle.STOP);
+        esMappings.put(DataValidation.ErrorStyle.WARNING, STDataValidationErrorStyle.WARNING);
+        errorStyleMappings = Collections.unmodifiableMap(esMappings);
 
-        operatorTypeMappings.put(DataValidationConstraint.OperatorType.BETWEEN,STDataValidationOperator.BETWEEN);
-        operatorTypeMappings.put(DataValidationConstraint.OperatorType.NOT_BETWEEN,STDataValidationOperator.NOT_BETWEEN);
-        operatorTypeMappings.put(DataValidationConstraint.OperatorType.EQUAL,STDataValidationOperator.EQUAL);
-        operatorTypeMappings.put(DataValidationConstraint.OperatorType.NOT_EQUAL,STDataValidationOperator.NOT_EQUAL);
-        operatorTypeMappings.put(DataValidationConstraint.OperatorType.GREATER_THAN,STDataValidationOperator.GREATER_THAN);
-        operatorTypeMappings.put(DataValidationConstraint.OperatorType.GREATER_OR_EQUAL,STDataValidationOperator.GREATER_THAN_OR_EQUAL);
-        operatorTypeMappings.put(DataValidationConstraint.OperatorType.LESS_THAN,STDataValidationOperator.LESS_THAN);
-        operatorTypeMappings.put(DataValidationConstraint.OperatorType.LESS_OR_EQUAL,STDataValidationOperator.LESS_THAN_OR_EQUAL);
+        reverseErrorStyleMappings = Collections.unmodifiableMap(MapUtils.invertMap(esMappings));
 
-        for( Map.Entry<Integer,STDataValidationOperator.Enum> entry : operatorTypeMappings.entrySet() ) {
-            operatorTypeReverseMappings.put(entry.getValue(),entry.getKey());
-        }
+        final Map<Integer, STDataValidationOperator.Enum> otMappings = new HashMap<>();
+        otMappings.put(DataValidationConstraint.OperatorType.BETWEEN,STDataValidationOperator.BETWEEN);
+        otMappings.put(DataValidationConstraint.OperatorType.NOT_BETWEEN,STDataValidationOperator.NOT_BETWEEN);
+        otMappings.put(DataValidationConstraint.OperatorType.EQUAL,STDataValidationOperator.EQUAL);
+        otMappings.put(DataValidationConstraint.OperatorType.NOT_EQUAL,STDataValidationOperator.NOT_EQUAL);
+        otMappings.put(DataValidationConstraint.OperatorType.GREATER_THAN,STDataValidationOperator.GREATER_THAN);
+        otMappings.put(DataValidationConstraint.OperatorType.GREATER_OR_EQUAL,STDataValidationOperator.GREATER_THAN_OR_EQUAL);
+        otMappings.put(DataValidationConstraint.OperatorType.LESS_THAN,STDataValidationOperator.LESS_THAN);
+        otMappings.put(DataValidationConstraint.OperatorType.LESS_OR_EQUAL,STDataValidationOperator.LESS_THAN_OR_EQUAL);
+        operatorTypeMappings = Collections.unmodifiableMap(otMappings);
 
-        validationTypeMappings.put(DataValidationConstraint.ValidationType.FORMULA,STDataValidationType.CUSTOM);
-        validationTypeMappings.put(DataValidationConstraint.ValidationType.DATE,STDataValidationType.DATE);
-        validationTypeMappings.put(DataValidationConstraint.ValidationType.DECIMAL,STDataValidationType.DECIMAL);
-        validationTypeMappings.put(DataValidationConstraint.ValidationType.LIST,STDataValidationType.LIST);
-        validationTypeMappings.put(DataValidationConstraint.ValidationType.ANY,STDataValidationType.NONE);
-        validationTypeMappings.put(DataValidationConstraint.ValidationType.TEXT_LENGTH,STDataValidationType.TEXT_LENGTH);
-        validationTypeMappings.put(DataValidationConstraint.ValidationType.TIME,STDataValidationType.TIME);
-        validationTypeMappings.put(DataValidationConstraint.ValidationType.INTEGER,STDataValidationType.WHOLE);
+        operatorTypeReverseMappings = Collections.unmodifiableMap(MapUtils.invertMap(otMappings));
 
-        for( Map.Entry<Integer,STDataValidationType.Enum> entry : validationTypeMappings.entrySet() ) {
-            validationTypeReverseMappings.put(entry.getValue(),entry.getKey());
-        }
+        final Map<Integer, STDataValidationType.Enum> vtMappings = new HashMap<>();
+        vtMappings.put(DataValidationConstraint.ValidationType.FORMULA,STDataValidationType.CUSTOM);
+        vtMappings.put(DataValidationConstraint.ValidationType.DATE,STDataValidationType.DATE);
+        vtMappings.put(DataValidationConstraint.ValidationType.DECIMAL,STDataValidationType.DECIMAL);
+        vtMappings.put(DataValidationConstraint.ValidationType.LIST,STDataValidationType.LIST);
+        vtMappings.put(DataValidationConstraint.ValidationType.ANY,STDataValidationType.NONE);
+        vtMappings.put(DataValidationConstraint.ValidationType.TEXT_LENGTH,STDataValidationType.TEXT_LENGTH);
+        vtMappings.put(DataValidationConstraint.ValidationType.TIME,STDataValidationType.TIME);
+        vtMappings.put(DataValidationConstraint.ValidationType.INTEGER,STDataValidationType.WHOLE);
+        validationTypeMappings = Collections.unmodifiableMap(vtMappings);
+
+        validationTypeReverseMappings = Collections.unmodifiableMap(MapUtils.invertMap(validationTypeMappings));
+
     }
 
     XSSFDataValidation(CellRangeAddressList regions,CTDataValidation ctDataValidation) {

@@ -14,30 +14,13 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel;
 
 import static m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.POIXMLTypeLoader.DEFAULT_XML_OPTIONS;
 
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.common.Duplicatable;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.POIXMLException;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.BorderStyle;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.CellStyle;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.FillPatternType;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Font;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.HorizontalAlignment;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.IndexedColors;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.ReadingOrder;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.VerticalAlignment;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Removal;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.model.StylesTable;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.model.ThemesTable;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.extensions.XSSFCellAlignment;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.extensions.XSSFCellBorder;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.extensions.XSSFCellBorder.BorderSide;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.extensions.XSSFCellFill;
 import org.apache.xmlbeans.XmlException;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTBorder;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTBorderPr;
@@ -50,14 +33,39 @@ import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTXf;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.STBorderStyle;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.STPatternType;
 
+import java.util.EnumMap;
+
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.common.Duplicatable;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.POIXMLException;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.BorderStyle;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.CellPropertyType;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.CellStyle;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Color;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.FillPatternType;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Font;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.HorizontalAlignment;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.IndexedColors;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.ReadingOrder;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.VerticalAlignment;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.CellUtil;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Removal;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.model.StylesTable;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.model.ThemesTable;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.extensions.XSSFCellAlignment;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.extensions.XSSFCellBorder;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.extensions.XSSFCellBorder.BorderSide;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.extensions.XSSFCellFill;
+
+
 /**
  *
  * High level representation of the possible formatting information for the contents of the cells on a sheet in a
  * SpreadsheetML document.
  *
- * @see m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFWorkbook#createCellStyle()
- * @see m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFWorkbook#getCellStyleAt(int)
- * @see m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFCell#setCellStyle(org.apache.poi.ss.usermodel.CellStyle)
+ * @see org.apache.poi.xssf.usermodel.XSSFWorkbook#createCellStyle()
+ * @see org.apache.poi.xssf.usermodel.XSSFWorkbook#getCellStyleAt(int)
+ * @see org.apache.poi.xssf.usermodel.XSSFCell#setCellStyle(org.apache.poi.ss.usermodel.CellStyle)
  */
 public class XSSFCellStyle implements CellStyle, Duplicatable {
 
@@ -68,6 +76,7 @@ public class XSSFCellStyle implements CellStyle, Duplicatable {
     private XSSFFont _font;
     private XSSFCellAlignment _cellAlignment;
     private ThemesTable _theme;
+    private EnumMap<CellPropertyType, Object> _cachedProperties;
 
     /**
      * Creates a Cell Style from the supplied parts
@@ -81,6 +90,17 @@ public class XSSFCellStyle implements CellStyle, Duplicatable {
         _cellXf = stylesSource.getCellXfAt(this._cellXfId);
         _cellStyleXf = cellStyleXfId == -1 ? null : stylesSource.getCellStyleXfAt(cellStyleXfId);
         _theme = theme;
+    }
+
+    /**
+     * Creates an empty Cell Style
+     */
+    public XSSFCellStyle(StylesTable stylesSource) {
+        _stylesSource = stylesSource;
+        // We need a new CTXf for the main styles
+        // TODO decide on a style ctxf
+        _cellXf = CTXf.Factory.newInstance();
+        _cellStyleXf = null;
     }
 
     /**
@@ -100,24 +120,13 @@ public class XSSFCellStyle implements CellStyle, Duplicatable {
     }
 
     /**
-     * Creates an empty Cell Style
-     */
-    public XSSFCellStyle(StylesTable stylesSource) {
-        _stylesSource = stylesSource;
-        // We need a new CTXf for the main styles
-        // TODO decide on a style ctxf
-        _cellXf = CTXf.Factory.newInstance();
-        _cellStyleXf = null;
-    }
-
-    /**
      * Verifies that this style belongs to the supplied Workbook
      *  Styles Source.
      * Will throw an exception if it belongs to a different one.
      * This is normally called when trying to assign a style to a
      *  cell, to ensure the cell and the style are from the same
      *  workbook (if they're not, it won't work)
-     * @throws IllegalArgumentException if there's a workbook mis-match
+     * @throws IllegalArgumentException if there's a workbook mismatch
      */
     public void verifyBelongsToStylesSource(StylesTable src) {
         if(this._stylesSource != src) {
@@ -203,7 +212,7 @@ public class XSSFCellStyle implements CellStyle, Duplicatable {
             _font = null;
             _cellAlignment = null;
         } else {
-            throw new IllegalArgumentException("Can only clone from one XSSFCellStyle to another, not between HSSFCellStyle and XSSFCellStyle");
+            CellUtil.cloneStyle(source, this, null);
         }
     }
 
@@ -288,8 +297,8 @@ public class XSSFCellStyle implements CellStyle, Duplicatable {
      * Get the color to use for the bottom border
      * <br>
      * Color is optional. When missing, IndexedColors.AUTOMATIC is implied.
-     * @return the index of the color definition, default value is {@link m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.IndexedColors#AUTOMATIC}
-     * @see m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.IndexedColors
+     * @return the index of the color definition, default value is {@link org.apache.poi.ss.usermodel.IndexedColors#AUTOMATIC}
+     * @see org.apache.poi.ss.usermodel.IndexedColors
      */
     @Override
     public short getBottomBorderColor() {
@@ -339,8 +348,8 @@ public class XSSFCellStyle implements CellStyle, Duplicatable {
      * Note - many cells are actually filled with a foreground
      *  fill, not a background fill - see {@link #getFillForegroundColor()}
      * </p>
-     * @return fill color, default value is {@link m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.IndexedColors#AUTOMATIC}
-     * @see m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.IndexedColors
+     * @return fill color, default value is {@link org.apache.poi.ss.usermodel.IndexedColors#AUTOMATIC}
+     * @see org.apache.poi.ss.usermodel.IndexedColors
      */
     @Override
     public short getFillBackgroundColor() {
@@ -359,7 +368,7 @@ public class XSSFCellStyle implements CellStyle, Duplicatable {
      * Note - many cells are actually filled with a foreground
      *  fill, not a background fill - see {@link #getFillForegroundColor()}
      * </p>
-     * @see m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFColor#getRGB()
+     * @see org.apache.poi.xssf.usermodel.XSSFColor#getRGB()
      * @return XSSFColor - fill color or <code>null</code> if not set
      */
     public XSSFColor getFillBackgroundXSSFColor() {
@@ -383,7 +392,7 @@ public class XSSFCellStyle implements CellStyle, Duplicatable {
      *  background color ({@link #getFillBackgroundColor()})
      * </p>
      * @see IndexedColors
-     * @return fill color, default value is {@link m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.IndexedColors#AUTOMATIC}
+     * @return fill color, default value is {@link org.apache.poi.ss.usermodel.IndexedColors#AUTOMATIC}
      */
     @Override
     public short getFillForegroundColor() {
@@ -443,7 +452,7 @@ public class XSSFCellStyle implements CellStyle, Duplicatable {
      * Gets the index of the font for this style
      *
      * @return font index
-     * @see m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFWorkbook#getFontAt(int)
+     * @see org.apache.poi.xssf.usermodel.XSSFWorkbook#getFontAt(int)
      * @since 5.0.0 (used to return a short value)
      */
     @Override
@@ -455,7 +464,7 @@ public class XSSFCellStyle implements CellStyle, Duplicatable {
      * Gets the index of the font for this style
      *
      * @return font index
-     * @see m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFWorkbook#getFontAt(int)
+     * @see org.apache.poi.xssf.usermodel.XSSFWorkbook#getFontAt(int)
      * @deprecated use {@link #getFontIndex()} instead
      * @since 4.0.0
      */
@@ -512,7 +521,7 @@ public class XSSFCellStyle implements CellStyle, Duplicatable {
      * Get the color to use for the left border
      *
      * @return the index of the color definition, default value is {@link org.apache.poi.ss.usermodel.IndexedColors#BLACK}
-     * @see m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.IndexedColors
+     * @see org.apache.poi.ss.usermodel.IndexedColors
      */
     @Override
     public short getLeftBorderColor() {
@@ -524,7 +533,7 @@ public class XSSFCellStyle implements CellStyle, Duplicatable {
      * Get the color to use for the left border
      *
      * @return the index of the color definition or <code>null</code> if not set
-     * @see m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.IndexedColors
+     * @see org.apache.poi.ss.usermodel.IndexedColors
      */
     public XSSFColor getLeftBorderXSSFColor() {
         if(!_cellXf.getApplyBorder()) return null;
@@ -556,8 +565,8 @@ public class XSSFCellStyle implements CellStyle, Duplicatable {
     /**
      * Get the color to use for the right border
      *
-     * @return the index of the color definition, default value is {@link m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.IndexedColors#BLACK}
-     * @see m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.IndexedColors
+     * @return the index of the color definition, default value is {@link org.apache.poi.ss.usermodel.IndexedColors#BLACK}
+     * @see org.apache.poi.ss.usermodel.IndexedColors
      */
     @Override
     public short getRightBorderColor() {
@@ -607,8 +616,8 @@ public class XSSFCellStyle implements CellStyle, Duplicatable {
     /**
      * Get the color to use for the top border
      *
-     * @return the index of the color definition, default value is {@link m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.IndexedColors#BLACK}
-     * @see m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.IndexedColors
+     * @return the index of the color definition, default value is {@link org.apache.poi.ss.usermodel.IndexedColors#BLACK}
+     * @see org.apache.poi.ss.usermodel.IndexedColors
      */
     @Override
     public short getTopBorderColor() {
@@ -662,13 +671,14 @@ public class XSSFCellStyle implements CellStyle, Duplicatable {
         _cellXf.setApplyAlignment(true);
 
         getCellAlignment().setHorizontal(align);
+        invalidateCachedProperties();
     }
 
     /**
      * Set the type of border to use for the bottom border of the cell
      *
      * @param border - type of border to use
-     * @see m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.BorderStyle
+     * @see org.apache.poi.ss.usermodel.BorderStyle
      * @since POI 3.15
      */
     @Override
@@ -682,6 +692,7 @@ public class XSSFCellStyle implements CellStyle, Duplicatable {
 
         _cellXf.setBorderId(idx);
         _cellXf.setApplyBorder(true);
+        invalidateCachedProperties();
     }
 
      /**
@@ -701,6 +712,7 @@ public class XSSFCellStyle implements CellStyle, Duplicatable {
 
         _cellXf.setBorderId(idx);
         _cellXf.setApplyBorder(true);
+        invalidateCachedProperties();
     }
 
      /**
@@ -720,6 +732,7 @@ public class XSSFCellStyle implements CellStyle, Duplicatable {
 
         _cellXf.setBorderId(idx);
         _cellXf.setApplyBorder(true);
+        invalidateCachedProperties();
     }
 
     /**
@@ -739,12 +752,13 @@ public class XSSFCellStyle implements CellStyle, Duplicatable {
 
         _cellXf.setBorderId(idx);
         _cellXf.setApplyBorder(true);
+        invalidateCachedProperties();
     }
 
     /**
      * Set the color to use for the bottom border
      * @param color the index of the color definition
-     * @see m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.IndexedColors
+     * @see org.apache.poi.ss.usermodel.IndexedColors
      */
     @Override
     public void setBottomBorderColor(short color) {
@@ -770,6 +784,7 @@ public class XSSFCellStyle implements CellStyle, Duplicatable {
 
         _cellXf.setBorderId(idx);
         _cellXf.setApplyBorder(true);
+        invalidateCachedProperties();
     }
 
     /**
@@ -782,6 +797,7 @@ public class XSSFCellStyle implements CellStyle, Duplicatable {
         // XSSF supports >32,767 formats
         setDataFormat(fmt&0xffff);
     }
+
     /**
      * Set the index of a data format
      *
@@ -790,6 +806,7 @@ public class XSSFCellStyle implements CellStyle, Duplicatable {
     public void setDataFormat(int fmt) {
         _cellXf.setApplyNumberFormat(true);
         _cellXf.setNumFmtId(fmt);
+        invalidateCachedProperties();
     }
 
     /**
@@ -828,17 +845,18 @@ public class XSSFCellStyle implements CellStyle, Duplicatable {
         }
 
         addFill(ct);
+        invalidateCachedProperties();
     }
 
     /**
-     * Set the background fill color represented as a {@link m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Color} value.
+     * Set the background fill color represented as a {@link org.apache.poi.ss.usermodel.Color} value.
      * <br>
-     * @param color m.co.rh.id.a_poi_spreadsheet.org.apache.poi.ss.usermodel.Color to set
+     * @param color org.apache.poi.ss.usermodel.Color to set
      * @throws IllegalArgumentException if you provide a <code>Color</code> instance that is not a {@link XSSFColor}
      * @since POI 5.2.3
      */
     @Override
-    public void setFillBackgroundColor(m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Color color) {
+    public void setFillBackgroundColor(Color color) {
         if (color == null || color instanceof XSSFColor) {
             setFillBackgroundColor((XSSFColor)color);
         } else {
@@ -870,7 +888,7 @@ public class XSSFCellStyle implements CellStyle, Duplicatable {
      * for the color to be shown in the cell.
      *
      * @param bg - the color to use
-     * @see m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.IndexedColors
+     * @see org.apache.poi.ss.usermodel.IndexedColors
      */
     @Override
     public void setFillBackgroundColor(short bg) {
@@ -884,7 +902,7 @@ public class XSSFCellStyle implements CellStyle, Duplicatable {
      * <br>
     * <i>Note: Ensure Foreground color is set prior to background color.</i>
     * @param color the color to use
-    * @see #setFillBackgroundColor(m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFColor) )
+    * @see #setFillBackgroundColor(org.apache.poi.xssf.usermodel.XSSFColor)
     */
     public void setFillForegroundColor(XSSFColor color) {
         CTFill ct = getCTFill();
@@ -898,17 +916,18 @@ public class XSSFCellStyle implements CellStyle, Duplicatable {
         }
 
         addFill(ct);
+        invalidateCachedProperties();
     }
  
     /**
-     * Set the foreground fill color represented as a {@link m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Color} value.
+     * Set the foreground fill color represented as a {@link org.apache.poi.ss.usermodel.Color} value.
      * <br>
      * @param color the color to use
      * @throws IllegalArgumentException if you provide a <code>Color</code> instance that is not a {@link XSSFColor}
      * @since POI 5.2.3
      */
     @Override
-    public void setFillForegroundColor(m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Color color) {
+    public void setFillForegroundColor(Color color) {
         if (color == null || color instanceof XSSFColor) {
             setFillForegroundColor((XSSFColor)color);
         } else {
@@ -921,7 +940,7 @@ public class XSSFCellStyle implements CellStyle, Duplicatable {
      * <br>
      * <i>Note: Ensure Foreground color is set prior to background color.</i>
      * @param fg the color to use
-     * @see m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.IndexedColors
+     * @see org.apache.poi.ss.usermodel.IndexedColors
      */
     @Override
     public void setFillForegroundColor(short fg) {
@@ -954,6 +973,7 @@ public class XSSFCellStyle implements CellStyle, Duplicatable {
      */
     public void setReadingOrder(ReadingOrder order) {
         getCellAlignment().setReadingOrder(order);
+        invalidateCachedProperties();
     }
 
     /**
@@ -983,12 +1003,12 @@ public class XSSFCellStyle implements CellStyle, Duplicatable {
 
     /**
      * This element is used to specify cell fill information for pattern and solid color cell fills. For solid cell fills (no pattern),
-     * foreground color is used is used. For cell fills with patterns specified, then the cell fill color is specified by the background color element.
+     * foreground color is used. For cell fills with patterns specified, then the cell fill color is specified by the background color element.
      *
      * @param pattern the fill pattern to use
      * @see #setFillBackgroundColor(XSSFColor)
      * @see #setFillForegroundColor(XSSFColor)
-     * @see m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.FillPatternType
+     * @see org.apache.poi.ss.usermodel.FillPatternType
      */
     @Override
     public void setFillPattern(FillPatternType pattern) {
@@ -1001,14 +1021,15 @@ public class XSSFCellStyle implements CellStyle, Duplicatable {
         }
 
         addFill(ct);
+        invalidateCachedProperties();
     }
 
     /**
      * Set the font for this style
      *
      * @param font  a font object created or retrieved from the XSSFWorkbook object
-     * @see m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFWorkbook#createFont()
-     * @see m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFWorkbook#getFontAt(int)
+     * @see org.apache.poi.xssf.usermodel.XSSFWorkbook#createFont()
+     * @see org.apache.poi.xssf.usermodel.XSSFWorkbook#getFontAt(int)
      */
     @Override
     public void setFont(Font font) {
@@ -1019,6 +1040,7 @@ public class XSSFCellStyle implements CellStyle, Duplicatable {
         } else {
             this._cellXf.setApplyFont(false);
         }
+        invalidateCachedProperties();
     }
 
     /**
@@ -1032,6 +1054,7 @@ public class XSSFCellStyle implements CellStyle, Duplicatable {
              _cellXf.addNewProtection();
          }
         _cellXf.getProtection().setHidden(hidden);
+        invalidateCachedProperties();
     }
 
     /**
@@ -1042,19 +1065,21 @@ public class XSSFCellStyle implements CellStyle, Duplicatable {
     @Override
     public void setIndention(short indent) {
         getCellAlignment().setIndent(indent);
+        invalidateCachedProperties();
     }
 
     /**
      * Set the color to use for the left border as an indexed color value
      *
      * @param color the index of the color definition
-     * @see m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.IndexedColors
+     * @see org.apache.poi.ss.usermodel.IndexedColors
      */
     @Override
     public void setLeftBorderColor(short color) {
         XSSFColor clr = XSSFColor.from(CTColor.Factory.newInstance(), _stylesSource.getIndexedColors());
         clr.setIndexed(color);
         setLeftBorderColor(clr);
+        invalidateCachedProperties();
     }
 
     /**
@@ -1074,6 +1099,7 @@ public class XSSFCellStyle implements CellStyle, Duplicatable {
 
         _cellXf.setBorderId(idx);
         _cellXf.setApplyBorder(true);
+        invalidateCachedProperties();
     }
 
     /**
@@ -1087,6 +1113,7 @@ public class XSSFCellStyle implements CellStyle, Duplicatable {
              _cellXf.addNewProtection();
          }
         _cellXf.getProtection().setLocked(locked);
+        invalidateCachedProperties();
     }
 
     /**
@@ -1097,19 +1124,21 @@ public class XSSFCellStyle implements CellStyle, Duplicatable {
     @Override
     public void setQuotePrefixed(boolean quotePrefix) {
         _cellXf.setQuotePrefix(quotePrefix);
+        invalidateCachedProperties();
     }
 
     /**
      * Set the color to use for the right border
      *
      * @param color the index of the color definition
-     * @see m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.IndexedColors
+     * @see org.apache.poi.ss.usermodel.IndexedColors
      */
     @Override
     public void setRightBorderColor(short color) {
         XSSFColor clr = XSSFColor.from(CTColor.Factory.newInstance(), _stylesSource.getIndexedColors());
         clr.setIndexed(color);
         setRightBorderColor(clr);
+        invalidateCachedProperties();
     }
 
     /**
@@ -1129,6 +1158,7 @@ public class XSSFCellStyle implements CellStyle, Duplicatable {
 
         _cellXf.setBorderId(idx);
         _cellXf.setApplyBorder(true);
+        invalidateCachedProperties();
     }
 
     /**
@@ -1153,20 +1183,21 @@ public class XSSFCellStyle implements CellStyle, Duplicatable {
     @Override
     public void setRotation(short rotation) {
         getCellAlignment().setTextRotation(rotation);
+        invalidateCachedProperties();
     }
-
 
     /**
      * Set the color to use for the top border
      *
      * @param color the index of the color definition
-     * @see m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.IndexedColors
+     * @see org.apache.poi.ss.usermodel.IndexedColors
      */
     @Override
     public void setTopBorderColor(short color) {
         XSSFColor clr = XSSFColor.from(CTColor.Factory.newInstance(), _stylesSource.getIndexedColors());
         clr.setIndexed(color);
         setTopBorderColor(clr);
+        invalidateCachedProperties();
     }
 
     /**
@@ -1186,6 +1217,7 @@ public class XSSFCellStyle implements CellStyle, Duplicatable {
 
         _cellXf.setBorderId(idx);
         _cellXf.setApplyBorder(true);
+        invalidateCachedProperties();
     }
 
     /**
@@ -1197,6 +1229,7 @@ public class XSSFCellStyle implements CellStyle, Duplicatable {
         _cellXf.setApplyAlignment(true);
 
         getCellAlignment().setVertical(align);
+        invalidateCachedProperties();
     }
 
     /**
@@ -1211,6 +1244,7 @@ public class XSSFCellStyle implements CellStyle, Duplicatable {
     @Override
     public void setWrapText(boolean wrapped) {
         getCellAlignment().setWrapText(wrapped);
+        invalidateCachedProperties();
     }
 
     /**
@@ -1260,6 +1294,24 @@ public class XSSFCellStyle implements CellStyle, Duplicatable {
     @Override
     public void setShrinkToFit(boolean shrinkToFit) {
         getCellAlignment().setShrinkToFit(shrinkToFit);
+        invalidateCachedProperties();
+    }
+
+    @Override
+    public EnumMap<CellPropertyType, Object> getFormatProperties() {
+        // this code is not thread safe and POI generally isn't thread safe anyway
+        // you should not have one thread modifying styles while another reads them
+        EnumMap<CellPropertyType, Object> props = _cachedProperties;
+        if (props == null) {
+            props = CellUtil.getFormatProperties(this);
+            _cachedProperties = props;
+        }
+        return props;
+    }
+
+    @Override
+    public void invalidateCachedProperties() {
+        _cachedProperties = null;
     }
 
     private int getFontId() {

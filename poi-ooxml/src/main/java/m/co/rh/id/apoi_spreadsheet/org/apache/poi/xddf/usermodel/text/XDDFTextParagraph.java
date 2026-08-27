@@ -15,7 +15,21 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xddf.usermodel.text;
+
+import org.apache.commons.collections4.iterators.IteratorIterable;
+import org.apache.commons.collections4.iterators.ReverseListIterator;
+import org.apache.xmlbeans.QNameSet;
+import org.apache.xmlbeans.XmlObject;
+import org.openxmlformats.schemas.drawingml.x2006.main.CTRegularTextRun;
+import org.openxmlformats.schemas.drawingml.x2006.main.CTTextCharacterProperties;
+import org.openxmlformats.schemas.drawingml.x2006.main.CTTextField;
+import org.openxmlformats.schemas.drawingml.x2006.main.CTTextLineBreak;
+import org.openxmlformats.schemas.drawingml.x2006.main.CTTextParagraph;
+import org.openxmlformats.schemas.drawingml.x2006.main.CTTextParagraphProperties;
+import org.openxmlformats.schemas.drawingml.x2006.main.CTTextSpacing;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,23 +40,13 @@ import java.util.Spliterator;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import org.apache.commons.collections4.iterators.IteratorIterable;
-import org.apache.commons.collections4.iterators.ReverseListIterator;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.util.POIXMLUnits;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Beta;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LocaleUtil;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Units;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xddf.usermodel.XDDFColor;
-import org.apache.xmlbeans.QNameSet;
-import org.apache.xmlbeans.XmlObject;
-import org.openxmlformats.schemas.drawingml.x2006.main.CTRegularTextRun;
-import org.openxmlformats.schemas.drawingml.x2006.main.CTTextCharacterProperties;
-import org.openxmlformats.schemas.drawingml.x2006.main.CTTextField;
-import org.openxmlformats.schemas.drawingml.x2006.main.CTTextLineBreak;
-import org.openxmlformats.schemas.drawingml.x2006.main.CTTextParagraph;
-import org.openxmlformats.schemas.drawingml.x2006.main.CTTextParagraphProperties;
-import org.openxmlformats.schemas.drawingml.x2006.main.CTTextSpacing;
+
 
 /**
  * Represents a paragraph of text within the containing text body. The paragraph
@@ -113,7 +117,7 @@ public class XDDFTextParagraph implements Iterable<XDDFTextRun> {
     }
 
     public List<XDDFTextRun> getTextRuns() {
-        return _runs;
+        return Collections.unmodifiableList(_runs);
     }
 
     @Override

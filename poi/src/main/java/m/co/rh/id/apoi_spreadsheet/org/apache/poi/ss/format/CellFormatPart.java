@@ -14,25 +14,28 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.format;
+
+
+
 
 import static m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.format.CellFormatter.quote;
 
 import android.graphics.Color;
 import android.util.Log;
 
-import java.util.Iterator;
-import java.util.Locale;
-import java.util.Map;
-import java.util.PrimitiveIterator;
-import java.util.TreeMap;
+import java.util.*;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.util.HSSFColor;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.CodepointsUtil;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LocaleUtil;
+
 
 /**
  * Objects of this class represent a single part of a cell format expression.
@@ -53,53 +56,25 @@ public class CellFormatPart {
     private static final String TAG = "CellFormatPart";
 
     static final Map<String, Color> NAMED_COLORS;
+    static final List<Color> INDEXED_COLORS;
 
     private final Color color;
     private final CellFormatCondition condition;
     private final CellFormatter format;
     private final CellFormatType type;
 
-    static {
-        NAMED_COLORS = new TreeMap<>(
-                String.CASE_INSENSITIVE_ORDER);
-
-        for (HSSFColor.HSSFColorPredefined color : HSSFColor.HSSFColorPredefined.values()) {
-            String name = color.name();
-            short[] rgb = color.getTriplet();
-            Color c = Color.valueOf(rgb[0], rgb[1], rgb[2]);
-            NAMED_COLORS.put(name, c);
-            if (name.indexOf('_') > 0)
-                NAMED_COLORS.put(name.replace('_', ' '), c);
-            if (name.indexOf("_PERCENT") > 0)
-                NAMED_COLORS.put(name.replace("_PERCENT", "%").replace('_',
-                        ' '), c);
-        }
-    }
-
-    /**
-     * Pattern for the color part of a cell format part.
-     */
+    /** Pattern for the color part of a cell format part. */
     public static final Pattern COLOR_PAT;
-    /**
-     * Pattern for the condition part of a cell format part.
-     */
+    /** Pattern for the condition part of a cell format part. */
     public static final Pattern CONDITION_PAT;
-    /**
-     * Pattern for the format specification part of a cell format part.
-     */
+    /** Pattern for the format specification part of a cell format part. */
     public static final Pattern SPECIFICATION_PAT;
-    /**
-     * Pattern for the currency symbol part of a cell format part
-     */
+    /** Pattern for the currency symbol part of a cell format part */
     public static final Pattern CURRENCY_PAT;
-    /**
-     * Pattern for an entire cell single part.
-     */
+    /** Pattern for an entire cell single part. */
     public static final Pattern FORMAT_PAT;
 
-    /**
-     * Within {@link #FORMAT_PAT}, the group number for the matched color.
-     */
+    /** Within {@link #FORMAT_PAT}, the group number for the matched color. */
     public static final int COLOR_GROUP;
     /**
      * Within {@link #FORMAT_PAT}, the group number for the operator in the
@@ -118,6 +93,51 @@ public class CellFormatPart {
     public static final int SPECIFICATION_GROUP;
 
     static {
+    	// Build indexed color list, in order, from 1 to 56
+        Integer[] indexedColors = new Integer[] {
+            0x000000, 0xFFFFFF, 0xFF0000, 0x00FF00, 0x0000FF, 0xFFFF00, 0xFF00FF, 0x00FFFF,
+            0x800000, 0x008000, 0x000080, 0x808000, 0x800080, 0x008080, 0xC0C0C0, 0x808080,
+            0x9999FF, 0x993366, 0xFFFFCC, 0xCCFFFF, 0x660066, 0xFF8080, 0x0066CC, 0xCCCCFF,
+            0x000080, 0xFF00FF, 0xFFFF00, 0x00FFFF, 0x800080, 0x800000, 0x008080, 0x0000FF,
+            0x00CCFF, 0xCCFFFF, 0xCCFFCC, 0xFFFF99, 0x99CCFF, 0xFF99CC, 0xCC99FF, 0xFFCC99,
+            0x3366FF, 0x33CCCC, 0x99CC00, 0xFFCC00, 0xFF9900, 0xFF6600, 0x666699, 0x969696,
+            0x003366, 0x339966, 0x003300, 0x333300, 0x993300, 0x993366, 0x333399, 0x333333
+     	};
+         List<Color> indexedColorList = new ArrayList<>();
+         for (int rgb : indexedColors) {
+             indexedColorList.add(Color.valueOf(rgb | 0xFF000000));
+         }
+         INDEXED_COLORS = Collections.unmodifiableList(indexedColorList);
+
+        // Build initial named color map
+        Map<String, Color> namedColors = new TreeMap<>(
+                String.CASE_INSENSITIVE_ORDER);
+
+        // Retain compatibility with original implementation
+        for (HSSFColor.HSSFColorPredefined color : HSSFColor.HSSFColorPredefined.values()) {
+            String name = color.name();
+            short[] rgb = color.getTriplet();
+            Color c = Color.valueOf(0xFF000000 | ((rgb[0] & 0xFF) << 16) | ((rgb[1] & 0xFF) << 8) | (rgb[2] & 0xFF));
+            namedColors.put(name, c);
+            if (name.indexOf('_') > 0)
+                namedColors.put(name.replace('_', ' '), c);
+            if (name.indexOf("_PERCENT") > 0)
+                namedColors.put(name.replace("_PERCENT", "%").replace('_',
+                        ' '), c);
+        }
+
+        // Add missing color values and replace incorrectly defined standard colors 
+        // used in Excel, Google Sheets, etc. The first eight indexed colors correspond
+        // exactly to named colors.
+        namedColors.put("black",   INDEXED_COLORS.get(0));
+        namedColors.put("white",   INDEXED_COLORS.get(1));
+        namedColors.put("red",     INDEXED_COLORS.get(2));
+        namedColors.put("green",   INDEXED_COLORS.get(3));
+        namedColors.put("blue",    INDEXED_COLORS.get(4));
+        namedColors.put("yellow",  INDEXED_COLORS.get(5));
+        namedColors.put("magenta", INDEXED_COLORS.get(6));
+        namedColors.put("cyan",    INDEXED_COLORS.get(7));
+
         // A condition specification
         String condition = "([<>=]=?|!=|<>)    # The operator\n" +
                 "  \\s*(-?([0-9]+(?:\\.[0-9]*)?)|(\\.[0-9]*))\\s*  # The constant to test against\n";
@@ -125,8 +145,16 @@ public class CellFormatPart {
         // A currency symbol / string, in a specific locale
         String currency = "(\\[\\$.{0,3}(-[0-9a-f]{3,4})?])";
 
-        String color =
-                "\\[(black|blue|cyan|green|magenta|red|white|yellow|color [0-9]+)]";
+        // Build the color code matching expression. We should match any named color
+        // in the set as well as a string in the form of "Color 8" or "Color 15".
+        String color = "\\[(";
+        for (String key : namedColors.keySet()) {
+            // Escape special characters in the color name
+            color += key.replaceAll("([^a-zA-Z0-9])", "\\\\$1") + "|";
+        }
+        // Match the indexed color table (accept both e.g. COLOR2 and COLOR 2)
+        // Both formats are accepted as input in other products
+        color += "color\\s*[0-9]+)\\]";
 
         // A number specification
         // Note: careful that in something like ##, that the trailing comma is not caught up in the integer part
@@ -135,7 +163,7 @@ public class CellFormatPart {
         //noinspection RegExpRedundantEscape
         String part = "\\\\.                     # Quoted single character\n" +
                 "|\"([^\\\\\"]|\\\\.)*\"         # Quoted string of characters (handles escaped quotes like \\\") \n" +
-                "|" + currency + "                   # Currency symbol in a given locale\n" +
+                "|"+currency+"                   # Currency symbol in a given locale\n" +
                 "|_.                             # Space as wide as a given character\n" +
                 "|\\*.                           # Repeating fill character\n" +
                 "|@                              # Text: cell text\n" +
@@ -150,7 +178,7 @@ public class CellFormatPart {
                 "|\\[h{1,2}]                     # Elapsed time: hour spec\n" +
                 "|\\[m{1,2}]                     # Elapsed time: minute spec\n" +
                 "|\\[s{1,2}]                     # Elapsed time: second spec\n" +
-                "|[^;]                           # A character\n" + "";
+                "|[^;]                           # A character\n";
 
         String format = "(?:" + color + ")?                 # Text color\n" +
                 "(?:\\[" + condition + "])?               # Condition\n" +
@@ -174,11 +202,22 @@ public class CellFormatPart {
         CONDITION_OPERATOR_GROUP = findGroup(FORMAT_PAT, "[>=1]@", ">=");
         CONDITION_VALUE_GROUP = findGroup(FORMAT_PAT, "[>=1]@", "1");
         SPECIFICATION_GROUP = findGroup(FORMAT_PAT, "[Blue][>1]\\a ?", "\\a ?");
+
+        // Once patterns have been compiled, add indexed colors to
+        // namedColors so they can be easily picked up by getColor().
+        for (int i = 0; i < INDEXED_COLORS.size(); ++i) {
+            namedColors.put("color" + (i + 1), INDEXED_COLORS.get(i));
+            // Also support space between "color" and number.
+            namedColors.put("color " + (i + 1), INDEXED_COLORS.get(i));
+        }
+
+        // Store namedColors as NAMED_COLORS
+        NAMED_COLORS = Collections.unmodifiableMap(namedColors);
     }
 
     interface PartHandler {
         String handlePart(Matcher m, String part, CellFormatType type,
-                          StringBuffer desc);
+                StringBuffer desc);
     }
 
     /**
@@ -194,7 +233,7 @@ public class CellFormatPart {
      * Create an object to represent a format part.
      *
      * @param locale The locale to use.
-     * @param desc   The string to parse.
+     * @param desc The string to parse.
      */
     public CellFormatPart(Locale locale, String desc) {
         Matcher m = FORMAT_PAT.matcher(desc);
@@ -215,6 +254,7 @@ public class CellFormatPart {
      * always return {@code true}.
      *
      * @param valueObject The value to evaluate.
+     *
      * @return {@code true} if this format part applies to the given value.
      */
     public boolean applies(Object valueObject) {
@@ -235,7 +275,9 @@ public class CellFormatPart {
      * @param pat    The pattern to use.
      * @param str    The string to match against the pattern.
      * @param marker The marker value to find the group of.
+     *
      * @return The matching group number.
+     *
      * @throws IllegalArgumentException No group matches the marker.
      */
     private static int findGroup(Pattern pat, String str, String marker) {
@@ -258,15 +300,27 @@ public class CellFormatPart {
      * there is none.
      *
      * @param m The matcher for the format part.
+     *
      * @return The color specification or {@code null}.
      */
     private static Color getColor(Matcher m) {
-        String cdesc = m.group(COLOR_GROUP);
-        if (cdesc == null || cdesc.length() == 0)
+        return getColor(m.group(COLOR_GROUP));
+    }
+    
+    /**
+     * Get the Color object matching a color name, or {@code null} if the
+     * color name is not recognized.
+     * 
+     * @param cname Color name, such as "red" or "Color 15"
+     * 
+     * @return a Color object or {@code null}.
+     */
+    static Color getColor(String cname) {
+        if (cname == null || cname.isEmpty())
             return null;
-        Color c = NAMED_COLORS.get(cdesc);
+        Color c = NAMED_COLORS.get(cname);
         if (c == null) {
-            Log.w(TAG, "Unknown color: " + quote(cdesc));
+            Log.w(TAG, String.format("Unknown color: %s", quote(cname)));
         }
         return c;
     }
@@ -276,11 +330,12 @@ public class CellFormatPart {
      * there is none.
      *
      * @param m The matcher for the format part.
+     *
      * @return The condition specification or {@code null}.
      */
     private CellFormatCondition getCondition(Matcher m) {
         String mdesc = m.group(CONDITION_OPERATOR_GROUP);
-        if (mdesc == null || mdesc.length() == 0)
+        if (mdesc == null || mdesc.isEmpty())
             return null;
         return CellFormatCondition.getInstance(m.group(
                 CONDITION_OPERATOR_GROUP), m.group(CONDITION_VALUE_GROUP));
@@ -291,6 +346,7 @@ public class CellFormatPart {
      * the format part.
      *
      * @param matcher The matcher for the format part.
+     *
      * @return The CellFormatType.
      */
     private CellFormatType getCellFormatType(Matcher matcher) {
@@ -303,6 +359,7 @@ public class CellFormatPart {
      * format part.
      *
      * @param matcher The matcher for the format part.
+     *
      * @return The formatter.
      */
     private CellFormatter getFormatter(Locale locale, Matcher matcher) {
@@ -333,6 +390,7 @@ public class CellFormatPart {
      * Returns the type of format.
      *
      * @param fdesc The format specification
+     *
      * @return The type of format.
      */
     private CellFormatType formatType(String fdesc) {
@@ -350,43 +408,43 @@ public class CellFormatPart {
                 String c1 = codePoints.next();
 
                 switch (c1) {
-                    case "@":
-                        return CellFormatType.TEXT;
-                    case "d":
-                    case "D":
-                    case "y":
-                    case "Y":
-                        return CellFormatType.DATE;
-                    case "h":
-                    case "H":
-                    case "m":
-                    case "M":
-                    case "s":
-                    case "S":
-                        // These can be part of date, or elapsed
-                        couldBeDate = true;
-                        break;
-                    case "0":
-                        // This can be part of date, elapsed, or number
-                        seenZero = true;
-                        break;
-                    case "[":
-                        String c2 = null;
-                        if (codePoints.hasNext())
-                            c2 = codePoints.next().toLowerCase(Locale.ROOT);
-                        if ("h".equals(c2) || "m".equals(c2) || "s".equals(c2)) {
-                            return CellFormatType.ELAPSED;
-                        }
-                        if ("$".equals(c2)) {
-                            // Localised currency
-                            return CellFormatType.NUMBER;
-                        }
-                        // Something else inside [] which isn't supported!
-                        throw new IllegalArgumentException("Unsupported [] format block '" +
-                                repl + "' in '" + fdesc + "' with c2: " + c2);
-                    case "#":
-                    case "?":
+                case "@":
+                    return CellFormatType.TEXT;
+                case "d":
+                case "D":
+                case "y":
+                case "Y":
+                    return CellFormatType.DATE;
+                case "h":
+                case "H":
+                case "m":
+                case "M":
+                case "s":
+                case "S":
+                    // These can be part of date, or elapsed
+                    couldBeDate = true;
+                    break;
+                case "0":
+                    // This can be part of date, elapsed, or number
+                    seenZero = true;
+                    break;
+                case "[":
+                    String c2 = null;
+                    if (codePoints.hasNext())
+                        c2 = codePoints.next().toLowerCase(Locale.ROOT);
+                    if ("h".equals(c2) || "m".equals(c2) || "s".equals(c2)) {
+                        return CellFormatType.ELAPSED;
+                    }
+                    if ("$".equals(c2)) {
+                        // Localised currency
                         return CellFormatType.NUMBER;
+                    }
+                    // Something else inside [] which isn't supported!
+                    throw new IllegalArgumentException("Unsupported [] format block '" +
+                                                       repl + "' in '" + fdesc + "' with c2: " + c2);
+                case "#":
+                case "?":
+                    return CellFormatType.NUMBER;
                 }
             }
         }
@@ -406,7 +464,9 @@ public class CellFormatPart {
      *
      * @param repl The original string.
      * @param type The format type representation object.
+     *
      * @return A version of the string with any special characters replaced.
+     *
      * @see CellFormatType#isSpecial(char)
      */
     static String quoteSpecial(String repl, CellFormatType type) {
@@ -437,8 +497,9 @@ public class CellFormatPart {
      * CellFormatResult} object with the results.
      *
      * @param value The value to apply this format part to.
+     *
      * @return A {@link CellFormatResult} object containing the results of
-     * applying the format to the value.
+     *         applying the format to the value.
      */
     public CellFormatResult apply(Object value) {
         boolean applies = applies(value);
@@ -474,7 +535,7 @@ public class CellFormatPart {
     }
 
     public static StringBuffer parseFormat(String fdesc, CellFormatType type,
-                                           PartHandler partHandler) {
+            PartHandler partHandler) {
 
         // Quoting is very awkward.  In the Java classes, quoting is done
         // between ' chars, with '' meaning a single ' char. The problem is that
@@ -495,26 +556,26 @@ public class CellFormatPart {
         StringBuffer fmt = new StringBuffer();
         while (m.find()) {
             String part = group(m, 0);
-            if (part.length() > 0) {
+            if (!part.isEmpty()) {
                 String repl = partHandler.handlePart(m, part, type, fmt);
                 if (repl == null) {
                     switch (part.charAt(0)) {
-                        case '\"':
-                            repl = quoteSpecial(part.substring(1,
-                                    part.length() - 1), type);
-                            break;
-                        case '\\':
-                            repl = quoteSpecial(part.substring(1), type);
-                            break;
-                        case '_':
-                            repl = " ";
-                            break;
-                        case '*': //!! We don't do this for real, we just put in 3 of them
-                            repl = expandChar(part);
-                            break;
-                        default:
-                            repl = part;
-                            break;
+                    case '\"':
+                        repl = quoteSpecial(part.substring(1,
+                                part.length() - 1), type);
+                        break;
+                    case '\\':
+                        repl = quoteSpecial(part.substring(1), type);
+                        break;
+                    case '_':
+                        repl = " ";
+                        break;
+                    case '*': //!! We don't do this for real, we just put in 3 of them
+                        repl = expandChar(part);
+                        break;
+                    default:
+                        repl = part;
+                        break;
                     }
                 }
                 m.appendReplacement(fmt, Matcher.quoteReplacement(repl));
@@ -554,6 +615,7 @@ public class CellFormatPart {
      *
      * @param part The character to be repeated is the second character in this
      *             string.
+     *
      * @return The character repeated three times.
      */
     static String expandChar(String part) {
@@ -576,6 +638,7 @@ public class CellFormatPart {
      *
      * @param m The matcher.
      * @param g The group number.
+     *
      * @return The group or {@code ""}.
      */
     public static String group(Matcher m, int g) {

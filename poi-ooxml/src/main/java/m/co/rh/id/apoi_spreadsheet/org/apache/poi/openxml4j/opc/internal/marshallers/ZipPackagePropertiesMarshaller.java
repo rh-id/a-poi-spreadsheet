@@ -15,17 +15,21 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.internal.marshallers;
+
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 
 import java.io.IOException;
 import java.io.OutputStream;
 
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackagePart;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.StreamHelper;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.internal.ZipHelper;
+
 
 /**
  * Package core properties marshaller specialized for zipped package.
@@ -45,6 +49,8 @@ public final class ZipPackagePropertiesMarshaller extends PackagePropertiesMarsh
                 .getZipItemNameFromOPCName(part.getPartName().getURI()
                         .toString()));
         try {
+            ZipHelper.adjustEntryTime(ctEntry);
+
             // Save in ZIP
             zos.putArchiveEntry(ctEntry); // Add entry in ZIP
             try {

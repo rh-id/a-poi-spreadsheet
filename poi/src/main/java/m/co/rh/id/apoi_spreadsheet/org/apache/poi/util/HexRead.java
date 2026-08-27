@@ -15,13 +15,14 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.util;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.ArrayList;
+
 
 /**
  * Utilities to read hex from files.
@@ -94,42 +95,38 @@ public class HexRead {
     {
         int characterCount = 0;
         byte b = (byte) 0;
-        List<Byte> bytes = new ArrayList<>();
-        final char a = 'a' - 10;
-        final char A = 'A' - 10;
-        while ( true ) {
-            int count = stream.read();
-            int digitValue = -1;
-            if ( '0' <= count && count <= '9' ) {
-                digitValue = count - '0';
-            } else if ( 'A' <= count && count <= 'F' ) {
-                digitValue = count - A;
-            } else if ( 'a' <= count && count <= 'f' ) {
-                digitValue = count - a;
-            } else if ( '#' == count ) {
-                readToEOL( stream );
-            } else if ( -1 == count || eofChar == count ) {
-                break;
-            }
-            // else: ignore the character
+        try (ByteArrayOutputStream bytes = new ByteArrayOutputStream()) {
+            final char a = 'a' - 10;
+            final char A = 'A' - 10;
+            while (true) {
+                int count = stream.read();
+                int digitValue = -1;
+                if ('0' <= count && count <= '9') {
+                    digitValue = count - '0';
+                } else if ('A' <= count && count <= 'F') {
+                    digitValue = count - A;
+                } else if ('a' <= count && count <= 'f') {
+                    digitValue = count - a;
+                } else if ('#' == count) {
+                    readToEOL(stream);
+                } else if (-1 == count || eofChar == count) {
+                    break;
+                }
+                // else: ignore the character
 
-            if (digitValue != -1) {
-                b <<= 4;
-                b += (byte) digitValue;
-                characterCount++;
-                if ( characterCount == 2 ) {
-                    bytes.add( Byte.valueOf( b ) );
-                    characterCount = 0;
-                    b = (byte) 0;
+                if (digitValue != -1) {
+                    b <<= 4;
+                    b += (byte) digitValue;
+                    characterCount++;
+                    if (characterCount == 2) {
+                        bytes.write(b);
+                        characterCount = 0;
+                        b = (byte) 0;
+                    }
                 }
             }
+            return bytes.toByteArray();
         }
-        Byte[] polished = bytes.toArray(new Byte[0]);
-        byte[] rval = new byte[polished.length];
-        for ( int j = 0; j < polished.length; j++ ) {
-            rval[j] = polished[j].byteValue();
-        }
-        return rval;
     }
 
     static public byte[] readFromString(String data) {

@@ -17,6 +17,7 @@
 // Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -56,10 +57,17 @@ public class TestXSSFTextRun {
             assertNotNull(run.getRPr());
 
             assertEquals(Color.valueOf(Color.rgb(0, 0, 0)), run.getFontColor());
+            assertArrayEquals(new byte[]{0, 0, 0}, run.getFontColorAsBytes());
 
+            final byte[] colorBytes = new byte[]{0, (byte) 255, (byte) 255};
             Color color = Color.valueOf(Color.rgb(0, 255, 255));
             run.setFontColor(color);
             assertEquals(color, run.getFontColor());
+            assertArrayEquals(colorBytes, run.getFontColorAsBytes());
+
+            run.setFontColor(colorBytes);
+            assertEquals(color, run.getFontColor());
+            assertArrayEquals(colorBytes, run.getFontColorAsBytes());
 
             assertEquals(11.0, run.getFontSize(), 0.01);
             run.setFontSize(12.32);

@@ -14,8 +14,9 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel;
 
@@ -38,6 +39,7 @@ import java.util.regex.Pattern;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ConditionalFormattingEvaluator;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LocaleUtil;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.ThreadLocalUtil;
+
 
 /**
  * Contains methods for dealing with Excel dates.
@@ -71,7 +73,7 @@ public class DateUtil {
     private static final Pattern date_ptrn2 = Pattern.compile("^\\[[a-zA-Z]+]");
     private static final Pattern date_ptrn3a = Pattern.compile("[yYmMdDhHsS]");
     // add "\u5e74 \u6708 \u65e5" for Chinese/Japanese date format:2017 \u5e74 2 \u6708 7 \u65e5
-    private static final Pattern date_ptrn3b = Pattern.compile("^[\\[\\]yYmMdDhHsS\\-T/\u5e74\u6708\u65e5,. :\"\\\\]+0*[ampAMP/]*$");
+    private static final Pattern date_ptrn3b = Pattern.compile("^[\\[\\]yYmMdDhHsS\\-T/\u5e74\u6708\u65e5,. :\"\\\\]+0* ?[ampAMP/]*$");
     //  elapsed time patterns: [h],[m] and [s]
     private static final Pattern date_ptrn4 = Pattern.compile("^\\[([hH]+|[mM]+|[sS]+)]");
 
@@ -79,8 +81,8 @@ public class DateUtil {
     private static final Pattern date_ptrn5 = Pattern.compile("^\\[DBNum([123])]");
 
     private static final DateTimeFormatter dateTimeFormats = new DateTimeFormatterBuilder()
-            .appendPattern("[dd MMM[ yyyy]][[ ]h:m[:s][.SSS] a][[ ]H:m[:s][.SSS]]")
-            .appendPattern("[[yyyy ]dd-MMM[-yyyy]][[ ]h:m[:s][.SSS] a][[ ]H:m[:s][.SSS]]")
+            .appendPattern("[d[.] [MMMM][MMM][ yyyy]][[ ]h:m[:s][.SSS] a][[ ]H:m[:s][.SSS]]")
+            .appendPattern("[[yyyy ]d-[MMMM][MMM][-yyyy]][[ ]h:m[:s][.SSS] a][[ ]H:m[:s][.SSS]]")
             .appendPattern("[M/dd[/yyyy]][[ ]h:m[:s][.SSS] a][[ ]H:m[:s][.SSS]]")
             .appendPattern("[[yyyy/]M/dd][[ ]h:m[:s][.SSS] a][[ ]H:m[:s][.SSS]]")
             .parseDefaulting(ChronoField.YEAR_OF_ERA, LocaleUtil.getLocaleCalendar().get(Calendar.YEAR))
@@ -221,8 +223,12 @@ public class DateUtil {
         return internalGetExcelDate(year, dayOfYear, hour, minute, second, milliSecond, use1904windowing);
     }
 
+    private static boolean isLastDay1899(final int year, final int dayOfYear) {
+        return year == 1899 && dayOfYear == 365;
+    }
+
     private static double internalGetExcelDate(int year, int dayOfYear, int hour, int minute, int second, int milliSecond, boolean use1904windowing) {
-        if ((!use1904windowing && year < 1900) ||
+        if ((!use1904windowing && (year < 1900 && !isLastDay1899(year, dayOfYear))) ||
             (use1904windowing && year < 1904))
         {
             return BAD_DATE;
@@ -283,7 +289,7 @@ public class DateUtil {
      *
      *  @param date  The Excel date.
      *  @return Java representation of the date, or null if date is not a valid Excel date
-     *  @see TimeZone
+     *  @see java.util.TimeZone
      */
     public static Date getJavaDate(double date) {
         return getJavaDate(date, false, null, false);
@@ -346,7 +352,7 @@ public class DateUtil {
      *  @param use1904windowing  true if date uses 1904 windowing,
      *   or false if using 1900 date windowing.
      *  @return Java representation of the date, or null if date is not a valid Excel date
-     *  @see TimeZone
+     *  @see java.util.TimeZone
      */
     public static Date getJavaDate(double date, boolean use1904windowing) {
         return getJavaDate(date, use1904windowing, null, false);
@@ -367,7 +373,7 @@ public class DateUtil {
      *
      *  @param date  The Excel date.
      *  @return Java representation of the date, or null if date is not a valid Excel date
-     *  @see TimeZone
+     *  @see java.util.TimeZone
      */
     public static LocalDateTime getLocalDateTime(double date) {
         return getLocalDateTime(date, false, false);
@@ -545,6 +551,7 @@ public class DateUtil {
     // avoid re-checking DateUtil.isADateFormat(int, String) if a given format
     // string represents a date format if the same string is passed multiple times.
     // see https://issues.apache.org/bugzilla/show_bug.cgi?id=55611
+    private static boolean maintainCache = true;
     private static final ThreadLocal<Integer> lastFormatIndex = ThreadLocal.withInitial(() -> -1);
     private static final ThreadLocal<String> lastFormatString = new ThreadLocal<>();
     private static final ThreadLocal<Boolean> lastCachedResult = new ThreadLocal<>();
@@ -558,22 +565,24 @@ public class DateUtil {
     }
 
     private static boolean isCached(String formatString, int formatIndex) {
-        return formatIndex == lastFormatIndex.get()
+        return maintainCache && formatIndex == lastFormatIndex.get()
                 && formatString.equals(lastFormatString.get());
     }
 
     private static void cache(String formatString, int formatIndex, boolean cached) {
-        if (formatString == null || "".equals(formatString)) {
-            lastFormatString.remove();
-        } else {
-            lastFormatString.set(formatString);
+        if (maintainCache) {
+            if (formatString == null || "".equals(formatString)) {
+                lastFormatString.remove();
+            } else {
+                lastFormatString.set(formatString);
+            }
+            if (formatIndex == -1) {
+                lastFormatIndex.remove();
+            } else {
+                lastFormatIndex.set(formatIndex);
+            }
+            lastCachedResult.set(cached);
         }
-        if (formatIndex == -1) {
-            lastFormatIndex.remove();
-        } else {
-            lastFormatIndex.set(formatIndex);
-        }
-        lastCachedResult.set(cached);
     }
 
     /**
@@ -621,7 +630,7 @@ public class DateUtil {
         }
 
         // If we didn't get a real string, don't even cache it as we can always find this out quickly
-        if(formatString == null || formatString.length() == 0) {
+        if(formatString == null || formatString.isEmpty()) {
             return false;
         }
 
@@ -717,27 +726,30 @@ public class DateUtil {
     /**
      * Given a format ID this will check whether the format represents
      *  an internal excel date format or not.
-     * @see #isADateFormat(int, String)
+     * @see #isADateFormat(int, java.lang.String)
      */
     public static boolean isInternalDateFormat(int format) {
-            switch(format) {
-                // Internal Date Formats as described on page 427 in
-                // Microsoft Excel Dev's Kit...
-                case 0x0e:
-                case 0x0f:
-                case 0x10:
-                case 0x11:
-                case 0x12:
-                case 0x13:
-                case 0x14:
-                case 0x15:
-                case 0x16:
-                case 0x2d:
-                case 0x2e:
-                case 0x2f:
-                    return true;
-            }
-       return false;
+        switch(format) {
+            // Internal Date Formats as described on page 427 in
+            // Microsoft Excel Dev's Kit...
+            // see also javadoc in org.apache.poi.ss.usermodel.BuiltinFormats
+            case 0x0e:
+            case 0x0f:
+            case 0x10:
+            case 0x11:
+            // the 0x12 to 0x15 formats are time (only) formats
+            case 0x12:
+            case 0x13:
+            case 0x14:
+            case 0x15:
+            case 0x16:
+            // the 0x2d to 0x2f formats are time (only) formats
+            case 0x2d:
+            case 0x2e:
+            case 0x2f:
+                return true;
+        }
+        return false;
     }
 
     /**
@@ -812,7 +824,6 @@ public class DateUtil {
      * @return true if valid
      * @param  value the double value
      */
-
     public static boolean isValidExcelDate(double value)
     {
         return (value > -Double.MIN_VALUE);
@@ -851,31 +862,24 @@ public class DateUtil {
      * @throws IllegalArgumentException if date is invalid
      */
     private static int absoluteDay(int year, int dayOfYear, boolean use1904windowing) {
-        return dayOfYear + daysInPriorYears(year, use1904windowing);
+        return dayOfYear + daysInPriorYears(year, dayOfYear, use1904windowing);
     }
 
-    /**
-     * Return the number of days in prior years since 1900
-     *
-     * @return    days  number of days in years prior to yr.
-     * @param     yr    a year (1900 < yr < 4000)
-     * @param use1904windowing Should 1900 or 1904 date windowing be used?
-     * @throws IllegalArgumentException if year is outside of range.
-     */
-
-    static int daysInPriorYears(int yr, boolean use1904windowing)
+    private static int daysInPriorYears(final int year, final int dayOfYear,
+                                        final boolean use1904windowing)
     {
-        if ((!use1904windowing && yr < 1900) || (use1904windowing && yr < 1904)) {
+        if ((!use1904windowing && (year < 1900 && !isLastDay1899(year, dayOfYear)))
+                || (use1904windowing && year < 1904)) {
             throw new IllegalArgumentException("'year' must be 1900 or greater");
         }
 
-        int yr1  = yr - 1;
+        int yr1  = year - 1;
         int leapDays =   yr1 / 4   // plus julian leap days in prior years
                        - yr1 / 100 // minus prior century years
                        + yr1 / 400 // plus years divisible by 400
                        - 460;      // leap days in previous 1900 years
 
-        return 365 * (yr - (use1904windowing ? 1904 : 1900)) + leapDays;
+        return 365 * (year - (use1904windowing ? 1904 : 1900)) + leapDays;
     }
 
     // set HH:MM:SS fields of cal to 00:00:00:000
@@ -998,5 +1002,19 @@ public class DateUtil {
         if(time != null) tm += 1.0*time.toSecondOfDay()/SECONDS_PER_DAY;
 
         return tm;
+    }
+
+    /**
+     * Enable or disable the thread-local cache for date format checking.
+     * If enabled, the date format checking will be cached per thread,
+     * which can improve performance when checking the same format multiple times.
+     * If disabled, the cache will not be used and each check will be performed independently.
+     *
+     * @param enable true to enable the cache, false to disable it (enabled, by default)
+     * @since POI 5.5.0
+     */
+    public static void enableThreadLocalCache(final boolean enable) {
+        // enable thread-local cache for date format checking
+        maintainCache = enable;
     }
 }

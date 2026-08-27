@@ -14,9 +14,11 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record;
+
 
 import static m.co.rh.id.apoi_spreadsheet.org.apache.poi.hpsf.ClassIDPredefined.FILE_MONIKER;
 import static m.co.rh.id.apoi_spreadsheet.org.apache.poi.hpsf.ClassIDPredefined.STD_MONIKER;
@@ -41,9 +43,10 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndianOutput;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.RecordFormatException;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.StringUtil;
 
+
 /**
  * The <code>HyperlinkRecord</code> (0x01B8) wraps an HLINK-record
- * from the Excel-97 format.
+ *  from the Excel-97 format.
  * Supports only external links for now (eg http://)
  */
 public final class HyperlinkRecord extends StandardRecord {
@@ -53,62 +56,40 @@ public final class HyperlinkRecord extends StandardRecord {
     /*
      * Link flags
      */
-    static final int HLINK_URL = 0x01;  // File link or URL.
-    static final int HLINK_ABS = 0x02;  // Absolute path.
-    static final int HLINK_LABEL = 0x14;  // Has label/description.
-    /**
-     * Place in worksheet. If set, the {@link #_textMark} field will be present
-     */
-    static final int HLINK_PLACE = 0x08;
-    private static final int HLINK_TARGET_FRAME = 0x80;  // has 'target frame'
-    private static final int HLINK_UNC_PATH = 0x100;  // has UNC path
+    static final int HLINK_URL    = 0x01;  // File link or URL.
+    static final int HLINK_ABS    = 0x02;  // Absolute path.
+    static final int HLINK_LABEL  = 0x14;  // Has label/description.
+    /** Place in worksheet. If set, the {@link #_textMark} field will be present */
+    static final int HLINK_PLACE  = 0x08;
+    private static final int  HLINK_TARGET_FRAME  = 0x80;  // has 'target frame'
+    private static final int  HLINK_UNC_PATH  = 0x100;  // has UNC path
 
-    /**
-     * expected Tail of a URL link
-     */
-    private static final byte[] URL_TAIL = HexRead.readFromString("79 58 81 F4  3B 1D 7F 48   AF 2C 82 5D  C4 85 27 63   00 00 00 00  A5 AB 00 00");
-    /**
-     * expected Tail of a file link
-     */
+    /** expected Tail of a URL link */
+    private static final byte[] URL_TAIL  = HexRead.readFromString("79 58 81 F4  3B 1D 7F 48   AF 2C 82 5D  C4 85 27 63   00 00 00 00  A5 AB 00 00");
+    /** expected Tail of a file link */
     private static final byte[] FILE_TAIL = HexRead.readFromString("FF FF AD DE  00 00 00 00   00 00 00 00  00 00 00 00   00 00 00 00  00 00 00 00");
 
     private static final int TAIL_SIZE = FILE_TAIL.length;
 
-    /**
-     * cell range of this hyperlink
-     */
+    /** cell range of this hyperlink */
     private CellRangeAddress _range;
 
-    /**
-     * 16-byte GUID
-     */
+    /** 16-byte GUID */
     private ClassID _guid;
-    /**
-     * Some sort of options for file links.
-     */
+    /** Some sort of options for file links. */
     private int _fileOpts;
-    /**
-     * Link options. Can include any of HLINK_* flags.
-     */
+    /** Link options. Can include any of HLINK_* flags. */
     private int _linkOpts;
-    /**
-     * Test label
-     */
+    /** Test label */
     private String _label;
 
     private String _targetFrame;
-    /**
-     * Moniker. Makes sense only for URL and file links
-     */
+    /** Moniker. Makes sense only for URL and file links */
     private ClassID _moniker;
-    /**
-     * in 8:3 DOS format No Unicode string header,
-     * always 8-bit characters, zero-terminated
-     */
+    /** in 8:3 DOS format No Unicode string header,
+     * always 8-bit characters, zero-terminated */
     private String _shortFilename;
-    /**
-     * Link
-     */
+    /** Link */
     private String _address;
     /**
      * Text describing a place in document.  In Excel UI, this is appended to the
@@ -122,8 +103,7 @@ public final class HyperlinkRecord extends StandardRecord {
     /**
      * Create a new hyperlink
      */
-    public HyperlinkRecord() {
-    }
+    public HyperlinkRecord() {}
 
 
     public HyperlinkRecord(HyperlinkRecord other) {
@@ -216,7 +196,8 @@ public final class HyperlinkRecord extends StandardRecord {
     /**
      * @return 16-byte moniker
      */
-    ClassID getMoniker() {
+    ClassID getMoniker()
+    {
         return _moniker;
     }
 
@@ -230,7 +211,6 @@ public final class HyperlinkRecord extends StandardRecord {
         }
         return s.substring(0, idx);
     }
-
     private static String appendNullTerm(String s) {
         if (s == null) {
             return null;
@@ -241,7 +221,7 @@ public final class HyperlinkRecord extends StandardRecord {
     /**
      * Return text label for this hyperlink
      *
-     * @return text to display
+     * @return  text to display
      */
     public String getLabel() {
         return cleanString(_label);
@@ -255,7 +235,6 @@ public final class HyperlinkRecord extends StandardRecord {
     public void setLabel(String label) {
         _label = appendNullTerm(label);
     }
-
     public String getTargetFrame() {
         return cleanString(_targetFrame);
     }
@@ -263,12 +242,12 @@ public final class HyperlinkRecord extends StandardRecord {
     /**
      * Hyperlink address. Depending on the hyperlink type it can be URL, e-mail, path to a file, etc.
      *
-     * @return the address of this hyperlink
+     * @return  the address of this hyperlink
      */
     public String getAddress() {
         if ((_linkOpts & HLINK_URL) != 0 && FILE_MONIKER.equals(_moniker)) {
             return cleanString(_address != null ? _address : _shortFilename);
-        } else if ((_linkOpts & HLINK_PLACE) != 0) {
+        } else if((_linkOpts & HLINK_PLACE) != 0) {
             return cleanString(_textMark);
         } else {
             return cleanString(_address);
@@ -278,12 +257,12 @@ public final class HyperlinkRecord extends StandardRecord {
     /**
      * Hyperlink address. Depending on the hyperlink type it can be URL, e-mail, path to a file, etc.
      *
-     * @param address the address of this hyperlink
+     * @param address  the address of this hyperlink
      */
     public void setAddress(String address) {
         if ((_linkOpts & HLINK_URL) != 0 && FILE_MONIKER.equals(_moniker)) {
             _shortFilename = appendNullTerm(address);
-        } else if ((_linkOpts & HLINK_PLACE) != 0) {
+        } else if((_linkOpts & HLINK_PLACE) != 0) {
             _textMark = appendNullTerm(address);
         } else {
             _address = appendNullTerm(address);
@@ -301,7 +280,6 @@ public final class HyperlinkRecord extends StandardRecord {
     public String getTextMark() {
         return cleanString(_textMark);
     }
-
     public void setTextMark(String textMark) {
         _textMark = appendNullTerm(textMark);
     }
@@ -313,21 +291,21 @@ public final class HyperlinkRecord extends StandardRecord {
      *
      * @return Link options
      */
-    int getLinkOptions() {
+    int getLinkOptions(){
         return _linkOpts;
     }
 
     /**
      * @return Label options
      */
-    public int getLabelOptions() {
+    public int getLabelOptions(){
         return 2; // always 2
     }
 
     /**
      * @return Options for a file link
      */
-    public int getFileOptions() {
+    public int getFileOptions(){
         return _fileOpts;
     }
 
@@ -347,12 +325,12 @@ public final class HyperlinkRecord extends StandardRecord {
         }
         _linkOpts = in.readInt();
 
-        if ((_linkOpts & HLINK_LABEL) != 0) {
+        if ((_linkOpts & HLINK_LABEL) != 0){
             int label_len = in.readInt();
             _label = in.readUnicodeLEString(label_len);
         }
 
-        if ((_linkOpts & HLINK_TARGET_FRAME) != 0) {
+        if ((_linkOpts & HLINK_TARGET_FRAME) != 0){
             int len = in.readInt();
             _targetFrame = in.readUnicodeLEString(len);
         }
@@ -366,7 +344,7 @@ public final class HyperlinkRecord extends StandardRecord {
         if ((_linkOpts & HLINK_URL) != 0 && (_linkOpts & HLINK_UNC_PATH) == 0) {
             _moniker = new ClassID(in);
 
-            if (URL_MONIKER.equals(_moniker)) {
+            if(URL_MONIKER.equals(_moniker)){
                 int length = in.readInt();
                 /*
                  * The value of <code>length<code> be either the byte size of the url field
@@ -376,10 +354,10 @@ public final class HyperlinkRecord extends StandardRecord {
                  */
                 int remaining = in.remaining();
                 if (length == remaining) {
-                    int nChars = length / 2;
+                    int nChars = length/2;
                     _address = in.readUnicodeLEString(nChars);
                 } else {
-                    int nChars = (length - TAIL_SIZE) / 2;
+                    int nChars = (length - TAIL_SIZE)/2;
                     _address = in.readUnicodeLEString(nChars);
                     /*
                      * TODO: make sense of the remaining bytes
@@ -403,10 +381,9 @@ public final class HyperlinkRecord extends StandardRecord {
 
                     //From the spec: An optional unsigned integer that MUST be 3 if present
                     // but some files has 4
-                    /*int usKeyValue = */
-                    in.readUShort();
+                    /*int usKeyValue = */ in.readUShort();
 
-                    _address = StringUtil.readUnicodeLE(in, charDataSize / 2);
+                    _address = StringUtil.readUnicodeLE(in, charDataSize/2);
                 } else {
                     _address = null;
                 }
@@ -422,14 +399,14 @@ public final class HyperlinkRecord extends StandardRecord {
             }
         }
 
-        if ((_linkOpts & HLINK_PLACE) != 0) {
+        if((_linkOpts & HLINK_PLACE) != 0) {
 
             int len = in.readInt();
             _textMark = in.readUnicodeLEString(len);
         }
 
         if (in.remaining() > 0) {
-            Log.w(TAG, String.format("Hyperlink data remains: %d : %s", in.remaining(), toHex(in.readRemainder())));
+            Log.w(TAG, String.format("Hyperlink data remains: %s : %s", in.remaining(), toHex(in.readRemainder())));
         }
     }
 
@@ -441,11 +418,11 @@ public final class HyperlinkRecord extends StandardRecord {
         out.writeInt(0x00000002); // TODO const
         out.writeInt(_linkOpts);
 
-        if ((_linkOpts & HLINK_LABEL) != 0) {
+        if ((_linkOpts & HLINK_LABEL) != 0){
             out.writeInt(_label.length());
             StringUtil.putUnicodeLE(_label, out);
         }
-        if ((_linkOpts & HLINK_TARGET_FRAME) != 0) {
+        if ((_linkOpts & HLINK_TARGET_FRAME) != 0){
             out.writeInt(_targetFrame.length());
             StringUtil.putUnicodeLE(_targetFrame, out);
         }
@@ -457,16 +434,16 @@ public final class HyperlinkRecord extends StandardRecord {
 
         if ((_linkOpts & HLINK_URL) != 0 && (_linkOpts & HLINK_UNC_PATH) == 0) {
             _moniker.write(out);
-            if (URL_MONIKER.equals(_moniker)) {
+            if(URL_MONIKER.equals(_moniker)){
                 if (_uninterpretedTail == null) {
-                    out.writeInt(_address.length() * 2);
+                    out.writeInt(_address.length()*2);
                     StringUtil.putUnicodeLE(_address, out);
                 } else {
-                    out.writeInt(_address.length() * 2 + TAIL_SIZE);
+                    out.writeInt(_address.length()*2 + TAIL_SIZE);
                     StringUtil.putUnicodeLE(_address, out);
                     writeTail(_uninterpretedTail, out);
                 }
-            } else if (FILE_MONIKER.equals(_moniker)) {
+            } else if (FILE_MONIKER.equals(_moniker)){
                 out.writeShort(_fileOpts);
                 out.writeInt(_shortFilename.length());
                 StringUtil.putCompressedUnicode(_shortFilename, out);
@@ -482,8 +459,8 @@ public final class HyperlinkRecord extends StandardRecord {
                 }
             }
         }
-        if ((_linkOpts & HLINK_PLACE) != 0) {
-            out.writeInt(_textMark.length());
+        if((_linkOpts & HLINK_PLACE) != 0){
+               out.writeInt(_textMark.length());
             StringUtil.putUnicodeLE(_textMark, out);
         }
     }
@@ -495,27 +472,27 @@ public final class HyperlinkRecord extends StandardRecord {
         size += ClassID.LENGTH;
         size += 4;  //label_opts
         size += 4;  //link_opts
-        if ((_linkOpts & HLINK_LABEL) != 0) {
+        if ((_linkOpts & HLINK_LABEL) != 0){
             size += 4;  //link length
-            size += _label.length() * 2;
+            size += _label.length()*2;
         }
-        if ((_linkOpts & HLINK_TARGET_FRAME) != 0) {
+        if ((_linkOpts & HLINK_TARGET_FRAME) != 0){
             size += 4;  // int nChars
-            size += _targetFrame.length() * 2;
+            size += _targetFrame.length()*2;
         }
         if ((_linkOpts & HLINK_URL) != 0 && (_linkOpts & HLINK_UNC_PATH) != 0) {
             size += 4;  // int nChars
-            size += _address.length() * 2;
+            size += _address.length()*2;
         }
         if ((_linkOpts & HLINK_URL) != 0 && (_linkOpts & HLINK_UNC_PATH) == 0) {
             size += ClassID.LENGTH;
-            if (URL_MONIKER.equals(_moniker)) {
+            if(URL_MONIKER.equals(_moniker)){
                 size += 4;  //address length
-                size += _address.length() * 2;
+                size += _address.length()*2;
                 if (_uninterpretedTail != null) {
                     size += TAIL_SIZE;
                 }
-            } else if (FILE_MONIKER.equals(_moniker)) {
+            } else if (FILE_MONIKER.equals(_moniker)){
                 size += 2;  //file_opts
                 size += 4;  //address length
                 size += _shortFilename.length();
@@ -528,9 +505,9 @@ public final class HyperlinkRecord extends StandardRecord {
 
             }
         }
-        if ((_linkOpts & HLINK_PLACE) != 0) {
+        if((_linkOpts & HLINK_PLACE) != 0){
             size += 4;  //address length
-            size += _textMark.length() * 2;
+            size += _textMark.length()*2;
         }
         return size;
     }
@@ -559,27 +536,25 @@ public final class HyperlinkRecord extends StandardRecord {
      */
     @SuppressWarnings("unused")
     public boolean isUrlLink() {
-        return (_linkOpts & HLINK_URL) > 0
-                && (_linkOpts & HLINK_ABS) > 0;
+       return (_linkOpts & HLINK_URL) > 0
+           && (_linkOpts & HLINK_ABS) > 0;
     }
-
     /**
      * Based on the link options, is this a file?
      *
      * @return true, if this is a file link
      */
     public boolean isFileLink() {
-        return (_linkOpts & HLINK_URL) > 0
-                && (_linkOpts & HLINK_ABS) == 0;
+       return (_linkOpts & HLINK_URL) > 0
+           && (_linkOpts & HLINK_ABS) == 0;
     }
-
     /**
      * Based on the link options, is this a document?
      *
      * @return true, if this is a docment link
      */
     public boolean isDocumentLink() {
-        return (_linkOpts & HLINK_PLACE) > 0;
+       return (_linkOpts & HLINK_PLACE) > 0;
     }
 
     /**
@@ -636,16 +611,16 @@ public final class HyperlinkRecord extends StandardRecord {
     @Override
     public Map<String, Supplier<?>> getGenericProperties() {
         return GenericRecordUtil.getGenericProperties(
-                "range", () -> _range,
-                "guid", this::getGuid,
-                "linkOpts", () -> getBitsAsString(this::getLinkOptions,
-                        new int[]{HLINK_URL, HLINK_ABS, HLINK_PLACE, HLINK_LABEL, HLINK_TARGET_FRAME, HLINK_UNC_PATH},
-                        new String[]{"URL", "ABS", "PLACE", "LABEL", "TARGET_FRAME", "UNC_PATH"}),
-                "label", this::getLabel,
-                "targetFrame", this::getTargetFrame,
-                "moniker", this::getMoniker,
-                "textMark", this::getTextMark,
-                "address", this::getAddress
+            "range", () -> _range,
+            "guid", this::getGuid,
+            "linkOpts", () -> getBitsAsString(this::getLinkOptions,
+                  new int[]{HLINK_URL,HLINK_ABS,HLINK_PLACE,HLINK_LABEL,HLINK_TARGET_FRAME,HLINK_UNC_PATH},
+                  new String[]{"URL","ABS","PLACE","LABEL","TARGET_FRAME","UNC_PATH"}),
+            "label", this::getLabel,
+            "targetFrame", this::getTargetFrame,
+            "moniker", this::getMoniker,
+            "textMark", this::getTextMark,
+            "address", this::getAddress
         );
     }
 }

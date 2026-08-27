@@ -15,6 +15,8 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula;
 
 import java.text.DecimalFormat;
@@ -53,6 +55,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.CellRangeAddress;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.CellReference;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LocaleUtil;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.StringUtil;
+
 
 /**
  * Abstracted and cached version of a Conditional Format rule for use with a
@@ -357,7 +360,7 @@ public class EvaluationConditionalFormatRule implements Comparable<EvaluationCon
 
         String f2 = rule.getFormula2();
         ValueEval eval2 = BlankEval.instance;
-        if (f2 != null && f2.length() > 0) {
+        if (f2 != null && !f2.isEmpty()) {
             eval2 = unwrapEval(workbookEvaluator.evaluate(f2, ConditionalFormattingEvaluator.getRef(cell), region));
         }
 

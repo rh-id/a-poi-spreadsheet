@@ -1,22 +1,4 @@
-/*
- *  ====================================================================
- *    Licensed to the Apache Software Foundation (ASF) under one or more
- *    contributor license agreements.  See the NOTICE file distributed with
- *    this work for additional information regarding copyright ownership.
- *    The ASF licenses this file to You under the Apache License, Version 2.0
- *    (the "License"); you may not use this file except in compliance with
- *    the License.  You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
- * ====================================================================
- */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.streaming;
 
@@ -47,6 +29,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.CodepointsUtil;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Removal;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.model.SharedStringsTable;
 
+
 /**
  * Initially copied from BigGridDemo "SpreadsheetWriter".
  * Unlike the original code which wrote the entire document,
@@ -54,6 +37,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.model.SharedStringsTable;
  * so that it was renamed to "SheetDataWriter"
  */
 public class SheetDataWriter implements Closeable {
+
     private final File _fd;
     protected final Writer _out;
     private int _rownum;
@@ -101,7 +85,7 @@ public class SheetDataWriter implements Closeable {
     /**
      * Create a writer for the sheet data.
      *
-     * @param fd the file to write to
+     * @param  fd the file to write to
      * @deprecated this method is due to be made non-public, probably protected
      */
     @Removal(version = "6.0.0")
@@ -124,7 +108,7 @@ public class SheetDataWriter implements Closeable {
      * as it is being written to disk.
      * The default behavior is to to pass the stream through unmodified.
      *
-     * @param fos the stream to decorate
+     * @param fos  the stream to decorate
      * @return a decorated stream
      * @throws IOException if decorating the stream fails
      * @see #decorateInputStream(FileInputStream)
@@ -168,7 +152,7 @@ public class SheetDataWriter implements Closeable {
      * as it is being read from disk.
      * The default behavior is to to pass the stream through unmodified.
      *
-     * @param fis the stream to decorate
+     * @param fis  the stream to decorate
      * @return a decorated stream
      * @throws IOException if decorating the stream fails
      * @see #decorateOutputStream(FileOutputStream)
@@ -198,6 +182,7 @@ public class SheetDataWriter implements Closeable {
      *
      * @param rownum 0-based row number
      * @param row    a row
+     *
      * @throws IOException If an I/O error occurs
      */
     public void writeRow(int rownum, SXSSFRow row) throws IOException {
@@ -232,10 +217,10 @@ public class SheetDataWriter implements Closeable {
         if (row.getOutlineLevel() != 0) {
             writeAttribute("outlineLevel", Integer.toString(row.getOutlineLevel()));
         }
-        if (row.getHidden() != null) {
+        if(row.getHidden() != null) {
             writeAttribute("hidden", row.getHidden() ? "1" : "0");
         }
-        if (row.getCollapsed() != null) {
+        if(row.getCollapsed() != null) {
             writeAttribute("collapsed", row.getCollapsed() ? "1" : "0");
         }
 
@@ -268,7 +253,7 @@ public class SheetDataWriter implements Closeable {
                 break;
             }
             case FORMULA: {
-                switch (cell.getCachedFormulaResultType()) {
+                switch(cell.getCachedFormulaResultType()) {
                     case NUMERIC:
                         writeAttribute("t", "n");
                         break;
@@ -296,7 +281,7 @@ public class SheetDataWriter implements Closeable {
                         break;
                     case STRING:
                         String value = cell.getStringCellValue();
-                        if (value != null && !value.isEmpty()) {
+                        if(value != null && !value.isEmpty()) {
                             _out.write("<v>");
                             outputEscapedString(value);
                             _out.write("</v>");
@@ -378,20 +363,20 @@ public class SheetDataWriter implements Closeable {
     }
 
     /**
-     * @return whether the string has leading / trailing spaces that
-     * need to be preserved with the xml:space=\"preserve\" attribute
+     * @return  whether the string has leading / trailing spaces that
+     *  need to be preserved with the xml:space=\"preserve\" attribute
      */
     boolean hasLeadingTrailingSpaces(String str) {
-        if (str != null && str.length() > 0) {
+        if (str != null && !str.isEmpty()) {
             char firstChar = str.charAt(0);
-            char lastChar = str.charAt(str.length() - 1);
-            return Character.isWhitespace(firstChar) || Character.isWhitespace(lastChar);
+            char lastChar  = str.charAt(str.length() - 1);
+            return Character.isWhitespace(firstChar) || Character.isWhitespace(lastChar) ;
         }
         return false;
     }
 
     protected void outputEscapedString(String s) throws IOException {
-        if (s == null || s.length() == 0) {
+        if (s == null || s.isEmpty()) {
             return;
         }
 
@@ -453,7 +438,6 @@ public class SheetDataWriter implements Closeable {
 
     /**
      * Deletes the temporary file that backed this sheet on disk.
-     *
      * @return true if the file was deleted, false if it wasn't.
      */
     boolean dispose() throws IOException {
@@ -461,7 +445,7 @@ public class SheetDataWriter implements Closeable {
         try {
             _out.close();
         } finally {
-            ret = _fd.delete();
+            ret = _fd == null || _fd.delete();
         }
         return ret;
     }

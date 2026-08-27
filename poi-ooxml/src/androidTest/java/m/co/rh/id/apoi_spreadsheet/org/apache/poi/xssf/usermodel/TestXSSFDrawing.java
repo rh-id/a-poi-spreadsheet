@@ -616,17 +616,17 @@ public class TestXSSFDrawing {
         Color clr = paras.get(0).getTextRuns().get(0).getFontColor();
         assertArrayEquals(
                 new int[]{255, 0, 0},
-                new int[]{(int) clr.red(), (int) clr.green(), (int) clr.blue()});
+                new int[]{Math.round(clr.red() * 255), Math.round(clr.green() * 255), Math.round(clr.blue() * 255)});
 
         clr = paras.get(1).getTextRuns().get(0).getFontColor();
         assertArrayEquals(
                 new int[]{0, 255, 0},
-                new int[]{(int) clr.red(), (int) clr.green(), (int) clr.blue()});
+                new int[]{Math.round(clr.red() * 255), Math.round(clr.green() * 255), Math.round(clr.blue() * 255)});
 
         clr = paras.get(2).getTextRuns().get(0).getFontColor();
         assertArrayEquals(
                 new int[]{0, 0, 255},
-                new int[]{(int) clr.red(), (int) clr.green(), (int) clr.blue()});
+                new int[]{Math.round(clr.red() * 255), Math.round(clr.green() * 255), Math.round(clr.blue() * 255)});
 
         checkRewrite(wb);
         wb.close();

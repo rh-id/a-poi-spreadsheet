@@ -14,8 +14,11 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel;
+
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTColor;
 
 import java.util.Arrays;
 
@@ -23,7 +26,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Color;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.ExtendedColor;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.IndexedColors;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTColor;
+
 
 /**
  * Represents a color in SpreadsheetML
@@ -34,7 +37,7 @@ public class XSSFColor extends ExtendedColor {
 
     /**
      * @param color The ooxml color object to use
-     * @param map The IndexedColorMap to use instead of the default one (can be null)
+     * @param map   The IndexedColorMap to use instead of the default one (can be null)
      * @return null if color is null, new instance otherwise
      */
     public static XSSFColor from(CTColor color, IndexedColorMap map) {
@@ -64,6 +67,7 @@ public class XSSFColor extends ExtendedColor {
 
     /**
      * new color with the given indexed color map
+     *
      * @param colorMap The IndexedColorMap to use instead of the default one (can be null)
      */
     public XSSFColor(IndexedColorMap colorMap) {
@@ -71,8 +75,12 @@ public class XSSFColor extends ExtendedColor {
     }
 
     /**
+     * @param rgb      The RGB-byte-values for the Color
+     * @param colorMap The IndexedColorMap to use instead of the default one (can be null)
+     */
+    /**
      * TEST ONLY
-     * @param clr awt Color
+     * @param clr android Color
      * @param map The IndexedColorMap to use instead of the default one (can be null)
      */
     public XSSFColor(android.graphics.Color clr, IndexedColorMap map) {
@@ -80,10 +88,6 @@ public class XSSFColor extends ExtendedColor {
         setColor(clr);
     }
 
-    /**
-     * @param rgb The RGB-byte-values for the Color
-     * @param colorMap The IndexedColorMap to use instead of the default one (can be null)
-     */
     public XSSFColor(byte[] rgb, IndexedColorMap colorMap) {
         this(CTColor.Factory.newInstance(), colorMap);
         ctColor.setRgb(rgb);
@@ -99,7 +103,7 @@ public class XSSFColor extends ExtendedColor {
 
     /**
      * @param indexedColor color index (Enum named for default colors)
-     * @param colorMap The IndexedColorMap to use instead of the default one
+     * @param colorMap     The IndexedColorMap to use instead of the default one
      */
     public XSSFColor(IndexedColors indexedColor, IndexedColorMap colorMap) {
         this(CTColor.Factory.newInstance(), colorMap);
@@ -164,8 +168,9 @@ public class XSSFColor extends ExtendedColor {
      */
     @Override
     public short getIndex() {
-        return (short)ctColor.getIndexed();
+        return (short) ctColor.getIndexed();
     }
+
     /**
      * @return Indexed ctColor value. Only used for backwards compatibility. References a ctColor in indexedColors.
      */
@@ -175,82 +180,84 @@ public class XSSFColor extends ExtendedColor {
 
     /**
      * Indexed ctColor value. Only used for backwards compatibility. References a ctColor in indexedColors.
+     *
      * @param indexed color index
      */
     public void setIndexed(int indexed) {
         ctColor.setIndexed(indexed);
     }
 
-   /**
-    * Standard Red Green Blue ctColor value (RGB).
-    * If there was an A (Alpha) value, it will be stripped.
-    */
-   @Override
-   public byte[] getRGB() {
-      byte[] rgb = getRGBOrARGB();
-      if(rgb == null) {
-          return null;
-      }
+    /**
+     * Standard Red Green Blue ctColor value (RGB).
+     * If there was an A (Alpha) value, it will be stripped.
+     */
+    @Override
+    public byte[] getRGB() {
+        byte[] rgb = getRGBOrARGB();
+        if (rgb == null) {
+            return null;
+        }
 
-       // Need to trim off the alpha
-       return rgb.length == 4 ? Arrays.copyOfRange(rgb, 1, 4) : rgb;
-   }
-
-   /**
-    * Standard Alpha Red Green Blue ctColor value (ARGB).
-    */
-   @Override
-   public byte[] getARGB() {
-      byte[] rgb = getRGBOrARGB();
-      if(rgb == null) {
-          return null;
-      }
-
-      if(rgb.length == 3) {
-         // Pad with the default Alpha
-         byte[] tmp = new byte[4];
-         tmp[0] = -1;
-         System.arraycopy(rgb, 0, tmp, 1, 3);
-         return tmp;
-      } else {
-         return rgb;
-      }
-   }
-
-   @Override
-   protected byte[] getStoredRGB() {
-       return ctColor.getRgb();
-   }
-
-   @Override
-   protected byte[] getIndexedRGB() {
-       if (isIndexed()) {
-           if (indexedColorMap != null) return indexedColorMap.getRGB(getIndex());
-           return DefaultIndexedColorMap.getDefaultRGB(getIndex());
-       }
-       return null;
-   }
+        // Need to trim off the alpha
+        return rgb.length == 4 ? Arrays.copyOfRange(rgb, 1, 4) : rgb;
+    }
 
     /**
      * Standard Alpha Red Green Blue ctColor value (ARGB).
      */
-   @Override
-    public void setRGB(byte[] rgb) {
-       ctColor.setRgb(rgb);
+    @Override
+    public byte[] getARGB() {
+        byte[] rgb = getRGBOrARGB();
+        if (rgb == null) {
+            return null;
+        }
+
+        if (rgb.length == 3) {
+            // Pad with the default Alpha
+            byte[] tmp = new byte[4];
+            tmp[0] = -1;
+            System.arraycopy(rgb, 0, tmp, 1, 3);
+            return tmp;
+        } else {
+            return rgb;
+        }
+    }
+
+    @Override
+    protected byte[] getStoredRGB() {
+        return ctColor.getRgb();
+    }
+
+    @Override
+    protected byte[] getIndexedRGB() {
+        if (isIndexed()) {
+            if (indexedColorMap != null) return indexedColorMap.getRGB(getIndex());
+            return DefaultIndexedColorMap.getDefaultRGB(getIndex());
+        }
+        return null;
     }
 
     /**
-     * Index into the {@code clrScheme} collection, referencing a particular {@code sysClr} or
+     * Standard Alpha Red Green Blue ctColor value (ARGB).
+     */
+    @Override
+    public void setRGB(byte[] rgb) {
+        ctColor.setRgb(rgb);
+    }
+
+    /**
+     * Index into the {@code cslrScheme} collection, referencing a particular {@code sysClr} or
      * {@code srgbClr} value expressed in the Theme part.
      */
-   @Override
-   public int getTheme() {
-      return (int)ctColor.getTheme();
+    @Override
+    public int getTheme() {
+        return (int) ctColor.getTheme();
     }
 
     /**
      * Index into the {@code clrScheme} collection, referencing a particular {@code sysClr} or
      * {@code srgbClr} value expressed in the Theme part.
+     *
      * @param theme index
      */
     public void setTheme(int theme) {
@@ -355,7 +362,7 @@ public class XSSFColor extends ExtendedColor {
      * @return the underlying XML bean
      */
     @Internal
-    public CTColor getCTColor(){
+    public CTColor getCTColor() {
         return ctColor;
     }
 
@@ -373,11 +380,11 @@ public class XSSFColor extends ExtendedColor {
         if (color != null && !(color instanceof XSSFColor)) {
             throw new IllegalArgumentException("Only XSSFColor objects are supported, but had " + color.getClass());
         }
-        return (XSSFColor)color;
+        return (XSSFColor) color;
     }
 
     @Override
-    public int hashCode(){
+    public int hashCode() {
         return ctColor.toString().hashCode();
     }
 
@@ -388,35 +395,39 @@ public class XSSFColor extends ExtendedColor {
         }
         return false;
     }
+
     private boolean sameARGB(XSSFColor other) {
         if (isRGB() == other.isRGB()) {
             return !isRGB() || Arrays.equals(getARGB(), other.getARGB());
         }
         return false;
     }
+
     private boolean sameTheme(XSSFColor other) {
         if (isThemed() == other.isThemed()) {
             return !isThemed() || getTheme() == other.getTheme();
         }
         return false;
     }
+
     private boolean sameTint(XSSFColor other) {
         if (hasTint() == other.hasTint()) {
             return !hasTint() || getTint() == other.getTint();
         }
         return false;
     }
+
     private boolean sameAuto(XSSFColor other) {
         return isAuto() == other.isAuto();
     }
 
     @Override
-    public boolean equals(Object o){
-        if(!(o instanceof XSSFColor)) {
+    public boolean equals(Object o) {
+        if (!(o instanceof XSSFColor)) {
             return false;
         }
 
-        XSSFColor other = (XSSFColor)o;
+        XSSFColor other = (XSSFColor) o;
 
         // Compare each field in ctColor.
         // Cannot compare ctColor's XML string representation because equivalent

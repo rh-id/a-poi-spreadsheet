@@ -15,6 +15,8 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula;
 
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.AreaEval;
@@ -23,6 +25,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.ValueEval;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ptg.AreaI;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ptg.AreaI.OffsetArea;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.CellReference;
+
 
 /**
  * Provides Lazy Evaluation to a 3D Reference
@@ -37,6 +40,14 @@ public final class LazyRefEval extends RefEvalBase {
 
     public ValueEval getInnerValueEval(int sheetIndex) {
         return _evaluator.getEvalForCell(sheetIndex, getRow(), getColumn());
+    }
+
+    /**
+     * @return the Eval of the first sheet associated with this LazyRefEval
+     * @since POI 5.4.0
+     */
+    public ValueEval getInnerValueEvalForFirstSheet() {
+        return _evaluator.getEvalForCell(_evaluator.getFirstSheetIndex(), getRow(), getColumn());
     }
 
     public AreaEval offset(int relFirstRowIx, int relLastRowIx, int relFirstColIx, int relLastColIx) {

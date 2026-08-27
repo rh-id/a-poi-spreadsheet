@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.util;
 
@@ -26,6 +27,8 @@ import java.util.Map;
 import java.util.Objects;
 
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Color;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Removal;
+
 
 
 /**
@@ -35,15 +38,15 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Color;
  * Each color has an index (for the standard palette in Excel (tm) ),
  * native (RGB) triplet and string triplet.  The string triplet is as the
  * color would be represented by Gnumeric.  Having (string) this here is a bit of a
- * collision of function between HSSF and the HSSFSerializer but I think its
+ * collision of function between HSSF and the HSSFSerializer, but I think it's
  * a reasonable one in this case.
  */
 public class HSSFColor implements Color {
 
-    private static Map<Integer, HSSFColor> indexHash;
-    private static Map<HSSFColorPredefined, HSSFColor> enumList;
+    private static Map<Integer,HSSFColor> indexHash;
+    private static Map<HSSFColorPredefined,HSSFColor> enumList;
 
-    private final android.graphics.Color color;
+    private final int rgb;
     private final int index;
     private final int index2;
 
@@ -53,65 +56,65 @@ public class HSSFColor implements Color {
      * @since POI 3.16 beta 2
      */
     public enum HSSFColorPredefined {
-        BLACK(0x08, -1, 0x000000),
-        BROWN(0x3C, -1, 0x993300),
-        OLIVE_GREEN(0x3B, -1, 0x333300),
-        DARK_GREEN(0x3A, -1, 0x003300),
-        DARK_TEAL(0x38, -1, 0x003366),
-        DARK_BLUE(0x12, 0x20, 0x000080),
-        INDIGO(0x3E, -1, 0x333399),
-        GREY_80_PERCENT(0x3F, -1, 0x333333),
-        ORANGE(0x35, -1, 0xFF6600),
-        DARK_YELLOW(0x13, -1, 0x808000),
-        GREEN(0x11, -1, 0x008000),
-        TEAL(0x15, 0x26, 0x008080),
-        BLUE(0x0C, 0x27, 0x0000FF),
-        BLUE_GREY(0x36, -1, 0x666699),
-        GREY_50_PERCENT(0x17, -1, 0x808080),
-        RED(0x0A, -1, 0xFF0000),
-        LIGHT_ORANGE(0x34, -1, 0xFF9900),
-        LIME(0x32, -1, 0x99CC00),
-        SEA_GREEN(0x39, -1, 0x339966),
-        AQUA(0x31, -1, 0x33CCCC),
-        LIGHT_BLUE(0x30, -1, 0x3366FF),
-        VIOLET(0x14, 0x24, 0x800080),
-        GREY_40_PERCENT(0x37, -1, 0x969696),
-        PINK(0x0E, 0x21, 0xFF00FF),
-        GOLD(0x33, -1, 0xFFCC00),
-        YELLOW(0x0D, 0x22, 0xFFFF00),
-        BRIGHT_GREEN(0x0B, -1, 0x00FF00),
-        TURQUOISE(0x0F, 0x23, 0x00FFFF),
-        DARK_RED(0x10, 0x25, 0x800000),
-        SKY_BLUE(0x28, -1, 0x00CCFF),
-        PLUM(0x3D, 0x19, 0x993366),
-        GREY_25_PERCENT(0x16, -1, 0xC0C0C0),
-        ROSE(0x2D, -1, 0xFF99CC),
-        LIGHT_YELLOW(0x2B, -1, 0xFFFF99),
-        LIGHT_GREEN(0x2A, -1, 0xCCFFCC),
-        LIGHT_TURQUOISE(0x29, 0x1B, 0xCCFFFF),
-        PALE_BLUE(0x2C, -1, 0x99CCFF),
-        LAVENDER(0x2E, -1, 0xCC99FF),
-        WHITE(0x09, -1, 0xFFFFFF),
-        CORNFLOWER_BLUE(0x18, -1, 0x9999FF),
-        LEMON_CHIFFON(0x1A, -1, 0xFFFFCC),
-        MAROON(0x19, -1, 0x7F0000),
-        ORCHID(0x1C, -1, 0x660066),
-        CORAL(0x1D, -1, 0xFF8080),
-        ROYAL_BLUE(0x1E, -1, 0x0066CC),
-        LIGHT_CORNFLOWER_BLUE(0x1F, -1, 0xCCCCFF),
-        TAN(0x2F, -1, 0xFFCC99),
+        BLACK                (0x08,   -1, 0x000000),
+        BROWN                (0x3C,   -1, 0x993300),
+        OLIVE_GREEN          (0x3B,   -1, 0x333300),
+        DARK_GREEN           (0x3A,   -1, 0x003300),
+        DARK_TEAL            (0x38,   -1, 0x003366),
+        DARK_BLUE            (0x12, 0x20, 0x000080),
+        INDIGO               (0x3E,   -1, 0x333399),
+        GREY_80_PERCENT      (0x3F,   -1, 0x333333),
+        ORANGE               (0x35,   -1, 0xFF6600),
+        DARK_YELLOW          (0x13,   -1, 0x808000),
+        GREEN                (0x11,   -1, 0x008000),
+        TEAL                 (0x15, 0x26, 0x008080),
+        BLUE                 (0x0C, 0x27, 0x0000FF),
+        BLUE_GREY            (0x36,   -1, 0x666699),
+        GREY_50_PERCENT      (0x17,   -1, 0x808080),
+        RED                  (0x0A,   -1, 0xFF0000),
+        LIGHT_ORANGE         (0x34,   -1, 0xFF9900),
+        LIME                 (0x32,   -1, 0x99CC00),
+        SEA_GREEN            (0x39,   -1, 0x339966),
+        AQUA                 (0x31,   -1, 0x33CCCC),
+        LIGHT_BLUE           (0x30,   -1, 0x3366FF),
+        VIOLET               (0x14, 0x24, 0x800080),
+        GREY_40_PERCENT      (0x37,   -1, 0x969696),
+        PINK                 (0x0E, 0x21, 0xFF00FF),
+        GOLD                 (0x33,   -1, 0xFFCC00),
+        YELLOW               (0x0D, 0x22, 0xFFFF00),
+        BRIGHT_GREEN         (0x0B,   -1, 0x00FF00),
+        TURQUOISE            (0x0F, 0x23, 0x00FFFF),
+        DARK_RED             (0x10, 0x25, 0x800000),
+        SKY_BLUE             (0x28,   -1, 0x00CCFF),
+        PLUM                 (0x3D, 0x19, 0x993366),
+        GREY_25_PERCENT      (0x16,   -1, 0xC0C0C0),
+        ROSE                 (0x2D,   -1, 0xFF99CC),
+        LIGHT_YELLOW         (0x2B,   -1, 0xFFFF99),
+        LIGHT_GREEN          (0x2A,   -1, 0xCCFFCC),
+        LIGHT_TURQUOISE      (0x29, 0x1B, 0xCCFFFF),
+        PALE_BLUE            (0x2C,   -1, 0x99CCFF),
+        LAVENDER             (0x2E,   -1, 0xCC99FF),
+        WHITE                (0x09,   -1, 0xFFFFFF),
+        CORNFLOWER_BLUE      (0x18,   -1, 0x9999FF),
+        LEMON_CHIFFON        (0x1A,   -1, 0xFFFFCC),
+        MAROON               (0x19,   -1, 0x7F0000),
+        ORCHID               (0x1C,   -1, 0x660066),
+        CORAL                (0x1D,   -1, 0xFF8080),
+        ROYAL_BLUE           (0x1E,   -1, 0x0066CC),
+        LIGHT_CORNFLOWER_BLUE(0x1F,   -1, 0xCCCCFF),
+        TAN                  (0x2F,   -1, 0xFFCC99),
 
         /**
          * Special Default/Normal/Automatic color.<p>
          * <i>Note:</i> This class is NOT in the default Map returned by HSSFColor.
          * The index is a special case which is interpreted in the various setXXXColor calls.
          */
-        AUTOMATIC(0x40, -1, 0x000000);
+        AUTOMATIC            (0x40,   -1, 0x000000);
 
         private final HSSFColor color;
 
         HSSFColorPredefined(int index, int index2, int rgb) {
-            this.color = new HSSFColor(index, index2, android.graphics.Color.valueOf(rgb));
+            this.color = new HSSFColor(index, index2, rgb);
         }
 
         /**
@@ -131,7 +134,7 @@ public class HSSFColor implements Color {
         /**
          * @see HSSFColor#getTriplet()
          */
-        public short[] getTriplet() {
+        public short [] getTriplet() {
             return color.getTriplet();
         }
 
@@ -146,23 +149,48 @@ public class HSSFColor implements Color {
          * @return (a copy of) the HSSFColor assigned to the enum
          */
         public HSSFColor getColor() {
-            return new HSSFColor(getIndex(), getIndex2(), color.color);
+            return new HSSFColor(getIndex(), getIndex2(), color.rgb);
         }
     }
 
 
-    /**
-     * Creates a new instance of HSSFColor
-     */
+    /** Creates a new instance of HSSFColor */
     public HSSFColor() {
         // automatic index
-        this(0x40, -1, android.graphics.Color.valueOf(android.graphics.Color.BLACK));
+        this(0x40, -1, 0x000000);
     }
 
+    /** Constructs new instance of {@code HSSFColor} by
+     * extracting RGB from {@link android.graphics.Color}. The code is equivalent
+     * to calling:
+     * <pre>
+     * new HSSFColor(index, index2, color.toArgb());
+     * </pre>
+     * or specifying {@link #HSSFColor(int, int, int) RGB directly}.
+     *
+     * @param index Index to the standard color palette
+     * @param index2 Index to the alternate color palette
+     * @param color color to extract RGB from
+     * @deprecated use {@link #HSSFColor(int, int, int)} instead
+     */
+    @Removal(version = "7.0.0")
     public HSSFColor(int index, int index2, android.graphics.Color color) {
+        this(index, index2, color.toArgb());
+    }
+
+    /** Constructs new instance of {@code HSSFColor} by
+     * specifying RGB as an {@code int} value. Given {@code blue}, {@code green} and
+     * {@code blue} being byte values between {@code 0x00 to 0xFF}, then
+     * {@code rgb = blue + (green >> 8) + (red >> 16)}.
+     * @param index Index to the standard color palette
+     * @param index2 Index to the alternate color palette
+     * @param rgb combined value of RGB
+     * @since POI 5.5.0
+     */
+    public HSSFColor(int index, int index2, int rgb) {
         this.index = index;
         this.index2 = index2;
-        this.color = color;
+        this.rgb = 0xFF000000 | rgb;
     }
 
     /**
@@ -171,34 +199,33 @@ public class HSSFColor implements Color {
      *
      * @return a Map containing all colours keyed by {@code Integer} excel-style palette indexes
      */
-    public static synchronized Map<Integer, HSSFColor> getIndexHash() {
-        if (indexHash == null) {
-            indexHash = Collections.unmodifiableMap(createColorsByIndexMap());
+    public static synchronized Map<Integer,HSSFColor> getIndexHash() {
+        if(indexHash == null) {
+           indexHash = Collections.unmodifiableMap( createColorsByIndexMap() );
         }
 
         return indexHash;
     }
-
     /**
      * This function returns all the Colours, stored in a Map that
-     * can be edited. No caching is performed. If you don't need to edit
-     * the table, then call {@link #getIndexHash()} which returns a
-     * statically cached immutable map of colours.
+     *  can be edited. No caching is performed. If you don't need to edit
+     *  the table, then call {@link #getIndexHash()} which returns a
+     *  statically cached immutable map of colours.
      */
-    public static Map<Integer, HSSFColor> getMutableIndexHash() {
-        return createColorsByIndexMap();
+    public static Map<Integer,HSSFColor> getMutableIndexHash() {
+       return createColorsByIndexMap();
     }
 
-    private static Map<Integer, HSSFColor> createColorsByIndexMap() {
-        Map<HSSFColorPredefined, HSSFColor> eList = mapEnumToColorClass();
-        Map<Integer, HSSFColor> result = new HashMap<>(eList.size() * 3 / 2);
+    private static Map<Integer,HSSFColor> createColorsByIndexMap() {
+        Map<HSSFColorPredefined,HSSFColor> eList = mapEnumToColorClass();
+        Map<Integer,HSSFColor> result = new HashMap<>(eList.size() * 3 / 2);
 
-        for (Map.Entry<HSSFColorPredefined, HSSFColor> colorRef : eList.entrySet()) {
-            Integer index1 = Integer.valueOf(colorRef.getKey().getIndex());
+        for (Map.Entry<HSSFColorPredefined,HSSFColor> colorRef : eList.entrySet()) {
+            Integer index1 = (int) colorRef.getKey().getIndex();
             if (!result.containsKey(index1)) {
                 result.put(index1, colorRef.getValue());
             }
-            Integer index2 = Integer.valueOf(colorRef.getKey().getIndex2());
+            Integer index2 = (int) colorRef.getKey().getIndex2();
             if (index2 != -1 && !result.containsKey(index2)) {
                 result.put(index2, colorRef.getValue());
             }
@@ -207,7 +234,7 @@ public class HSSFColor implements Color {
     }
 
     /**
-     * this function returns all colors in a hastable.  It's not implemented as a
+     * This function returns all colors in a map.  It's not implemented as a
      * static member/statically initialized because that would be dirty in a
      * server environment as it is intended.  This means you'll eat the time
      * it takes to create it once per request but you will not hold onto it
@@ -215,15 +242,16 @@ public class HSSFColor implements Color {
      *
      * @return a Map containing all colors keyed by String gnumeric-like triplets
      */
-    public static Map<String, HSSFColor> getTripletHash() {
+    public static Map<String,HSSFColor> getTripletHash()
+    {
         return createColorsByHexStringMap();
     }
 
-    private static Map<String, HSSFColor> createColorsByHexStringMap() {
-        Map<HSSFColorPredefined, HSSFColor> eList = mapEnumToColorClass();
-        Map<String, HSSFColor> result = new HashMap<>(eList.size());
+    private static Map<String,HSSFColor> createColorsByHexStringMap() {
+        Map<HSSFColorPredefined,HSSFColor> eList = mapEnumToColorClass();
+        Map<String,HSSFColor> result = new HashMap<>(eList.size());
 
-        for (Map.Entry<HSSFColorPredefined, HSSFColor> colorRef : eList.entrySet()) {
+        for (Map.Entry<HSSFColorPredefined,HSSFColor> colorRef : eList.entrySet()) {
             String hexString = colorRef.getKey().getHexString();
             if (!result.containsKey(hexString)) {
                 result.put(hexString, colorRef.getValue());
@@ -235,10 +263,10 @@ public class HSSFColor implements Color {
     /**
      * Maps the Enums to the HSSFColor, in cases of user code evaluating the classname
      */
-    private static synchronized Map<HSSFColorPredefined, HSSFColor> mapEnumToColorClass() {
+    private static synchronized Map<HSSFColorPredefined,HSSFColor> mapEnumToColorClass() {
         if (enumList == null) {
             enumList = new EnumMap<>(HSSFColorPredefined.class);
-            // AUTOMATIC is not add to list
+            // AUTOMATIC is not added to list
             addHSSFColorPredefined(HSSFColorPredefined.BLACK);
             addHSSFColorPredefined(HSSFColorPredefined.BROWN);
             addHSSFColorPredefined(HSSFColorPredefined.OLIVE_GREEN);
@@ -296,44 +324,50 @@ public class HSSFColor implements Color {
 
     /**
      * returns color standard palette index
-     *
      * @return index to the standard palette
      */
 
     public short getIndex() {
-        return (short) index;
+        return (short)index;
     }
 
     /**
      * returns alternative color standard palette index
-     *
      * @return alternative index to the standard palette, if -1 this index is not defined
      */
 
     public short getIndex2() {
-        return (short) index2;
+        return (short)index2;
     }
 
     /**
      * returns  RGB triplet (0, 0, 0)
-     *
-     * @return triplet representation like that in Excel
+     * @return  triplet representation like that in Excel
      */
 
-    public short[] getTriplet() {
-        return new short[]{(short) color.red(), (short) color.green(), (short) color.blue()};
+    public short [] getTriplet() {
+        return new short[] { getRed(), getGreen(), getBlue() };
     }
 
     /**
      * returns colon-delimited hex string "0:0:0"
-     *
      * @return a hex string exactly like a gnumeric triplet
      */
 
     public String getHexString() {
-        return (Integer.toHexString(((int) color.red()) * 0x101) + ":" +
-                Integer.toHexString(((int) color.green()) * 0x101) + ":" +
-                Integer.toHexString(((int) color.blue()) * 0x101)).toUpperCase(Locale.ROOT);
+        return (Integer.toHexString(getRed()*0x101) + ":" +
+               Integer.toHexString(getGreen()*0x101) + ":" +
+               Integer.toHexString(getBlue()*0x101)).toUpperCase(Locale.ROOT);
+    }
+
+    private short getBlue() {
+        return (short) (rgb & 0xFF);
+    }
+    private short getGreen() {
+        return (short) ((rgb >> 8) & 0xFF);
+    }
+    private short getRed() {
+        return (short) ((rgb >> 16) & 0xFF);
     }
 
     @Override
@@ -345,12 +379,12 @@ public class HSSFColor implements Color {
 
         if (index != hssfColor.index) return false;
         if (index2 != hssfColor.index2) return false;
-        return Objects.equals(color, hssfColor.color);
+        return Objects.equals(rgb, hssfColor.rgb);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(color, index, index2);
+        return Objects.hash(rgb, index, index2);
     }
 
     /**
@@ -367,6 +401,6 @@ public class HSSFColor implements Color {
         if (color != null && !(color instanceof HSSFColor)) {
             throw new IllegalArgumentException("Only HSSFColor objects are supported, but had " + color.getClass());
         }
-        return (HSSFColor) color;
+        return (HSSFColor)color;
     }
 }

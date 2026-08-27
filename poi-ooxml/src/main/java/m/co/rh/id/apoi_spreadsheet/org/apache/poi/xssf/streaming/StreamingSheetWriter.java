@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.streaming;
 
@@ -30,11 +31,12 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Beta;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Removal;
+
 
 /**
  * Unlike SheetDataWriter, this writer does not create a temporary file, it writes data directly
  * to the provided OutputStream.
- *
  * @since 5.0.0
  */
 @Beta
@@ -42,6 +44,11 @@ public class StreamingSheetWriter extends SheetDataWriter {
     private static final String TAG = "StreamingSheetWriter";
     private boolean closed = false;
 
+    /**
+     * @throws IOException always thrown, use the constructor with an OutputStream
+     * @deprecated use {@link #StreamingSheetWriter(OutputStream)}
+     */
+    @Removal(version = "6.0.0")
     public StreamingSheetWriter() throws IOException {
         throw new IllegalStateException("StreamingSheetWriter requires OutputStream");
     }
@@ -51,11 +58,17 @@ public class StreamingSheetWriter extends SheetDataWriter {
         Log.d(TAG, "Preparing SXSSF sheet writer");
     }
 
+    /**
+     * @throws IllegalStateException always thrown - not supported
+     */
     @Override
     public File createTempFile() throws IOException {
         throw new IllegalStateException("Not supported with StreamingSheetWriter");
     }
 
+    /**
+     * @throws IllegalStateException always thrown - not supported
+     */
     @Override
     public Writer createWriter(File fd) throws IOException {
         throw new IllegalStateException("Not supported with StreamingSheetWriter");
@@ -77,6 +90,9 @@ public class StreamingSheetWriter extends SheetDataWriter {
         }
     }
 
+    /**
+     * @throws IllegalStateException always thrown - not supported
+     */
     @Override
     public InputStream getWorksheetXMLInputStream() throws IOException {
         throw new IllegalStateException("Not supported with StreamingSheetWriter");

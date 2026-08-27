@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xddf.usermodel.chart;
 
@@ -39,17 +40,17 @@ import java.util.Map;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.CellReference;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Beta;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Removal;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xddf.usermodel.XDDFFillProperties;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xddf.usermodel.XDDFLineProperties;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xddf.usermodel.XDDFShapeProperties;
+
 
 /**
  * Base of all XDDF Chart Data
  */
 @Beta
 public abstract class XDDFChartData {
-    private static final String TAG = "XDDFChartData";
+    private static final String LOGGER_TAG = "XDDFChartData";
 
     protected XDDFChart parent;
     protected List<Series> series;
@@ -62,7 +63,7 @@ public abstract class XDDFChartData {
     }
 
     protected void defineAxes(CTUnsignedInt[] axes, Map<Long, XDDFChartAxis> categories,
-                              Map<Long, XDDFValueAxis> values) {
+            Map<Long, XDDFValueAxis> values) {
         List<XDDFValueAxis> list = new ArrayList<>(axes.length);
         for (CTUnsignedInt axe : axes) {
             Long axisId = axe.getVal();
@@ -85,27 +86,6 @@ public abstract class XDDFChartData {
 
     public List<XDDFValueAxis> getValueAxes() {
         return valueAxes;
-    }
-
-    /**
-     * Calls to {@code getSeries().add(series)} or to {@code getSeries().remove(series)}
-     * may corrupt the workbook.
-     *
-     * <p>
-     * Instead, use the following methods:
-     * <ul>
-     * <li>{@link #getSeriesCount()}</li>
-     * <li>{@link #getSeries(int)}</li>
-     * <li>{@link #addSeries(XDDFDataSource, XDDFNumericalDataSource)}</li>
-     * <li>{@link #removeSeries(int)}</li>
-     * </ul>
-     *
-     * @deprecated since POI 4.1.1
-     */
-    @Deprecated
-    @Removal(version = "5.3")
-    public List<Series> getSeries() {
-        return Collections.unmodifiableList(series);
     }
 
     public final int getSeriesCount() {
@@ -141,16 +121,14 @@ public abstract class XDDFChartData {
 
     public abstract void setVaryColors(Boolean varyColors);
 
-    public abstract Series addSeries(XDDFDataSource<?> category,
-                                     XDDFNumericalDataSource<? extends Number> values);
+    public abstract XDDFChartData.Series addSeries(XDDFDataSource<?> category,
+            XDDFNumericalDataSource<? extends Number> values);
 
     public abstract static class Series {
         protected abstract CTSerTx getSeriesText();
 
         public abstract void setShowLeaderLines(boolean showLeaderLines);
-
         public abstract XDDFShapeProperties getShapeProperties();
-
         public abstract void setShapeProperties(XDDFShapeProperties properties);
 
         protected XDDFDataSource<?> categoryData;
@@ -174,7 +152,8 @@ public abstract class XDDFChartData {
             if (categoryData != null && values != null) {
                 int numOfPoints = category.getPointCount();
                 if (numOfPoints != values.getPointCount()) {
-                    Log.w(TAG, String.format("Category and values must have the same point count, but had %d categories and %d values.", numOfPoints, values.getPointCount()));
+                    Log.w(LOGGER_TAG, String.format("Category and values must have the same point count, but had %s" +
+                             " categories and %s values.", numOfPoints, values.getPointCount()));
                 }
             }
             this.categoryData = category;
@@ -183,7 +162,6 @@ public abstract class XDDFChartData {
 
         /**
          * Set the Chart Series title.
-         *
          * @param title chart series title
          * @since POI 5.2.3
          */
@@ -193,8 +171,7 @@ public abstract class XDDFChartData {
 
         /**
          * Set the Chart Series title.
-         *
-         * @param title    chart series title
+         * @param title chart series title
          * @param titleRef cell reference
          */
         public void setTitle(String title, CellReference titleRef) {
@@ -249,7 +226,8 @@ public abstract class XDDFChartData {
         }
 
         /**
-         * @param fill fill property for the shape representing the series.
+         * @param fill
+         *      fill property for the shape representing the series.
          * @since POI 4.1.1
          */
         public void setFillProperties(XDDFFillProperties fill) {
@@ -262,7 +240,8 @@ public abstract class XDDFChartData {
         }
 
         /**
-         * @param line line property for the shape representing the series.
+         * @param line
+         *      line property for the shape representing the series.
          * @since POI 4.1.1
          */
         public void setLineProperties(XDDFLineProperties line) {
@@ -278,7 +257,8 @@ public abstract class XDDFChartData {
          * If a data point definition with the given {@code index} exists, then remove it.
          * Otherwise do nothing.
          *
-         * @param index data point index.
+         * @param index
+         *      data point index.
          * @since POI 5.1.0
          */
         public void clearDataPoint(long index) {
@@ -295,8 +275,10 @@ public abstract class XDDFChartData {
          * If a data point definition with the given {@code index} exists, then return it.
          * Otherwise create a new data point definition and return it.
          *
-         * @param index data point index.
-         * @return the data point with the given {@code index}.
+         * @param index
+         *      data point index.
+         * @return
+         *      the data point with the given {@code index}.
          * @since POI 5.1.0
          */
         public XDDFDataPoint getDataPoint(long index) {

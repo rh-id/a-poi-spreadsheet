@@ -95,6 +95,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.HSSFTestDataSamples;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.POIXMLDocumentPart;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.POIXMLDocumentPart.RelationPart;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.ReferenceRelationship;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.POIXMLException;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.POIXMLProperties;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.util.DocumentHelper;
@@ -274,18 +275,18 @@ public final class TestXSSFBugs extends BaseTestBugzillaIssues {
             assertEquals(1, wb1.getNumberOfSheets());
             XSSFSheet sh = wb1.getSheetAt(0);
             XSSFDrawing drawing = sh.createDrawingPatriarch();
-            List<RelationPart> rels = drawing.getRelationParts();
-            assertEquals(1, rels.size());
-            assertEquals("Sheet1!A1", rels.get(0).getRelationship().getTargetURI().getFragment());
+            List<ReferenceRelationship> referenceRelationships = drawing.getReferenceRelationships();
+            assertEquals(1, referenceRelationships.size());
+            assertEquals("#Sheet1!A1", referenceRelationships.get(0).getUri().toString());
 
             // And again, just to be sure
             try (XSSFWorkbook wb2 = writeOutAndReadBack(wb1)) {
                 assertEquals(1, wb2.getNumberOfSheets());
                 sh = wb2.getSheetAt(0);
                 drawing = sh.createDrawingPatriarch();
-                rels = drawing.getRelationParts();
-                assertEquals(1, rels.size());
-                assertEquals("Sheet1!A1", rels.get(0).getRelationship().getTargetURI().getFragment());
+                referenceRelationships = drawing.getReferenceRelationships();
+                assertEquals(1, referenceRelationships.size());
+                assertEquals("#Sheet1!A1", referenceRelationships.get(0).getUri().toString());
             }
         }
     }
@@ -1812,7 +1813,7 @@ public final class TestXSSFBugs extends BaseTestBugzillaIssues {
     @Test
     public void testBug56688() throws IOException {
         List<Object[]> data = new ArrayList<>();
-        data.add(new Object[]{"56688_1.xlsx", "-1.0"});
+        data.add(new Object[]{"56688_1.xlsx", "0.0"});
         data.add(new Object[]{"56688_2.xlsx", "#VALUE!"});
         data.add(new Object[]{"56688_3.xlsx", "#VALUE!"});
         data.add(new Object[]{"56688_4.xlsx", "date"});
@@ -1937,7 +1938,7 @@ public final class TestXSSFBugs extends BaseTestBugzillaIssues {
     @Test
     public void test54764WithSAXHelper() throws Exception {
         File testFile = XSSFTestDataSamples.getSampleFile("54764.xlsx");
-        try (ZipFile zip = new ZipFile(testFile)) {
+        try (ZipFile zip = ZipFile.builder().setFile(testFile).get()) {
             ZipArchiveEntry ze = zip.getEntry("xl/sharedStrings.xml");
             XMLReader reader = XMLHelper.newXMLReader();
             SAXParseException e = assertThrows(SAXParseException.class,
@@ -1952,7 +1953,7 @@ public final class TestXSSFBugs extends BaseTestBugzillaIssues {
     @Test
     public void test54764WithDocumentHelper() throws Exception {
         File testFile = XSSFTestDataSamples.getSampleFile("54764.xlsx");
-        try (ZipFile zip = new ZipFile(testFile)) {
+        try (ZipFile zip = ZipFile.builder().setFile(testFile).get()) {
             ZipArchiveEntry ze = zip.getEntry("xl/sharedStrings.xml");
             SAXParseException e = assertThrows(SAXParseException.class,
                     () -> DocumentHelper.readDocument(zip.getInputStream(ze)));
@@ -3409,7 +3410,7 @@ public final class TestXSSFBugs extends BaseTestBugzillaIssues {
                 }
             Log.i(TAG, String.valueOf(between(start, now())));
 
-            assertTrue("Had start: " + start + ", now: " + now() +
+            assertTrue("Expected to have less than 25s duration for test, but had start: " + start + ", now: " + now() +
                             ", diff: " + Duration.between(start, now()).getSeconds(),
                     between(start, now()).getSeconds() < 40);
         }
@@ -3935,16 +3936,58 @@ public final class TestXSSFBugs extends BaseTestBugzillaIssues {
                 if (row != null) {
                     XSSFCell cellSymbol = row.getCell(0);
                     if (cellSymbol != null) {
-                        XSSFComment comment = cellSymbol.getCellComment();
+                        cellSymbol.getCellComment();
                     }
                 }
             }
         }
     }
 
+    @Test
+    public void testBug69769() throws Exception {
+        final int expectedCount = 3;
+        try (XSSFWorkbook wb = openSampleWorkbook("bug69769.xlsx")) {
+            SharedStringsTable sst = wb.getSharedStringSource();
+            assertNotNull(sst);
+            assertEquals(expectedCount, sst.getCount());
+            for (int i = 0; i < expectedCount; i++) {
+                assertNotNull(sst.getItemAt(i));
+            }
+            XSSFSheet ws = wb.getSheetAt(0);
+            int nRowCount = ws.getLastRowNum();
+            DataFormatter df = new DataFormatter();
+            for (int r = 0; r <= nRowCount; r++) {
+                XSSFRow row = ws.getRow(r);
+                if (row != null) {
+                    for (Cell cell : row) {
+                        String cellValue = df.formatCellValue(cell);
+                        assertNotNull("Cell value should not be null", cellValue);
+                        if (cell.getRowIndex() == 1 && cell.getColumnIndex() == 1) {
+                            assertEquals("Mustermann", cellValue);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    public void testBug69812() throws Exception {
+        try (XSSFWorkbook wb = openSampleWorkbook("bug69812.xlsx")) {
+            XSSFSheet sheet = wb.getSheetAt(0);
+            XSSFRow row = sheet.getRow(0);
+            XSSFCell cellA1 = row.getCell(0);
+            DataFormatter dataFormatter = new DataFormatter();
+            String cellValue = dataFormatter.formatCellValue(cellA1);
+            // https://bz.apache.org/bugzilla/show_bug.cgi?id=69812: user says this should be "25,386"
+            assertEquals("25,396", cellValue);
+            assertEquals("#,##0,,", cellA1.getCellStyle().getDataFormatString());
+        }
+    }
+
     private static void readByCommonsCompress(File temp_excel_poi) throws IOException {
         /* read by commons-compress*/
-        try (ZipFile zipFile = new ZipFile(temp_excel_poi)) {
+        try (ZipFile zipFile = ZipFile.builder().setFile(temp_excel_poi).get()) {
             ZipArchiveEntry entry = zipFile.getEntry("xl/workbook.xml");
             InputStream inputStream = zipFile.getInputStream(entry);
 

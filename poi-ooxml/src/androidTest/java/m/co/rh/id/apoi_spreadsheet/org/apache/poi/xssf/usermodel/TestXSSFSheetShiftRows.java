@@ -38,6 +38,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Row;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Sheet;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Workbook;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.CellAddress;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.CellRangeAddress;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.CellUtil;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.XSSFITestDataProvider;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.XSSFTestDataSamples;
@@ -547,5 +548,33 @@ public final class TestXSSFSheetShiftRows extends BaseTestSheetShiftRows {
         }*/
 
         wb.close();
+    }
+
+    @Test
+    public void testBug69154() throws Exception {
+        // this does not appear to work for HSSF but let's get it working for XSSF anyway
+        try (Workbook wb = _testDataProvider.createWorkbook()) {
+            Sheet sheet = wb.createSheet();
+            for (int i = 0; i < 6; i++) {
+                Row row = sheet.createRow(i);
+                for (int j = 0; j < 6; j++) {
+                    String value = new CellAddress(i, j).formatAsString();
+                    row.createCell(j).setCellValue(value);
+                }
+            }
+            final int firstCol = 1;
+            final int secondCol = firstCol + 1;
+            final int thirdCol = secondCol + 1;
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, firstCol, secondCol));
+            sheet.addMergedRegion(new CellRangeAddress(1, 2, firstCol, firstCol));
+            sheet.addMergedRegion(new CellRangeAddress(3, 3, secondCol, thirdCol));
+            assertEquals(3, sheet.getNumMergedRegions());
+            sheet.shiftColumns(2, 5, -1);
+            // only the 3rd merged region should remain
+            assertEquals(1, sheet.getNumMergedRegions());
+            CellRangeAddress mr = sheet.getMergedRegion(0);
+            CellRangeAddress expectedMR = new CellRangeAddress(3, 3, secondCol - 1, thirdCol - 1);
+            assertEquals(expectedMR, mr);
+        }
     }
 }

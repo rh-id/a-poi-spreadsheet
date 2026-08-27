@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.extractor;
 
@@ -39,7 +40,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.xpath.XPath;
@@ -58,6 +58,9 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFTable;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFTableColumn;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.helpers.XSSFSingleXmlCell;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.helpers.XSSFXmlColumnPr;
+
+
+
 
 /**
  * Imports data from an external XML to an XLSX according to one of the mappings
@@ -82,9 +85,9 @@ public class XSSFImportFromXML {
      * Imports an XML into the XLSX using the Custom XML mapping defined
      *
      * @param xmlInputString the XML to import
-     * @throws SAXException             if error occurs during XML parsing
+     * @throws SAXException if error occurs during XML parsing
      * @throws XPathExpressionException if error occurs during XML navigation
-     * @throws IOException              if there are problems reading the input string
+     * @throws IOException  if there are problems reading the input string
      */
     public void importFromXML(String xmlInputString) throws SAXException, XPathExpressionException, IOException {
 
@@ -113,8 +116,7 @@ public class XSSFImportFromXML {
                 String textContent = result.getTextContent();
                 Log.d(TAG, String.format("Extracting with xpath %s : value is '%s'", xpathString, textContent));
                 XSSFCell cell = singleXmlCell.getReferencedCell();
-                Log.d(TAG, String.format("Setting '%s' to cell %d-%d in sheet %s", textContent,
-                        cell.getColumnIndex(), cell.getRowIndex(), cell.getSheet().getSheetName()));
+                Log.d(TAG, String.format("Setting '%s' to cell %s-%s in sheet %s", textContent, cell.getColumnIndex(), cell.getRowIndex(), cell.getSheet().getSheetName()));
                 setCellValue(textContent, cell, xmlDataType);
             }
         }
@@ -138,7 +140,7 @@ public class XSSFImportFromXML {
                 for (XSSFTableColumn tableColumn : table.getColumns()) {
 
                     XSSFXmlColumnPr xmlColumnPr = tableColumn.getXmlColumnPr();
-                    if (xmlColumnPr == null) {
+                    if(xmlColumnPr == null) {
                         continue;
                     }
 
@@ -159,13 +161,13 @@ public class XSSFImportFromXML {
                     if (cell == null) {
                         cell = row.createCell(columnId);
                     }
-                    Log.d(TAG, String.format("Setting '%s' to cell %d-%d in sheet %s", value,
-                            cell.getColumnIndex(), cell.getRowIndex(), table.getXSSFSheet().getSheetName()));
+                    Log.d(TAG, String.format("Setting '%s' to cell %s-%s in sheet %s", value, cell.getColumnIndex(), cell.getRowIndex(), table.getXSSFSheet().getSheetName()));
                     setCellValue(value, cell, xmlColumnPr.getXmlDataType());
                 }
             }
         }
     }
+
 
 
     private enum DataType {
@@ -198,27 +200,27 @@ public class XSSFImportFromXML {
                 cell.setCellValue((String) null);
             } else {
                 switch (type) {
-                    case BOOLEAN:
-                        cell.setCellValue(Boolean.parseBoolean(value));
-                        break;
-                    case DOUBLE:
-                        cell.setCellValue(Double.parseDouble(value));
-                        break;
-                    case INTEGER:
-                        cell.setCellValue(Integer.parseInt(value));
-                        break;
-                    case DATE:
-                        DateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", LocaleUtil.getUserLocale());
-                        Date date = sdf.parse(value);
-                        cell.setCellValue(date);
-                        if (!DateUtil.isValidExcelDate(cell.getNumericCellValue())) {
-                            cell.setCellValue(value);
-                        }
-                        break;
-                    case STRING:
-                    default:
-                        cell.setCellValue(value.trim());
-                        break;
+                case BOOLEAN:
+                    cell.setCellValue(Boolean.parseBoolean(value));
+                    break;
+                case DOUBLE:
+                    cell.setCellValue(Double.parseDouble(value));
+                    break;
+                case INTEGER:
+                    cell.setCellValue(Integer.parseInt(value));
+                    break;
+                case DATE:
+                    DateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", LocaleUtil.getUserLocale());
+                    Date date = sdf.parse(value);
+                    cell.setCellValue(date);
+                    if (!DateUtil.isValidExcelDate(cell.getNumericCellValue())) {
+                        cell.setCellValue(value);
+                    }
+                    break;
+                case STRING:
+                default:
+                    cell.setCellValue(value.trim());
+                    break;
                 }
             }
         } catch (IllegalArgumentException | ParseException e) {
@@ -246,7 +248,7 @@ public class XSSFImportFromXML {
         /**
          * @param prefix Prefix to resolve.
          * @return uri of Namespace that prefix resolves to, or
-         * <code>null</code> if specified prefix is not bound.
+         *         <code>null</code> if specified prefix is not bound.
          */
         private String getNamespaceForPrefix(String prefix) {
 

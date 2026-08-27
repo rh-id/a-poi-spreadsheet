@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.eventusermodel;
 
 import android.util.Log;
@@ -53,6 +54,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.binary.XSSFBUtils;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.model.CommentsTable;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFRelation;
 
+
 /**
  * Reader for xlsb files.
  *
@@ -60,7 +62,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFRelation;
  */
 public class XSSFBReader extends XSSFReader {
 
-    private static final String TAG = "XSSFBReader";
+    private static final String LOGGER_TAG = "XSSFBReader";
     private static final Set<String> WORKSHEET_RELS =
             Collections.unmodifiableSet(new HashSet<>(
                     Arrays.asList(
@@ -77,7 +79,7 @@ public class XSSFBReader extends XSSFReader {
      *
      * @param pkg opc package
      * @throws OpenXML4JException if the package data format is invalid
-     * @throws IOException        if there is an I/O issue reading the data
+     * @throws IOException if there is an I/O issue reading the data
      */
     public XSSFBReader(OPCPackage pkg) throws IOException, OpenXML4JException {
         super(pkg);
@@ -101,23 +103,24 @@ public class XSSFBReader extends XSSFReader {
 
     /**
      * Returns an Iterator which will let you get at all the
-     * different Sheets in turn.
+     *  different Sheets in turn.
      * Each sheet's InputStream is only opened when fetched
-     * from the Iterator. It's up to you to close the
-     * InputStreams when done with each one.
+     *  from the Iterator. It's up to you to close the
+     *  InputStreams when done with each one.
      *
      * @return iterator of {@link InputStream}s
      * @throws InvalidFormatException if the sheet data format is invalid
-     * @throws IOException            if there is an I/O issue reading the data
+     * @throws IOException if there is an I/O issue reading the data
+     * @since POI 5.4.0
      */
     @Override
-    public Iterator<InputStream> getSheetsData() throws IOException, InvalidFormatException {
+    public SheetIterator getSheetIterator() throws IOException, InvalidFormatException {
         return new SheetIterator(workbookPart);
     }
 
     public XSSFBStylesTable getXSSFBStylesTable() throws IOException {
         ArrayList<PackagePart> parts = pkg.getPartsByContentType(XSSFBRelation.STYLES_BINARY.getContentType());
-        if (parts.isEmpty()) return null;
+        if(parts.isEmpty()) return null;
 
         // Create the Styles Table, and associate the Themes if present
         try (InputStream stream = parts.get(0).getInputStream()) {
@@ -132,7 +135,7 @@ public class XSSFBReader extends XSSFReader {
          *
          * @param wb package part holding workbook.xml
          * @throws InvalidFormatException if the sheet data format is invalid
-         * @throws IOException            if there is an I/O issue reading the data
+         * @throws IOException if there is an I/O issue reading the data
          */
         private SheetIterator(PackagePart wb) throws IOException, InvalidFormatException {
             super(wb);
@@ -155,7 +158,6 @@ public class XSSFBReader extends XSSFReader {
         /**
          * Not supported by XSSFBReader's SheetIterator.
          * Please use {@link #getXSSFBSheetComments()} instead.
-         *
          * @return nothing, always throws IllegalArgumentException!
          */
         @Override
@@ -192,13 +194,10 @@ public class XSSFBReader extends XSSFReader {
 
     private static class PathExtractor extends XSSFBParser {
         private static final SparseBitSet RECORDS = new SparseBitSet();
-
         static {
             RECORDS.set(XSSFBRecordType.BrtAbsPath15.getId());
         }
-
         private String path;
-
         public PathExtractor(InputStream is) {
             super(is, RECORDS);
         }
@@ -214,6 +213,7 @@ public class XSSFBReader extends XSSFReader {
         }
 
         /**
+         *
          * @return the path if found, otherwise <code>null</code>
          */
         String getPath() {
@@ -244,7 +244,7 @@ public class XSSFBReader extends XSSFReader {
                 tryToAddWorksheet(data);
             } catch (XSSFBParseException e) {
                 if (tryOldFormat(data)) {
-                    Log.w(TAG, "This file was written with a beta version of Excel. " +
+                    Log.w(LOGGER_TAG, "This file was written with a beta version of Excel. "+
                             "POI will try to parse the file as a regular xlsb.");
                 } else {
                     throw e;
@@ -256,21 +256,17 @@ public class XSSFBReader extends XSSFReader {
             int offset = 0;
             //this is the sheet state #2.5.142
             /*long hsShtat =*/ //noinspection ResultOfMethodCallIgnored
-            LittleEndian.getUInt(data, offset);
-            offset += LittleEndianConsts.INT_SIZE;
+            LittleEndian.getUInt(data, offset); offset += LittleEndianConsts.INT_SIZE;
 
-            long iTabID = LittleEndian.getUInt(data, offset);
-            offset += LittleEndianConsts.INT_SIZE;
+            long iTabID = LittleEndian.getUInt(data, offset); offset += LittleEndianConsts.INT_SIZE;
             //according to #2.4.304
             if (iTabID < 1 || iTabID > 0x0000FFFFL) {
-                throw new XSSFBParseException("table id out of range: " + iTabID);
+                throw new XSSFBParseException("table id out of range: "+iTabID);
             }
             StringBuilder sb = new StringBuilder();
             offset += XSSFBUtils.readXLWideString(data, offset, sb);
-            String relId = sb.toString();
-            sb.setLength(0);
-            /*offset +=*/
-            XSSFBUtils.readXLWideString(data, offset, sb);
+            String relId = sb.toString(); sb.setLength(0);
+            /*offset +=*/ XSSFBUtils.readXLWideString(data, offset, sb);
             String name = sb.toString();
             if (StringUtil.isNotBlank(relId)) {
                 sheets.add(new XSSFSheetRef(relId, name));
@@ -281,10 +277,9 @@ public class XSSFBReader extends XSSFReader {
             //undocumented what is contained in these 8 bytes.
             //for the non-beta xlsb files, this would be 4, not 8.
             int offset = 8;
-            long iTabID = LittleEndian.getUInt(data, offset);
-            offset += LittleEndianConsts.INT_SIZE;
+            long iTabID = LittleEndian.getUInt(data, offset); offset += LittleEndianConsts.INT_SIZE;
             if (iTabID < 1 || iTabID > 0x0000FFFFL) {
-                throw new XSSFBParseException("table id out of range: " + iTabID);
+                throw new XSSFBParseException("table id out of range: "+iTabID);
             }
             StringBuilder sb = new StringBuilder();
             offset += XSSFBUtils.readXLWideString(data, offset, sb);

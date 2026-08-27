@@ -15,6 +15,8 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.util;
 
 import java.io.IOException;
@@ -22,6 +24,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+
 
 /**
  * dump data in hexadecimal format
@@ -294,7 +297,7 @@ public final class HexDump {
         char[] buf = new char[nDigits];
         long acc = value;
         for(int i=nDigits-1; i>=0; i--) {
-            int digit = Math.toIntExact(acc & 0x0F);
+            int digit = (int) (acc & 0x0F);
             buf[i] = (char) (digit < 10 ? ('0' + digit) : ('A' + digit - 10));
             acc >>>= 4;
         }

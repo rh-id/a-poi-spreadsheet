@@ -14,8 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 /* ====================================================================
    This product contains an ASLv2 licensed version of the OOXML signer
    package from the eID Applet project
@@ -65,7 +65,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
-
 import javax.security.auth.x500.X500Principal;
 import javax.xml.XMLConstants;
 import javax.xml.crypto.XMLStructure;
@@ -83,15 +82,17 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.dsig.SignatureConf
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.dsig.SignatureInfo;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.dsig.services.SignaturePolicyService;
 
+
 /**
  * XAdES Signature Facet. Implements XAdES v1.4.1 which is compatible with XAdES
  * v1.3.2. The implemented XAdES format is XAdES-BES/EPES. It's up to another
  * part of the signature service to upgrade the XAdES-BES to a XAdES-X-L.
- * <p>
+ *
  * This implementation has been tested against an implementation that
  * participated multiple ETSI XAdES plugtests.
  *
  * @see <a href="http://en.wikipedia.org/wiki/XAdES">XAdES</a>
+ *
  */
 public class XAdESSignatureFacet implements SignatureFacet {
 
@@ -104,11 +105,11 @@ public class XAdESSignatureFacet implements SignatureFacet {
 
     @Override
     public void preSign(
-            SignatureInfo signatureInfo
-            , Document document
-            , List<Reference> references
-            , List<XMLObject> objects)
-            throws XMLSignatureException {
+          SignatureInfo signatureInfo
+        , Document document
+        , List<Reference> references
+        , List<XMLObject> objects)
+    throws XMLSignatureException {
         Log.d(TAG, "preSign");
 
         SignatureConfig signatureConfig = signatureInfo.getSignatureConfig();
@@ -199,14 +200,14 @@ public class XAdESSignatureFacet implements SignatureFacet {
         if (policyService == null) {
             if (signatureConfig.isXadesSignaturePolicyImplied()) {
                 signedSignatureProperties.
-                        addNewSignaturePolicyIdentifier().
-                        addNewSignaturePolicyImplied();
+                addNewSignaturePolicyIdentifier().
+                addNewSignaturePolicyImplied();
             }
             return;
         }
 
         SignaturePolicyIdentifierType policyId =
-                signedSignatureProperties.addNewSignaturePolicyIdentifier();
+            signedSignatureProperties.addNewSignaturePolicyIdentifier();
 
         SignaturePolicyIdType signaturePolicyId = policyId.addNewSignaturePolicyId();
 
@@ -223,7 +224,7 @@ public class XAdESSignatureFacet implements SignatureFacet {
             return;
         }
         AnyType sigPolicyQualifier =
-                signaturePolicyId.addNewSigPolicyQualifiers().addNewSigPolicyQualifier();
+            signaturePolicyId.addNewSigPolicyQualifiers().addNewSigPolicyQualifier();
         XmlString spUriElement = XmlString.Factory.newInstance();
         spUriElement.setStringValue(signaturePolicyDownloadUrl);
         insertXChild(sigPolicyQualifier, spUriElement);
@@ -235,11 +236,11 @@ public class XAdESSignatureFacet implements SignatureFacet {
         }
 
         List<DataObjectFormatType> dataObjectFormats =
-                signedProperties.
-                        addNewSignedDataObjectProperties().
-                        getDataObjectFormatList();
+            signedProperties.
+            addNewSignedDataObjectProperties().
+            getDataObjectFormatList();
 
-        dataObjectFormatMimeTypes.forEach((key, value) -> {
+        dataObjectFormatMimeTypes.forEach((key,value) -> {
             DataObjectFormatType dof = DataObjectFormatType.Factory.newInstance();
             dof.setObjectReference("#" + key);
             dof.setMimeType(value);
@@ -262,8 +263,8 @@ public class XAdESSignatureFacet implements SignatureFacet {
         }
 
         SignedDataObjectPropertiesType dopt = signedProperties.isSetSignedDataObjectProperties()
-                ? signedProperties.getSignedDataObjectProperties()
-                : signedProperties.addNewSignedDataObjectProperties();
+            ? signedProperties.getSignedDataObjectProperties()
+            : signedProperties.addNewSignedDataObjectProperties();
 
         CommitmentTypeIndicationType cti = dopt.addNewCommitmentTypeIndication();
         if (commit != null) {
@@ -279,18 +280,19 @@ public class XAdESSignatureFacet implements SignatureFacet {
     }
 
 
+
     protected Reference addXadesReference(SignatureInfo signatureInfo) throws XMLSignatureException {
         SignatureConfig signatureConfig = signatureInfo.getSignatureConfig();
         List<Transform> transforms = singletonList(newTransform(signatureInfo, CanonicalizationMethod.INCLUSIVE));
-        return newReference(signatureInfo, "#" + signatureConfig.getXadesSignatureId(), transforms, XADES_TYPE);
+        return newReference(signatureInfo, "#"+signatureConfig.getXadesSignatureId(), transforms, XADES_TYPE);
     }
 
     /**
      * Gives back the JAXB DigestAlgAndValue data structure.
      *
      * @param digestAlgAndValue the parent for the new digest element
-     * @param data              the data to be digested
-     * @param digestAlgo        the digest algorithm
+     * @param data the data to be digested
+     * @param digestAlgo the digest algorithm
      */
     protected static void setDigestAlgAndValue(
             DigestAlgAndValueType digestAlgAndValue,
@@ -308,7 +310,7 @@ public class XAdESSignatureFacet implements SignatureFacet {
      * Gives back the JAXB CertID data structure.
      */
     protected static void setCertID
-    (CertIDType certId, SignatureConfig signatureConfig, boolean issuerNameNoReverseOrder, X509Certificate certificate) {
+        (CertIDType certId, SignatureConfig signatureConfig, boolean issuerNameNoReverseOrder, X509Certificate certificate) {
         X509IssuerSerialType issuerSerial = certId.addNewIssuerSerial();
         X500Principal issuerPrincipal = certificate.getIssuerX500Principal();
         String issuerName;
@@ -344,7 +346,7 @@ public class XAdESSignatureFacet implements SignatureFacet {
      * information is added via the xades:DataObjectFormat element.
      *
      * @param dsReferenceUri the reference uri
-     * @param mimetype       the mimetype
+     * @param mimetype the mimetype
      */
     public void addMimeType(String dsReferenceUri, String mimetype) {
         this.dataObjectFormatMimeTypes.put(dsReferenceUri, mimetype);
@@ -380,11 +382,11 @@ public class XAdESSignatureFacet implements SignatureFacet {
                     case TokenType.INT_START: {
                         QName name = cur.getName();
                         Element el = document.createElementNS(name.getNamespaceURI(), name.getLocalPart());
-                        lastNode = (Element) lastNode.appendChild(el);
+                        lastNode = (Element)lastNode.appendChild(el);
                         break;
                     }
                     case TokenType.INT_END: {
-                        Element parent = (Element) lastNode.getParentNode();
+                        Element parent = (Element)lastNode.getParentNode();
                         if (parent != null) {
                             lastNode = parent;
                         }
@@ -404,7 +406,7 @@ public class XAdESSignatureFacet implements SignatureFacet {
                     case TokenType.INT_NAMESPACE: {
                         // TODO: validate namespace creation
                         QName name = cur.getName();
-                        lastNode.setAttributeNS(XMLConstants.XMLNS_ATTRIBUTE_NS_URI, "xmlns:" + name.getPrefix(), name.getNamespaceURI());
+                        lastNode.setAttributeNS(XMLConstants.XMLNS_ATTRIBUTE_NS_URI, "xmlns:"+name.getPrefix(), name.getNamespaceURI());
                         break;
                     }
                     case TokenType.INT_COMMENT: {

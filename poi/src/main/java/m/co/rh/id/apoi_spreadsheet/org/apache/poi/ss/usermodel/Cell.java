@@ -15,6 +15,8 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel;
 
 import java.time.LocalDate;
@@ -27,6 +29,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.FormulaParseExcepti
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.CellAddress;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.CellRangeAddress;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Removal;
+
 
 /**
  * High level representation of a cell in a row of a spreadsheet.
@@ -369,11 +372,11 @@ public interface Cell {
      * the Workbook.</p>
      *
      * <p>To change the style of a cell without affecting other cells that use the same style,
-     * use {@link org.apache.poi.ss.util.CellUtil#setCellStyleProperties(Cell, Map)}</p>
+     * use {@link org.apache.poi.ss.util.CellUtil#setCellStylePropertiesEnum(Cell, Map)}</p>
      *
      * @param style  reference contained in the workbook.
      * If the value is null then the style information is removed causing the cell to used the default workbook style.
-     * @see m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Workbook#createCellStyle()
+     * @see org.apache.poi.ss.usermodel.Workbook#createCellStyle()
      */
     void setCellStyle(CellStyle style);
 

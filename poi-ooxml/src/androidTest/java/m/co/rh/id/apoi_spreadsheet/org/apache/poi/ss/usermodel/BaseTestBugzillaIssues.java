@@ -41,7 +41,6 @@ import java.util.List;
 import java.util.Map;
 
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.filesystem.FileMagic;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.ITestDataProvider;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.SpreadsheetVersion;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.FormulaParseException;
@@ -49,6 +48,8 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.CellAddress;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.CellRangeAddress;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.CellRangeAddressList;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.PaneInformation;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.SheetUtil;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Reproducibility;
 
 /**
  * A base class for bugzilla issues that can be described in terms of common ss interfaces.
@@ -407,7 +408,7 @@ public abstract class BaseTestBugzillaIssues {
 //            assertTrue("Had zero length starting at length " + i, computeCellWidthFixed(font, b.toString()) > 0);
 //        }
             double widthManual = computeCellWidthManually(cell0, font);
-            double widthBeforeCell = SheetUtil.getCellWidth(cell0, 8, null, false);
+            double widthBeforeCell = SheetUtil.getCellWidth(cell0, 8.0f, null, false);
             double widthBeforeCol = SheetUtil.getColumnWidth(sheet, 0, false);
 
             String info = widthManual + "/" + widthBeforeCell + "/" + widthBeforeCol + "/" +
@@ -421,7 +422,7 @@ public abstract class BaseTestBugzillaIssues {
 
             double width = SheetUtil.getColumnWidth(sheet, 0, false);
             assertTrue(width > 0, "Expected to have column width > 0 AFTER auto-size, but had " + width);
-            width = SheetUtil.getCellWidth(cell0, 8, null, false);
+            width = SheetUtil.getCellWidth(cell0, 8.0f, null, false);
             assertTrue(width > 0, "Expected to have cell width > 0 AFTER auto-size, but had " + width);
 
             assertEquals(255 * 256, sheet.getColumnWidth(0)); // maximum column width is 255 characters
@@ -429,6 +430,7 @@ public abstract class BaseTestBugzillaIssues {
         }
     }*/
 
+    @Ignore("autocolumn sizing requires desktop font metrics (SheetUtil.canComputeColumnWidth=false on Android)")
     @Test
     public final void bug51622_testAutoSizeShouldRecognizeLeadingSpaces() throws IOException {
         try (Workbook wb = _testDataProvider.createWorkbook()) {
@@ -612,6 +614,7 @@ public abstract class BaseTestBugzillaIssues {
         }
     }
 
+    @Ignore("autocolumn sizing requires desktop font metrics (SheetUtil.canComputeColumnWidth=false on Android)")
     @Test
     public void stackoverflow23114397() throws IOException {
         try (Workbook wb = _testDataProvider.createWorkbook()) {
@@ -1127,7 +1130,7 @@ public abstract class BaseTestBugzillaIssues {
             cell.setCellValue((String) null);
             String value = cell.getStringCellValue();
             assertTrue("HSSF will currently return empty string, XSSF/SXSSF will return null, but had: " + value,
-                    value == null || value.length() == 0);
+                    value == null || value.isEmpty());
 
             cell = row.createCell(1);
             cell.setCellFormula("0");
@@ -1137,7 +1140,7 @@ public abstract class BaseTestBugzillaIssues {
 
             value = cell.getStringCellValue();
             assertTrue("HSSF will currently return empty string, XSSF/SXSSF will return null, but had: " + value,
-                    value == null || value.length() == 0);
+                    value == null || value.isEmpty());
 
             // set some value
             cell.setCellValue("somevalue");
@@ -1149,7 +1152,7 @@ public abstract class BaseTestBugzillaIssues {
             cell.setCellValue((String) null);
             value = cell.getStringCellValue();
             assertTrue("HSSF will currently return empty string, XSSF/SXSSF will return null, but had: " + value,
-                    value == null || value.length() == 0);
+                    value == null || value.isEmpty());
         }
     }
 
@@ -1782,6 +1785,7 @@ public abstract class BaseTestBugzillaIssues {
         assertEquals(expectedResultOrNull, eval.evaluate(intF).formatAsString());
     }
 
+    // ensure a simple workbook can be reproducibly written
     @Test
     public void testWriteDocumentTwice() throws Exception {
         try (Workbook wb = _testDataProvider.createWorkbook()) {
@@ -1797,68 +1801,23 @@ public abstract class BaseTestBugzillaIssues {
             cell.setCellValue("Ernie & Bert are cool!");
             cell.setCellFormula("A1 & \" are cool!\"");
 
-            try (UnsynchronizedByteArrayOutputStream out1 = UnsynchronizedByteArrayOutputStream.builder().get();
-                 UnsynchronizedByteArrayOutputStream out2 = UnsynchronizedByteArrayOutputStream.builder().get()) {
-                wb.write(out1);
-                wb.write(out2);
+            Reproducibility.runWithSourceDateEpoch(
+                    () -> {
+                        try (UnsynchronizedByteArrayOutputStream out1 = UnsynchronizedByteArrayOutputStream.builder().get();
+                                UnsynchronizedByteArrayOutputStream out2 = UnsynchronizedByteArrayOutputStream.builder().get()) {
+                            wb.write(out1);
+                            wb.write(out2);
 
-                out1.flush();
-                out2.flush();
+                            out1.flush();
+                            out2.flush();
 
-                // to avoid flaky tests if the documents are written at slightly different timestamps
-                // we clear some bytes which contain timestamps
-                assertArrayEquals(
-                        removeTimestamp(out1.toByteArray()),
-                        removeTimestamp(out2.toByteArray()));
-            }
+                            // to avoid flaky tests if the documents are written at slightly different timestamps
+                            // we clear some bytes which contain timestamps
+                            assertArrayEquals(
+                                    out1.toByteArray(),
+                                    out2.toByteArray());
+                        }
+                    });
         }
-    }
-
-    private byte[] removeTimestamp(byte[] bytes) {
-        if (FileMagic.valueOf(bytes) == FileMagic.OOXML) {
-            // This removes the timestamp in the header of the ZIP-Format
-            // see "Local file header" at https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT
-            bytes[10] = 0;
-            bytes[11] = 0;
-            bytes[12] = 0;
-            bytes[13] = 0;
-
-            // there is a timestamp for every entry, so try to replace a few more byte-positions
-            // to reduce flakiness of this test, however we likely do not yet cover all entries
-            bytes[390] = 0;
-            bytes[391] = 0;
-            bytes[674] = 0;
-            bytes[883] = 0;
-            bytes[1207] = 0;
-            bytes[1208] = 0;
-            bytes[1433] = 0;
-            bytes[1434] = 0;
-            bytes[1817] = 0;
-            bytes[1818] = 0;
-            bytes[2098] = 0;
-            bytes[2099] = 0;
-            bytes[2762] = 0;
-            bytes[2763] = 0;
-            bytes[2382] = 0;
-            bytes[2383] = 0;
-            bytes[2827] = 0;
-            bytes[2828] = 0;
-            bytes[2884] = 0;
-            bytes[2885] = 0;
-            bytes[2946] = 0;
-            bytes[2947] = 0;
-            bytes[3009] = 0;
-            bytes[3010] = 0;
-            bytes[3075] = 0;
-            bytes[3076] = 0;
-            bytes[3134] = 0;
-            bytes[3135] = 0;
-            bytes[3195] = 0;
-            bytes[3196] = 0;
-            bytes[3267] = 0;
-            bytes[3268] = 0;
-        }
-
-        return bytes;
     }
 }

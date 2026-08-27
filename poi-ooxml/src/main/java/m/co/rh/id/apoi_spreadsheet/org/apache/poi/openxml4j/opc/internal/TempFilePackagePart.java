@@ -14,16 +14,16 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.internal;
 
+
+
 import android.util.Log;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.file.Files;
 
 import m.co.rh.id.apoi_spreadsheet.base.util.TempFile;
@@ -35,6 +35,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackagePartName;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.internal.marshallers.ZipPartMarshaller;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Beta;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.IOUtils;
+
 
 /**
  * (Experimental) Temp File version of a package part.
@@ -53,11 +54,16 @@ public final class TempFilePackagePart extends PackagePart {
     /**
      * Constructor.
      *
-     * @param pack        The owner package.
-     * @param partName    The part name.
-     * @param contentType The content type.
-     * @throws InvalidFormatException If the specified URI is not OPC compliant.
-     * @throws IOException            If temp file cannot be created.
+     * @param pack
+     *            The owner package.
+     * @param partName
+     *            The part name.
+     * @param contentType
+     *            The content type.
+     * @throws InvalidFormatException
+     *             If the specified URI is not OPC compliant.
+     * @throws IOException
+     *             If temp file cannot be created.
      */
     public TempFilePackagePart(OPCPackage pack, PackagePartName partName,
                                String contentType) throws InvalidFormatException, IOException {
@@ -67,12 +73,18 @@ public final class TempFilePackagePart extends PackagePart {
     /**
      * Constructor.
      *
-     * @param pack              The owner package.
-     * @param partName          The part name.
-     * @param contentType       The content type.
-     * @param loadRelationships Specify if the relationships will be loaded.
-     * @throws InvalidFormatException If the specified URI is not OPC compliant.
-     * @throws IOException            If temp file cannot be created.
+     * @param pack
+     *            The owner package.
+     * @param partName
+     *            The part name.
+     * @param contentType
+     *            The content type.
+     * @param loadRelationships
+     *            Specify if the relationships will be loaded.
+     * @throws InvalidFormatException
+     *             If the specified URI is not OPC compliant.
+     * @throws IOException
+     *             If temp file cannot be created.
      */
     public TempFilePackagePart(OPCPackage pack, PackagePartName partName,
                                String contentType, boolean loadRelationships)
@@ -98,7 +110,7 @@ public final class TempFilePackagePart extends PackagePart {
 
     @Override
     public void clear() {
-        try (OutputStream os = getOutputStreamImpl()) {
+        try(OutputStream os = getOutputStreamImpl()) {
             os.write(new byte[0]);
         } catch (IOException e) {
             Log.w(TAG, "Failed to clear data in temp file", e);
@@ -112,14 +124,14 @@ public final class TempFilePackagePart extends PackagePart {
 
     @Override
     public boolean load(InputStream is) throws InvalidFormatException {
-        try (OutputStream os = getOutputStreamImpl()) {
+       try (OutputStream os = getOutputStreamImpl()) {
             IOUtils.copy(is, os);
-        } catch (IOException e) {
+       } catch(IOException e) {
             throw new InvalidFormatException(e.getMessage(), e);
-        }
+       }
 
-        // All done
-        return true;
+       // All done
+       return true;
     }
 
     @Override

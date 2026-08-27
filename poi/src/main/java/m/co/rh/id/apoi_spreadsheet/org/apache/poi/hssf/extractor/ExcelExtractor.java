@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.extractor;
 
@@ -40,19 +41,20 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.ErrorEval;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.HeaderFooter;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Row.MissingCellPolicy;
 
+
 /**
  * A text extractor for Excel files.
  * <p>
  * Returns the textual content of the file, suitable for
- * indexing by something like Lucene, but not really
- * intended for display to the user.
+ *  indexing by something like Lucene, but not really
+ *  intended for display to the user.
  * </p>
  * <p>
  * To turn an excel file into a CSV or similar, then see
- * the XLS2CSVmra example
+ *  the XLS2CSVmra example
  * </p>
  *
- * @see <a href="http://svn.apache.org/repos/asf/poi/trunk/poi-examples/src/main/java/org/apache/poi/hssf/eventusermodel/examples/XLS2CSVmra.java">XLS2CSVmra</a>
+ * @see <a href="https://github.com/apache/poi/blob/trunk/poi-examples/src/main/java/org/apache/poi/examples/hssf/eventusermodel/XLS2CSVmra.java">XLS2CSVmra</a>
  */
 public class ExcelExtractor implements POIOLE2TextExtractor, m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.extractor.ExcelExtractor {
     private final HSSFWorkbook _wb;
@@ -82,7 +84,6 @@ public class ExcelExtractor implements POIOLE2TextExtractor, m.co.rh.id.apoi_spr
             super(msg);
         }
     }
-
     private static final class CommandArgs {
         private final boolean _requestHelp;
         private final File _inputFile;
@@ -91,7 +92,6 @@ public class ExcelExtractor implements POIOLE2TextExtractor, m.co.rh.id.apoi_spr
         private final boolean _showCellComments;
         private final boolean _showBlankCells;
         private final boolean _headersFooters;
-
         public CommandArgs(String[] args) throws CommandParseException {
             int nArgs = args.length;
             File inputFile = null;
@@ -101,14 +101,14 @@ public class ExcelExtractor implements POIOLE2TextExtractor, m.co.rh.id.apoi_spr
             boolean showCellComments = false;
             boolean showBlankCells = false;
             boolean headersFooters = true;
-            for (int i = 0; i < nArgs; i++) {
+            for (int i=0; i<nArgs; i++) {
                 String arg = args[i];
                 if ("-help".equalsIgnoreCase(arg)) {
                     requestHelp = true;
                     break;
                 }
                 if ("-i".equals(arg)) {
-                    // step to next arg
+                     // step to next arg
                     if (++i >= nArgs) {
                         throw new CommandParseException("Expected filename after '-i'");
                     }
@@ -155,10 +155,9 @@ public class ExcelExtractor implements POIOLE2TextExtractor, m.co.rh.id.apoi_spr
             _showBlankCells = showBlankCells;
             _headersFooters = headersFooters;
         }
-
         private static boolean parseBoolArg(String[] args, int i) throws CommandParseException {
             if (i >= args.length) {
-                throw new CommandParseException("Expected value after '" + args[i - 1] + "'");
+                throw new CommandParseException("Expected value after '" + args[i-1] + "'");
             }
             String value = args[i].toUpperCase(Locale.ROOT);
             if ("Y".equals(value) || "YES".equals(value) || "ON".equals(value) || "TRUE".equals(value)) {
@@ -167,33 +166,26 @@ public class ExcelExtractor implements POIOLE2TextExtractor, m.co.rh.id.apoi_spr
             if ("N".equals(value) || "NO".equals(value) || "OFF".equals(value) || "FALSE".equals(value)) {
                 return false;
             }
-            throw new CommandParseException("Invalid value '" + args[i] + "' for '" + args[i - 1] + "'. Expected 'Y' or 'N'");
+            throw new CommandParseException("Invalid value '" + args[i] + "' for '" + args[i-1] + "'. Expected 'Y' or 'N'");
         }
-
         public boolean isRequestHelp() {
             return _requestHelp;
         }
-
         public File getInputFile() {
             return _inputFile;
         }
-
         public boolean shouldShowSheetNames() {
             return _showSheetNames;
         }
-
         public boolean shouldEvaluateFormulas() {
             return _evaluateFormulas;
         }
-
         public boolean shouldShowCellComments() {
             return _showCellComments;
         }
-
         public boolean shouldShowBlankCells() {
             return _showBlankCells;
         }
-
         public boolean shouldIncludeHeadersFooters() {
             return _headersFooters;
         }
@@ -216,6 +208,7 @@ public class ExcelExtractor implements POIOLE2TextExtractor, m.co.rh.id.apoi_spr
      * Command line extractor.
      *
      * @param args the command line parameters
+     *
      * @throws IOException if the file can't be read or contains errors
      */
     public static void main(String[] args) throws IOException {
@@ -265,8 +258,8 @@ public class ExcelExtractor implements POIOLE2TextExtractor, m.co.rh.id.apoi_spr
 
     /**
      * Should blank cells be output? Default is to only
-     * output cells that are present in the file and are
-     * non-blank.
+     *  output cells that are present in the file and are
+     *  non-blank.
      *
      * @param includeBlankCells {@code true} if blank cells should be included
      */
@@ -288,49 +281,45 @@ public class ExcelExtractor implements POIOLE2TextExtractor, m.co.rh.id.apoi_spr
         _wb.setMissingCellPolicy(MissingCellPolicy.RETURN_BLANK_AS_NULL);
 
         // Process each sheet in turn
-        for (int i = 0; i < _wb.getNumberOfSheets(); i++) {
+        for(int i=0;i<_wb.getNumberOfSheets();i++) {
             HSSFSheet sheet = _wb.getSheetAt(i);
-            if (sheet == null) {
-                continue;
-            }
+            if(sheet == null) { continue; }
 
-            if (_includeSheetNames) {
+            if(_includeSheetNames) {
                 String name = _wb.getSheetName(i);
-                if (name != null) {
+                if(name != null) {
                     text.append(name);
                     text.append("\n");
                 }
             }
 
             // Header text, if there is any
-            if (_includeHeadersFooters) {
+            if(_includeHeadersFooters) {
                 text.append(_extractHeaderFooter(sheet.getHeader()));
             }
 
             int firstRow = sheet.getFirstRowNum();
             int lastRow = sheet.getLastRowNum();
-            for (int j = firstRow; j <= lastRow; j++) {
+            for(int j=firstRow;j<=lastRow;j++) {
                 HSSFRow row = sheet.getRow(j);
-                if (row == null) {
-                    continue;
-                }
+                if(row == null) { continue; }
 
                 // Check each cell in turn
                 int firstCell = row.getFirstCellNum();
                 int lastCell = row.getLastCellNum();
-                if (_includeBlankCells) {
+                if(_includeBlankCells) {
                     firstCell = 0;
                 }
 
-                for (int k = firstCell; k < lastCell; k++) {
+                for(int k=firstCell;k<lastCell;k++) {
                     HSSFCell cell = row.getCell(k);
                     boolean outputContents = true;
 
-                    if (cell == null) {
+                    if(cell == null) {
                         // Only output if requested
                         outputContents = _includeBlankCells;
                     } else {
-                        switch (cell.getCellType()) {
+                        switch(cell.getCellType()) {
                             case STRING:
                                 text.append(cell.getRichStringCellValue().getString());
                                 break;
@@ -344,13 +333,13 @@ public class ExcelExtractor implements POIOLE2TextExtractor, m.co.rh.id.apoi_spr
                                 text.append(ErrorEval.getText(cell.getErrorCellValue()));
                                 break;
                             case FORMULA:
-                                if (!_shouldEvaluateFormulas) {
+                                if(!_shouldEvaluateFormulas) {
                                     text.append(cell.getCellFormula());
                                 } else {
-                                    switch (cell.getCachedFormulaResultType()) {
+                                    switch(cell.getCachedFormulaResultType()) {
                                         case STRING:
                                             HSSFRichTextString str = cell.getRichStringCellValue();
-                                            if (str != null && str.length() > 0) {
+                                            if(str != null && str.length() > 0) {
                                                 text.append(str);
                                             }
                                             break;
@@ -379,7 +368,7 @@ public class ExcelExtractor implements POIOLE2TextExtractor, m.co.rh.id.apoi_spr
 
                         // Output the comment, if requested and exists
                         HSSFComment comment = cell.getCellComment();
-                        if (_includeCellComments && comment != null) {
+                        if(_includeCellComments && comment != null) {
                             // Replace any newlines with spaces, otherwise it
                             //  breaks the output
                             String commentText = comment.getString().getString().replace('\n', ' ');
@@ -388,7 +377,7 @@ public class ExcelExtractor implements POIOLE2TextExtractor, m.co.rh.id.apoi_spr
                     }
 
                     // Output a tab if we're not on the last cell
-                    if (outputContents && k < (lastCell - 1)) {
+                    if(outputContents && k < (lastCell-1)) {
                         text.append("\t");
                     }
                 }
@@ -398,7 +387,7 @@ public class ExcelExtractor implements POIOLE2TextExtractor, m.co.rh.id.apoi_spr
             }
 
             // Finally Footer text, if there is any
-            if (_includeHeadersFooters) {
+            if(_includeHeadersFooters) {
                 text.append(_extractHeaderFooter(sheet.getFooter()));
             }
         }
@@ -409,20 +398,20 @@ public class ExcelExtractor implements POIOLE2TextExtractor, m.co.rh.id.apoi_spr
     public static String _extractHeaderFooter(HeaderFooter hf) {
         StringBuilder text = new StringBuilder();
 
-        if (hf.getLeft() != null) {
+        if(hf.getLeft() != null) {
             text.append(hf.getLeft());
         }
-        if (hf.getCenter() != null) {
-            if (text.length() > 0)
+        if(hf.getCenter() != null) {
+            if(text.length() > 0)
                 text.append("\t");
             text.append(hf.getCenter());
         }
-        if (hf.getRight() != null) {
-            if (text.length() > 0)
+        if(hf.getRight() != null) {
+            if(text.length() > 0)
                 text.append("\t");
             text.append(hf.getRight());
         }
-        if (text.length() > 0)
+        if(text.length() > 0)
             text.append("\n");
 
         return text.toString();

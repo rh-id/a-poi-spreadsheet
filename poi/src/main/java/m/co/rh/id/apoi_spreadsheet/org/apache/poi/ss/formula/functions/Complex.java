@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions;
 
@@ -26,6 +27,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.EvaluationExce
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.OperandResolver;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.StringEval;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.ValueEval;
+
 
 /**
  * Implementation for Excel COMPLEX () function.
@@ -91,7 +93,7 @@ public class Complex extends Var2or3ArgFunction implements FreeRefFunction {
         }
 
         String suffixValue = OperandResolver.coerceValueToString(suffix);
-        if (suffixValue.length() == 0) {
+        if (suffixValue.isEmpty()) {
             suffixValue = DEFAULT_SUFFIX;
         }
         if (suffixValue.equals(DEFAULT_SUFFIX.toUpperCase(Locale.ROOT)) ||
@@ -105,7 +107,7 @@ public class Complex extends Var2or3ArgFunction implements FreeRefFunction {
         StringBuilder strb = new StringBuilder();
         if (realNum != 0) {
             if (isDoubleAnInt(realNum)) {
-                strb.append((int) realNum);
+                strb.append((int)realNum);
             } else {
                 strb.append(realNum);
             }
@@ -119,7 +121,7 @@ public class Complex extends Var2or3ArgFunction implements FreeRefFunction {
 
             if (realINum != 1 && realINum != -1) {
                 if (isDoubleAnInt(realINum)) {
-                    strb.append((int) realINum);
+                    strb.append((int)realINum);
                 } else {
                     strb.append(realINum);
                 }

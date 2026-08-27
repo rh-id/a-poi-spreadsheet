@@ -15,10 +15,10 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.streaming;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.Calendar;
 import java.util.Date;
@@ -32,6 +32,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.CellBase;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.CellStyle;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.CellType;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Comment;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.DataFormatter;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.DateUtil;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.FormulaError;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Hyperlink;
@@ -42,6 +43,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.CellReference;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.*;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFHyperlink;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFRichTextString;
+
 
 /**
  * Streaming version of XSSFCell implementing the "BigGridDemo" strategy.
@@ -572,7 +574,7 @@ public class SXSSFCell extends CellBase {
      * the Workbook.</p>
      *
      * <p>To change the style of a cell without affecting other cells that use the same style,
-     * use {@link org.apache.poi.ss.util.CellUtil#setCellStyleProperties(Cell, Map)}</p>
+     * use {@link org.apache.poi.ss.util.CellUtil#setCellStylePropertiesEnum(Cell, Map)}</p>
      *
      * @param style  reference contained in the workbook.
      * If the value is null then the style information is removed causing the cell to used the default workbook style.
@@ -743,11 +745,11 @@ public class SXSSFCell extends CellBase {
                 return getCellFormula();
             case NUMERIC:
                 if (DateUtil.isCellDateFormatted(this)) {
-                    DateFormat sdf = new SimpleDateFormat("dd-MMM-yyyy", LocaleUtil.getUserLocale());
-                    sdf.setTimeZone(LocaleUtil.getUserTimeZone());
-                    return sdf.format(getDateCellValue());
+                    DataFormatter df = new DataFormatter();
+                    df.setUseCachedValuesForFormulaCells(true);
+                    return df.formatCellValue(this);
                 }
-                return getNumericCellValue() + "";
+                return Double.toString(getNumericCellValue());
             case STRING:
                 return getRichStringCellValue().toString();
             default:
@@ -948,7 +950,7 @@ public class SXSSFCell extends CellBase {
         }
     }
 
-//COPIED FROM https://svn.apache.org/repos/asf/poi/trunk/poi-ooxml/src/main/java/org/apache/poi/xssf/usermodel/XSSFCell.java since the functions are declared private there
+//COPIED FROM XSSFCell.java since the functions are declared private there
     /**
      * Used to help format error messages
      */

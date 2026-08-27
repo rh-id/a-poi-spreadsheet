@@ -13,12 +13,9 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-
-   2012 - Alfresco Software, Ltd.
-   Alfresco Software has modified source of this file
-   The details of changes as svn diff can be found in svn at location root/projects/3rd-party/src
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel;
 
 import android.util.Log;
@@ -50,6 +47,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.DateFormatConverter;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.NumberToTextConverter;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LocaleUtil;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.StringUtil;
+
 
 
 /**
@@ -97,8 +95,8 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.StringUtil;
  * <p>Example:</p>
  * <p>
  * Consider a numeric cell with a value {@code 12.343} and format {@code "##.##_ "}.
- * The trailing underscore and space ("_ ") in the format adds a space to the end and Excel formats this cell as {@code "12.34 "},
- * but {@code DataFormatter} trims the formatted value and returns {@code "12.34"}.
+ *  The trailing underscore and space ("_ ") in the format adds a space to the end and Excel formats this cell as {@code "12.34 "},
+ *  but {@code DataFormatter} trims the formatted value and returns {@code "12.34"}.
  * </p>
  * You can enable spaces by passing the {@code emulateCSV=true} flag in the {@code DateFormatter} constructor.
  * If set to true, then the output tries to conform to what you get when you take an xls or xlsx in Excel and Save As CSV file:
@@ -122,24 +120,16 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.StringUtil;
 public class DataFormatter {
     private static final String defaultFractionWholePartFormat = "#";
     private static final String defaultFractionFractionPartFormat = "#/##";
-    /**
-     * Pattern to find a number format: "0" or  "#"
-     */
+    /** Pattern to find a number format: "0" or  "#" */
     private static final Pattern numPattern = Pattern.compile("[0#]+");
 
-    /**
-     * Pattern to find days of week as text "ddd...."
-     */
+    /** Pattern to find days of week as text "ddd...." */
     private static final Pattern daysAsText = Pattern.compile("([d]{3,})", Pattern.CASE_INSENSITIVE);
 
-    /**
-     * Pattern to find "AM/PM" marker
-     */
+    /** Pattern to find "AM/PM" marker */
     private static final Pattern amPmPattern = Pattern.compile("(([AP])[M/P]*)", Pattern.CASE_INSENSITIVE);
 
-    /**
-     * Pattern to find formats with condition ranges e.g. [>=100]
-     */
+    /** Pattern to find formats with condition ranges e.g. [>=100] */
     private static final Pattern rangeConditionalPattern = Pattern.compile(".*\\[\\s*(>|>=|<|<=|=)\\s*[0-9]*\\.*[0-9].*");
 
     /**
@@ -151,12 +141,12 @@ public class DataFormatter {
     /**
      * A regex to match the colour formatting's rules.
      * Allowed colours are: Black, Blue, Cyan, Green,
-     * Magenta, Red, White, Yellow, "Color n" (1<=n<=56)
+     *  Magenta, Red, White, Yellow, "Color n" (1<=n<=56)
      */
     private static final Pattern colorPattern =
-            Pattern.compile("(\\[BLACK])|(\\[BLUE])|(\\[CYAN])|(\\[GREEN])|" +
-                    "(\\[MAGENTA])|(\\[RED])|(\\[WHITE])|(\\[YELLOW])|" +
-                    "(\\[COLOR\\s*\\d])|(\\[COLOR\\s*[0-5]\\d])", Pattern.CASE_INSENSITIVE);
+       Pattern.compile("(\\[BLACK])|(\\[BLUE])|(\\[CYAN])|(\\[GREEN])|" +
+            "(\\[MAGENTA])|(\\[RED])|(\\[WHITE])|(\\[YELLOW])|" +
+            "(\\[COLOR\\s*\\d])|(\\[COLOR\\s*[0-5]\\d])", Pattern.CASE_INSENSITIVE);
 
     /**
      * A regex to identify a fraction pattern.
@@ -171,21 +161,25 @@ public class DataFormatter {
 
     /**
      * A regex to detect if an alternate grouping character is used
-     * in a numeric format
+     *  in a numeric format
      */
     private static final Pattern alternateGrouping = Pattern.compile("([#0]([^.#0])[#0]{3})");
 
     /**
-     * Cells formatted with a date or time format and which contain invalid date or time values
-     * show 255 pound signs ("#").
+     * For handling '0#' properly
      */
-    private static final String invalidDateTimeString;
+    private static final Pattern decimalFormatFix = Pattern.compile("0+#");
 
-    static {
-        StringBuilder buf = new StringBuilder();
-        for (int i = 0; i < 255; i++) buf.append('#');
-        invalidDateTimeString = buf.toString();
-    }
+    /**
+      * Cells formatted with a date or time format and which contain invalid date or time values
+     *  show 255 pound signs ("#").
+      */
+     private static final String invalidDateTimeString;
+     static {
+         StringBuilder buf = new StringBuilder();
+         for(int i = 0; i < 255; i++) buf.append('#');
+         invalidDateTimeString = buf.toString();
+     }
 
     /**
      * The decimal symbols of the locale used for formatting values.
@@ -202,30 +196,22 @@ public class DataFormatter {
      */
     private DateFormat defaultDateformat;
 
-    /**
-     * <em>General</em> format for numbers.
-     */
+    /** <em>General</em> format for numbers. */
     private Format generalNumberFormat;
 
-    /**
-     * A default format to use when a number pattern cannot be parsed.
-     */
+    /** A default format to use when a number pattern cannot be parsed. */
     private Format defaultNumFormat;
 
     /**
      * A map to cache formats.
-     * Map<String,Format> formats
+     *  Map<String,Format> formats
      */
-    private final Map<String, Format> formats = new HashMap<>();
+    private final Map<String,Format> formats = new HashMap<>();
 
-    /**
-     * whether CSV friendly adjustments should be made to the formatted text
-     **/
+    /** whether CSV friendly adjustments should be made to the formatted text **/
     private boolean emulateCSV = false;
 
-    /**
-     * whether years in dates should be displayed with 4 digits even if the formatString specifies only 2
-     **/
+    /** whether years in dates should be displayed with 4 digits even if the formatString specifies only 2 **/
     private boolean use4DigitYearsInAllDateFormats = false;
 
     /**
@@ -233,22 +219,16 @@ public class DataFormatter {
      */
     private boolean useCachedValuesForFormulaCells = false;
 
-    /**
-     * stores the locale set by updateLocale method
-     */
+    /** stores the locale set by updateLocale method */
     private Locale locale;
 
-    /**
-     * stores if the locale should change according to {@link LocaleUtil#getUserLocale()}
-     */
+    /** stores if the locale should change according to {@link LocaleUtil#getUserLocale()} */
     private boolean localeIsAdapting;
 
     // contain a support object instead of extending the support class
     private final PropertyChangeSupport pcs;
 
-    /**
-     * For logging any problems we find
-     */
+    /** For logging any problems we find */
     private static final String TAG = "DataFormatter";
 
     /**
@@ -261,7 +241,7 @@ public class DataFormatter {
     /**
      * Creates a formatter using the {@link Locale#getDefault() default locale}.
      *
-     * @param emulateCSV whether to emulate CSV output.
+     * @param  emulateCSV whether to emulate CSV output.
      */
     public DataFormatter(boolean emulateCSV) {
         this(LocaleUtil.getUserLocale(), true, emulateCSV);
@@ -277,7 +257,7 @@ public class DataFormatter {
     /**
      * Creates a formatter using the given locale.
      *
-     * @param emulateCSV whether to emulate CSV output.
+     * @param  emulateCSV whether to emulate CSV output.
      */
     public DataFormatter(Locale locale, boolean emulateCSV) {
         this(locale, false, emulateCSV);
@@ -285,9 +265,8 @@ public class DataFormatter {
 
     /**
      * Creates a formatter using the given locale.
-     *
-     * @param localeIsAdapting (true only if locale is not user-specified)
-     * @param emulateCSV       whether to emulate CSV output.
+     * @param  localeIsAdapting (true only if locale is not user-specified)
+     * @param  emulateCSV whether to emulate CSV output.
      */
     public DataFormatter(Locale locale, boolean localeIsAdapting, boolean emulateCSV) {
         this.localeIsAdapting = true;
@@ -330,9 +309,9 @@ public class DataFormatter {
 
     /**
      * @return useCachedValuesForFormulaCells if set to true, when you do not provide a {@link FormulaEvaluator},
-     * for cells with formulas, we will return the cached value for the cell (if available),
-     * otherwise - we return the formula itself.
-     * The default is false and this means we return the formula itself.
+     *                                        for cells with formulas, we will return the cached value for the cell (if available),
+     *                                        otherwise - we return the formula itself.
+     *                                        The default is false and this means we return the formula itself.
      * @since POI 5.2.0
      */
     public boolean useCachedValuesForFormulaCells() {
@@ -350,7 +329,7 @@ public class DataFormatter {
 
     /**
      * @return use4DigitYearsInAllDateFormats set to true if you want to have all dates formatted with 4 digit
-     * years (even if the format associated with the cell specifies just 2)
+     *                                        years (even if the format associated with the cell specifies just 2)
      * @since POI 5.2.0
      */
     public boolean use4DigitYearsInAllDateFormats() {
@@ -375,21 +354,21 @@ public class DataFormatter {
 
         ExcelNumberFormat numFmt = ExcelNumberFormat.from(cell, cfEvaluator);
 
-        if (numFmt == null) {
+        if ( numFmt == null) {
             return null;
         }
 
         int formatIndex = numFmt.getIdx();
         String formatStr = numFmt.getFormat();
-        if (StringUtil.isBlank(formatStr)) {
+        if(StringUtil.isBlank(formatStr)) {
             return null;
         }
         return getFormat(cell.getNumericCellValue(), formatIndex, formatStr, isDate1904(cell));
     }
 
     private boolean isDate1904(Cell cell) {
-        if (cell != null && cell.getSheet().getWorkbook() instanceof Date1904Support) {
-            return ((Date1904Support) cell.getSheet().getWorkbook()).isDate1904();
+        if ( cell != null && cell.getSheet().getWorkbook() instanceof Date1904Support) {
+            return ((Date1904Support)cell.getSheet().getWorkbook()).isDate1904();
 
         }
         return false;
@@ -409,7 +388,7 @@ public class DataFormatter {
         // String formatStr = (i < formatBits.length) ? formatBits[i] : formatBits[0];
 
         // this replace is done to fix https://bz.apache.org/bugzilla/show_bug.cgi?id=63211
-        String formatStr = formatStrIn.replace("\\%", "\'%\'");
+        String formatStr = formatStrIn.replace("\\%", "'%'");
 
         // Excel supports 2+ part conditional data formats, eg positive/negative/zero,
         //  or (>1000),(>0),(0),(negative). As Java doesn't handle these kinds
@@ -419,27 +398,27 @@ public class DataFormatter {
         // TODO Going forward, we should really merge the logic between the two classes
         if (formatStr.contains(";") &&
                 (formatStr.indexOf(';') != formatStr.lastIndexOf(';')
-                        || rangeConditionalPattern.matcher(formatStr).matches()
-                )) {
+                 || rangeConditionalPattern.matcher(formatStr).matches()
+                ) ) {
             try {
                 // Ask CellFormat to get a formatter for it
                 CellFormat cfmt = CellFormat.getInstance(locale, formatStr);
                 // CellFormat requires callers to identify date vs not, so do so
                 // don't try to handle Date value 0, let a 3 or 4-part format take care of it
                 Object cellValueO = (cellValue != 0.0 && DateUtil.isADateFormat(formatIndex, formatStr))
-                        ? DateUtil.getJavaDate(cellValue, use1904Windowing)
-                        : cellValue;
+                    ? DateUtil.getJavaDate(cellValue, use1904Windowing)
+                    : cellValue;
                 // Wrap and return (non-cacheable - CellFormat does that)
-                return new CellFormatResultWrapper(cfmt.apply(cellValueO));
+                return new CellFormatResultWrapper( cfmt.apply(cellValueO) );
             } catch (Exception e) {
                 Log.w(TAG, String.format("Formatting failed for format %s, falling back", formatStr), e);
             }
         }
 
-        // Excel's # with value 0 will output empty where Java will output 0. This hack removes the # from the format.
-        if (emulateCSV && cellValue == 0.0 && formatStr.contains("#") && !formatStr.contains("0")) {
-            formatStr = formatStr.replace("#", "");
-        }
+       // Excel's # with value 0 will output empty where Java will output 0. This hack removes the # from the format.
+       if (emulateCSV && cellValue == 0.0 && formatStr.contains("#") && !formatStr.contains("0")) {
+           formatStr = formatStr.replace("#", "");
+       }
 
         // See if we already have it cached
         Format format = formats.get(formatStr);
@@ -513,19 +492,19 @@ public class DataFormatter {
         }
 
         // Check for special cases
-        if (StringUtil.isBlank(formatStr)) {
+        if(StringUtil.isBlank(formatStr)) {
             return getDefaultFormat(cellValue);
         }
 
         if ("General".equalsIgnoreCase(formatStr) || "@".equals(formatStr)) {
-            return generalNumberFormat;
+           return generalNumberFormat;
         }
 
         if (formatStr == null) {
             return null;
         }
 
-        if (DateUtil.isADateFormat(formatIndex, formatStr) &&
+        if(DateUtil.isADateFormat(formatIndex, formatStr) &&
                 DateUtil.isValidExcelDate(cellValue)) {
             return createDateFormat(formatStr, cellValue);
         }
@@ -587,15 +566,15 @@ public class DataFormatter {
 
     private Format createDateFormat(String pFormatStr, double cellValue) {
         String formatStr = adjustTo4DigitYearsIfConfigured(pFormatStr);
-        formatStr = formatStr.replace("\\-", "-");
-        formatStr = formatStr.replace("\\,", ",");
-        formatStr = formatStr.replace("\\.", "."); // . is a special regexp char
-        formatStr = formatStr.replace("\\ ", " ");
-        formatStr = formatStr.replace("\\/", "/"); // weird: m\\/d\\/yyyy
+        formatStr = formatStr.replace("\\-","-");
+        formatStr = formatStr.replace("\\,",",");
+        formatStr = formatStr.replace("\\.","."); // . is a special regexp char
+        formatStr = formatStr.replace("\\ "," ");
+        formatStr = formatStr.replace("\\/","/"); // weird: m\\/d\\/yyyy
         formatStr = formatStr.replace(";@", "");
         formatStr = formatStr.replace("\"/\"", "/"); // "/" is escaped for no reason in: mm"/"dd"/"yyyy
         formatStr = formatStr.replace("\"\"", "'"); // replace Excel quoting with Java style quoting
-        formatStr = formatStr.replace("\\T", "'T'"); // Quote the T is iso8601 style dates
+        formatStr = formatStr.replace("\\T","'T'"); // Quote the T is iso8601 style dates
 
 
         boolean hasAmPm = false;
@@ -628,53 +607,62 @@ public class DataFormatter {
         boolean mIsMonth = true;
         List<Integer> ms = new ArrayList<>();
         boolean isElapsed = false;
-        for (int j = 0; j < chars.length; j++) {
+        for(int j=0; j<chars.length; j++) {
             char c = chars[j];
             if (c == '\'') {
                 sb.append(c);
                 j++;
 
                 // skip until the next quote
-                while (j < chars.length) {
+                while(j<chars.length) {
                     c = chars[j];
                     sb.append(c);
-                    if (c == '\'') {
+                    if(c == '\'') {
                         break;
                     }
                     j++;
                 }
-            } else if (c == '[' && !isElapsed) {
+            }
+            else if (c == '[' && !isElapsed) {
                 isElapsed = true;
                 mIsMonth = false;
                 sb.append(c);
-            } else if (c == ']' && isElapsed) {
+            }
+            else if (c == ']' && isElapsed) {
                 isElapsed = false;
                 sb.append(c);
-            } else if (isElapsed) {
-                if (c == 'h' || c == 'H') {
+            }
+            else if (isElapsed) {
+            if (c == 'h' || c == 'H') {
                     sb.append('H');
-                } else if (c == 'm' || c == 'M') {
+                }
+                else if (c == 'm' || c == 'M') {
                     sb.append('m');
-                } else if (c == 's' || c == 'S') {
+                }
+                else if (c == 's' || c == 'S') {
                     sb.append('s');
-                } else {
+                }
+                else {
                     sb.append(c);
                 }
-            } else if (c == 'h' || c == 'H') {
+            }
+            else if (c == 'h' || c == 'H') {
                 mIsMonth = false;
                 if (hasAmPm) {
                     sb.append('h');
                 } else {
                     sb.append('H');
                 }
-            } else if (c == 'm' || c == 'M') {
-                if (mIsMonth) {
+            }
+            else if (c == 'm' || c == 'M') {
+                if(mIsMonth) {
                     sb.append('M');
                     ms.add(sb.length() - 1);
                 } else {
                     sb.append('m');
                 }
-            } else if (c == 's' || c == 'S') {
+            }
+            else if (c == 's' || c == 'S') {
                 sb.append('s');
                 // if 'M' precedes 's' it should be minutes ('m')
                 for (int index : ms) {
@@ -684,18 +672,22 @@ public class DataFormatter {
                 }
                 mIsMonth = true;
                 ms.clear();
-            } else if (Character.isLetter(c)) {
+            }
+            else if (Character.isLetter(c)) {
                 mIsMonth = true;
                 ms.clear();
                 if (c == 'y' || c == 'Y') {
                     sb.append('y');
-                } else if (c == 'd' || c == 'D') {
+                }
+                else if (c == 'd' || c == 'D') {
                     sb.append('d');
-                } else {
+                }
+                else {
                     sb.append(c);
                 }
-            } else {
-                if (Character.isWhitespace(c)) {
+            }
+            else {
+                if (Character.isWhitespace(c)){
                     ms.clear();
                 }
                 sb.append(c);
@@ -705,7 +697,7 @@ public class DataFormatter {
 
         try {
             return new ExcelStyleDateFormatter(formatStr, dateSymbols);
-        } catch (IllegalArgumentException iae) {
+        } catch(IllegalArgumentException iae) {
             Log.d(TAG, String.format("Formatting failed for format %s, falling back", formatStr), iae);
             // the pattern could not be parsed correctly,
             // so fall back to the default number format
@@ -716,7 +708,7 @@ public class DataFormatter {
 
     private String cleanFormatForNumber(String formatStrIn) {
         // this replace is done to fix https://bz.apache.org/bugzilla/show_bug.cgi?id=63211
-        String formatStr = formatStrIn.replace("\\%", "\'%\'");
+        String formatStr = formatStrIn.replace("\\%", "'%'");
 
         StringBuilder sb = new StringBuilder(formatStr);
 
@@ -776,14 +768,14 @@ public class DataFormatter {
 
         // Now, handle the other aspects like
         //  quoting and scientific notation
-        for (int i = 0; i < sb.length(); i++) {
-            char c = sb.charAt(i);
+        for(int i = 0; i < sb.length(); i++) {
+           char c = sb.charAt(i);
             // remove quotes and back slashes
             if (c == '\\' || c == '"') {
                 sb.deleteCharAt(i);
                 i--;
 
-                // for scientific/engineering notation
+            // for scientific/engineering notation
             } else if ((c == '+' || c == '-') && i > 0 && sb.charAt(i - 1) == 'E') {
                 sb.deleteCharAt(i);
                 i--;
@@ -799,7 +791,6 @@ public class DataFormatter {
         private final BigDecimal divider;
         private static final BigDecimal ONE_THOUSAND = BigDecimal.valueOf(1000);
         private final DecimalFormat df;
-
         private static String trimTrailingCommas(String s) {
             return s.replaceAll(",+$", "");
         }
@@ -818,6 +809,10 @@ public class DataFormatter {
             } else {
                 divider = null;
             }
+        }
+
+        boolean requiresScaling() {
+            return divider != null;
         }
 
         private Object scaleInput(Object obj) {
@@ -857,7 +852,7 @@ public class DataFormatter {
             // Only replace the grouping character if it is not the default
             // grouping character for the US locale (',') in order to enable
             // correct grouping for non-US locales.
-            if (grouping != ',') {
+            if (grouping!=',') {
                 symbols = DecimalFormatSymbols.getInstance(locale);
 
                 symbols.setGroupingSeparator(grouping);
@@ -867,9 +862,14 @@ public class DataFormatter {
             }
         }
 
+        // Excel ignores leading zeros, but Java fails with an exception below
+        if (decimalFormatFix.matcher(format).matches()) {
+            format = "#";
+        }
+
         try {
             return new InternalDecimalFormatWithScale(format, symbols);
-        } catch (IllegalArgumentException iae) {
+        } catch(IllegalArgumentException iae) {
             Log.d(TAG, String.format("Formatting failed for format %s, falling back", formatStr), iae);
             // the pattern could not be parsed correctly,
             // so fall back to the default number format
@@ -879,14 +879,12 @@ public class DataFormatter {
 
     /**
      * Returns a default format for a cell.
-     *
      * @param cell The cell
      * @return a default format
      */
     public Format getDefaultFormat(Cell cell) {
         return getDefaultFormat(cell.getNumericCellValue());
     }
-
     private Format getDefaultFormat(double cellValue) {
         checkForLocaleChange();
 
@@ -894,14 +892,14 @@ public class DataFormatter {
         if (defaultNumFormat != null) {
             return defaultNumFormat;
 
-            // otherwise use general format
+          // otherwise use general format
         }
         return generalNumberFormat;
     }
 
     /**
      * Performs Excel-style date formatting, using the
-     * supplied Date and format
+     *  supplied Date and format
      */
     @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
     private String performDateFormatting(Date d, Format dateFormat) {
@@ -920,7 +918,7 @@ public class DataFormatter {
      * If no rules contain a number format, or no rules apply, the cell's style format is used.
      * If the style does not have a format, the default date format is applied.
      *
-     * @param cell        to format
+     * @param cell to format
      * @param cfEvaluator ConditionalFormattingEvaluator (if available)
      * @return Formatted value
      */
@@ -937,13 +935,13 @@ public class DataFormatter {
                 sdf.setTimeZone(LocaleUtil.getUserTimeZone());
                 dateFormat = sdf;
             } else {
-                dateFormat = defaultNumFormat;
+                dateFormat = defaultDateformat;
             }
         }
         synchronized (dateFormat) {
-            if (dateFormat instanceof ExcelStyleDateFormatter) {
+            if(dateFormat instanceof ExcelStyleDateFormatter) {
                 // Hint about the raw excel value
-                ((ExcelStyleDateFormatter) dateFormat).setDateToBeFormatted(
+                ((ExcelStyleDateFormatter)dateFormat).setDateToBeFormatted(
                         cell.getNumericCellValue()
                 );
             }
@@ -961,7 +959,7 @@ public class DataFormatter {
      * Format comes from either the highest priority conditional format rule with a
      * specified format, or from the cell style.
      *
-     * @param cell        The cell
+     * @param cell The cell
      * @param cfEvaluator if available, or null
      * @return a formatted number string
      */
@@ -974,42 +972,49 @@ public class DataFormatter {
         if (numberFormat == null) {
             return Double.toString(d);
         }
-        String formatted;
-        try {
-            //see https://github.com/apache/poi/pull/321 -- but this sometimes fails, thus the catch and retry
-            formatted = numberFormat.format(BigDecimal.valueOf(d));
-        } catch (NumberFormatException nfe) {
-            formatted = numberFormat.format(d);
+        String formatted = null;
+        if (numberFormat instanceof InternalDecimalFormatWithScale) {
+            InternalDecimalFormatWithScale idfws = (InternalDecimalFormatWithScale) numberFormat;
+            if (idfws.requiresScaling()) {
+                // hack for https://bz.apache.org/bugzilla/show_bug.cgi?id=69812
+                // the https://github.com/apache/poi/pull/321 hack causes problems here
+                formatted = idfws.format(d);
+            }
+        }
+        if (formatted == null) {
+            try {
+                //see https://github.com/apache/poi/pull/321 -- but this sometimes fails, thus the catch and retry
+                formatted = numberFormat.format(BigDecimal.valueOf(d));
+            } catch (NumberFormatException nfe) {
+                formatted = numberFormat.format(d);
+            }
         }
         return formatted.replaceFirst("E(\\d)", "E+$1"); // to match Excel's E-notation
     }
 
     /**
      * Formats the given raw cell value, based on the supplied
-     * format index and string, according to excel style rules.
-     *
+     *  format index and string, according to excel style rules.
      * @see #formatCellValue(Cell)
      */
     public String formatRawCellContents(double value, int formatIndex, String formatString) {
         return formatRawCellContents(value, formatIndex, formatString, false);
     }
-
     /**
      * Formats the given raw cell value, based on the supplied
-     * format index and string, according to excel style rules.
-     *
+     *  format index and string, according to excel style rules.
      * @see #formatCellValue(Cell)
      */
     public String formatRawCellContents(double value, int formatIndex, String formatString, boolean use1904Windowing) {
         checkForLocaleChange();
 
         // Is it a date?
-        if (DateUtil.isADateFormat(formatIndex, formatString)) {
-            if (DateUtil.isValidExcelDate(value)) {
+        if(DateUtil.isADateFormat(formatIndex,formatString)) {
+            if(DateUtil.isValidExcelDate(value)) {
                 Format dateFormat = getFormat(value, formatIndex, formatString, use1904Windowing);
-                if (dateFormat instanceof ExcelStyleDateFormatter) {
+                if(dateFormat instanceof ExcelStyleDateFormatter) {
                     // Hint about the raw excel value
-                    ((ExcelStyleDateFormatter) dateFormat).setDateToBeFormatted(value);
+                    ((ExcelStyleDateFormatter)dateFormat).setDateToBeFormatted(value);
                 }
                 Date d = DateUtil.getJavaDate(value, use1904Windowing);
                 return performDateFormatting(d, dateFormat);
@@ -1035,7 +1040,8 @@ public class DataFormatter {
         final String textValue = NumberToTextConverter.toText(value);
         if (textValue.indexOf('E') > -1) {
             result = numberFormat.format(value);
-        } else {
+        }
+        else {
             result = numberFormat.format(new BigDecimal(textValue));
         }
 
@@ -1081,9 +1087,9 @@ public class DataFormatter {
      * {@link FormulaEvaluator} if the evaluator is non-null. If the
      * evaluator is null, then the formula String will be returned. The caller
      * is responsible for setting the currentRow on the evaluator.
-     * </p>
+     *</p>
      *
-     * @param cell      The cell (can be null)
+     * @param cell The cell (can be null)
      * @param evaluator The FormulaEvaluator (can be null)
      * @return a string value of the cell
      * @see #formatCellValue(Cell)
@@ -1104,7 +1110,7 @@ public class DataFormatter {
      * {@link FormulaEvaluator} if the evaluator is non-null. If the
      * evaluator is null, then the formula String will be returned. The caller
      * is responsible for setting the currentRow on the evaluator
-     * </p>
+     *</p>
      * <p>
      * When a ConditionalFormattingEvaluator is present, it is checked first to see
      * if there is a number format to apply.  If multiple rules apply, the last one is used.
@@ -1113,10 +1119,10 @@ public class DataFormatter {
      * </p>
      * <p>
      * The two evaluators should be from the same context, to avoid inconsistencies in cached values.
-     * </p>
+     *</p>
      *
-     * @param cell        The cell (can be null)
-     * @param evaluator   The FormulaEvaluator (can be null)
+     * @param cell The cell (can be null)
+     * @param evaluator The FormulaEvaluator (can be null)
      * @param cfEvaluator ConditionalFormattingEvaluator (can be null)
      * @return a string value of the cell
      * @see #formatCellValue(Cell)
@@ -1146,19 +1152,19 @@ public class DataFormatter {
             }
         }
         switch (cellType) {
-            case NUMERIC:
+            case NUMERIC :
 
                 if (DateUtil.isCellDateFormatted(cell, cfEvaluator)) {
                     return getFormattedDateString(cell, cfEvaluator);
                 }
                 return getFormattedNumberString(cell, cfEvaluator);
 
-            case STRING:
+            case STRING :
                 return cell.getRichStringCellValue().getString();
 
-            case BOOLEAN:
+            case BOOLEAN :
                 return cell.getBooleanCellValue() ? "TRUE" : "FALSE";
-            case BLANK:
+            case BLANK :
                 return "";
             case ERROR:
                 return FormulaError.forInt(cell.getErrorCellValue()).getString();
@@ -1202,9 +1208,8 @@ public class DataFormatter {
      * numeric cell. Therefore the code in the format method should expect a
      * {@code Number} value.
      * </p>
-     *
      * @param excelFormatStr The data format string
-     * @param format         A Format instance
+     * @param format A Format instance
      */
     public void addFormat(String excelFormatStr, Format format) {
         formats.put(excelFormatStr, format);
@@ -1224,7 +1229,7 @@ public class DataFormatter {
 
     /**
      * Enables excel style rounding mode (round half up) on the
-     * Decimal Format given.
+     *  Decimal Format given.
      */
     public static void setExcelStyleRoundingMode(DecimalFormat format) {
         setExcelStyleRoundingMode(format, RoundingMode.HALF_UP);
@@ -1232,12 +1237,11 @@ public class DataFormatter {
 
     /**
      * Enables custom rounding mode on the given Decimal Format.
-     *
-     * @param format       DecimalFormat
+     * @param format DecimalFormat
      * @param roundingMode RoundingMode
      */
     public static void setExcelStyleRoundingMode(DecimalFormat format, RoundingMode roundingMode) {
-        format.setRoundingMode(roundingMode);
+       format.setRoundingMode(roundingMode);
     }
 
     /**
@@ -1307,17 +1311,14 @@ public class DataFormatter {
      * SSN formatting.
      */
     @SuppressWarnings("serial")
-    private static final class SSNFormat extends Format {
+   private static final class SSNFormat extends Format {
         public static final Format instance = new SSNFormat();
         private static final DecimalFormat df = createIntegerOnlyFormat("000000000");
-
         private SSNFormat() {
             // enforce singleton
         }
 
-        /**
-         * Format a number as an SSN
-         */
+        /** Format a number as an SSN */
         public static String format(Number num) {
             String result = df.format(num);
             return result.substring(0, 3) + '-' +
@@ -1327,7 +1328,7 @@ public class DataFormatter {
 
         @Override
         public StringBuffer format(Object obj, StringBuffer toAppendTo, FieldPosition pos) {
-            return toAppendTo.append(format((Number) obj));
+            return toAppendTo.append(format((Number)obj));
         }
 
         @Override
@@ -1341,17 +1342,14 @@ public class DataFormatter {
      * built-in formatting for Zip + 4.
      */
     @SuppressWarnings("serial")
-    private static final class ZipPlusFourFormat extends Format {
+   private static final class ZipPlusFourFormat extends Format {
         public static final Format instance = new ZipPlusFourFormat();
         private static final DecimalFormat df = createIntegerOnlyFormat("000000000");
-
         private ZipPlusFourFormat() {
             // enforce singleton
         }
 
-        /**
-         * Format a number as Zip + 4
-         */
+        /** Format a number as Zip + 4 */
         public static String format(Number num) {
             String result = df.format(num);
             return result.substring(0, 5) + '-' +
@@ -1360,7 +1358,7 @@ public class DataFormatter {
 
         @Override
         public StringBuffer format(Object obj, StringBuffer toAppendTo, FieldPosition pos) {
-            return toAppendTo.append(format((Number) obj));
+            return toAppendTo.append(format((Number)obj));
         }
 
         @Override
@@ -1374,17 +1372,14 @@ public class DataFormatter {
      * built-in phone number formatting.
      */
     @SuppressWarnings("serial")
-    private static final class PhoneFormat extends Format {
+   private static final class PhoneFormat extends Format {
         public static final Format instance = new PhoneFormat();
         private static final DecimalFormat df = createIntegerOnlyFormat("##########");
-
         private PhoneFormat() {
             // enforce singleton
         }
 
-        /**
-         * Format a number as a phone number
-         */
+        /** Format a number as a phone number */
         public static String format(Number num) {
             String result = df.format(num);
             StringBuilder sb = new StringBuilder();
@@ -1398,10 +1393,10 @@ public class DataFormatter {
             seg2 = result.substring(Math.max(0, len - 7), len - 4);
             seg1 = result.substring(Math.max(0, len - 10), Math.max(0, len - 7));
 
-            if (StringUtil.isNotBlank(seg1)) {
+            if(StringUtil.isNotBlank(seg1)) {
                 sb.append('(').append(seg1).append(") ");
             }
-            if (StringUtil.isNotBlank(seg2)) {
+            if(StringUtil.isNotBlank(seg2)) {
                 sb.append(seg2).append('-');
             }
             sb.append(seg3);
@@ -1410,7 +1405,7 @@ public class DataFormatter {
 
         @Override
         public StringBuffer format(Object obj, StringBuffer toAppendTo, FieldPosition pos) {
-            return toAppendTo.append(format((Number) obj));
+            return toAppendTo.append(format((Number)obj));
         }
 
         @Override
@@ -1420,19 +1415,20 @@ public class DataFormatter {
     }
 
 
+
+
     /**
      * Format class that does nothing and always returns a constant string.
-     * <p>
+     *
      * This format is used to simulate Excel's handling of a format string
      * of all # when the value is 0. Excel will output "", Java will output "0".
      *
      * @see DataFormatter#createFormat(double, int, String)
      */
     @SuppressWarnings("serial")
-    private static final class ConstantStringFormat extends Format {
+   private static final class ConstantStringFormat extends Format {
         private static final DecimalFormat df = createIntegerOnlyFormat("##########");
         private final String str;
-
         public ConstantStringFormat(String s) {
             str = s;
         }
@@ -1447,7 +1443,6 @@ public class DataFormatter {
             return df.parseObject(source, pos);
         }
     }
-
     /**
      * Workaround until we merge {@link DataFormatter} with {@link CellFormat}.
      * Constant, non-cachable wrapper around a {@link CellFormatResult}
@@ -1455,11 +1450,9 @@ public class DataFormatter {
     @SuppressWarnings("serial")
     private final class CellFormatResultWrapper extends Format {
         private final CellFormatResult result;
-
         private CellFormatResultWrapper(CellFormatResult result) {
             this.result = result;
         }
-
         @Override
         public StringBuffer format(Object obj, StringBuffer toAppendTo, FieldPosition pos) {
             if (emulateCSV) {
@@ -1468,7 +1461,6 @@ public class DataFormatter {
                 return toAppendTo.append(result.text.trim());
             }
         }
-
         @Override
         public Object parseObject(String source, ParsePosition pos) {
             return null; // Not supported

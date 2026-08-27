@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.dsig.services;
 
@@ -27,6 +28,8 @@ import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
@@ -34,7 +37,6 @@ import java.security.cert.X509Certificate;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
-
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -43,6 +45,7 @@ import javax.net.ssl.X509TrustManager;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.dsig.SignatureConfig;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.IOUtils;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.RandomSingleton;
+
 
 /**
  * This default implementation is used to decouple the timestamp service logic from
@@ -73,7 +76,8 @@ public class TimeStampSimpleHttpClient implements TimeStampHttpClient {
      * @return the max timestamp response size allowed
      */
     public static int getMaxTimestampResponseSize() {
-        return MAX_TIMESTAMP_RESPONSE_SIZE;
+        final int ioMaxSize = IOUtils.getByteArrayMaxOverride();
+        return ioMaxSize < 0 ? MAX_TIMESTAMP_RESPONSE_SIZE : Math.min(MAX_TIMESTAMP_RESPONSE_SIZE, ioMaxSize);
     }
 
 
@@ -101,7 +105,7 @@ public class TimeStampSimpleHttpClient implements TimeStampHttpClient {
 
     protected SignatureConfig config;
     protected Proxy proxy = Proxy.NO_PROXY;
-    protected final Map<String, String> header = new HashMap<>();
+    protected final Map<String,String> header = new HashMap<>();
     protected String contentTypeOut = null;
     protected boolean ignoreHttpsCertificates = false;
     protected boolean followRedirects = false;
@@ -127,11 +131,11 @@ public class TimeStampSimpleHttpClient implements TimeStampHttpClient {
             proxy = Proxy.NO_PROXY;
         } else {
             try {
-                URL pUrl = new URL(proxyUrl);
+                URL pUrl = new URI(proxyUrl).toURL();
                 String host = pUrl.getHost();
                 int port = pUrl.getPort();
                 proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(InetAddress.getByName(host), (port == -1 ? 80 : port)));
-            } catch (IOException ignored) {
+            } catch (IOException | URISyntaxException ignored) {
             }
         }
     }
@@ -195,10 +199,9 @@ public class TimeStampSimpleHttpClient implements TimeStampHttpClient {
     }
 
     @Override
-    public TimeStampHttpClientResponse get(String url) throws IOException {
+    public TimeStampHttpClientResponse get(String url)  throws IOException {
         // connection is by default a GET call
-        return handleRedirect(url, (huc) -> {
-        }, isFollowRedirects());
+        return handleRedirect(url, (huc) -> {}, isFollowRedirects());
     }
 
     protected interface MethodHandler {
@@ -206,7 +209,12 @@ public class TimeStampSimpleHttpClient implements TimeStampHttpClient {
     }
 
     protected TimeStampHttpClientResponse handleRedirect(String url, MethodHandler handler, boolean followRedirect) throws IOException {
-        HttpURLConnection huc = (HttpURLConnection) new URL(url).openConnection(proxy);
+        final HttpURLConnection huc;
+        try {
+            huc = (HttpURLConnection)new URI(url).toURL().openConnection(proxy);
+        } catch (URISyntaxException e) {
+            throw new IOException(e);
+        }
         if (ignoreHttpsCertificates) {
             recklessConnection(huc);
         }
@@ -249,7 +257,7 @@ public class TimeStampSimpleHttpClient implements TimeStampHttpClient {
                     break;
                 default:
                     final String message = "Error contacting TSP server " + url +
-                            ", had status code " + responseCode + "/" + huc.getResponseMessage();
+                        ", had status code " + responseCode + "/" + huc.getResponseMessage();
                     Log.e(TAG, message);
                     throw new IOException(message);
             }
@@ -264,7 +272,7 @@ public class TimeStampSimpleHttpClient implements TimeStampHttpClient {
         if (!(conn instanceof HttpsURLConnection)) {
             return;
         }
-        HttpsURLConnection conns = (HttpsURLConnection) conn;
+        HttpsURLConnection conns = (HttpsURLConnection)conn;
 
         try {
             SSLContext sc = SSLContext.getInstance("TLS");
@@ -278,16 +286,10 @@ public class TimeStampSimpleHttpClient implements TimeStampHttpClient {
 
     private static class UnsafeTrustManager implements X509TrustManager {
         @Override
-        public X509Certificate[] getAcceptedIssuers() {
-            return null;
-        }
-
+        public java.security.cert.X509Certificate[] getAcceptedIssuers() { return null; }
         @Override
-        public void checkClientTrusted(X509Certificate[] certs, String authType) {
-        }
-
+        public void checkClientTrusted(X509Certificate[] certs, String authType) { }
         @Override
-        public void checkServerTrusted(X509Certificate[] certs, String authType) {
-        }
+        public void checkServerTrusted(X509Certificate[] certs, String authType) { }
     }
 }

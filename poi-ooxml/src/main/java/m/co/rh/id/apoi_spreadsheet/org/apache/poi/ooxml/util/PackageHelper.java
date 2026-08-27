@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.util;
 
@@ -36,8 +37,10 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackageRelations
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackageRelationshipTypes;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackagingURIHelper;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.TargetMode;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.internal.InvalidZipException;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.IOUtils;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Removal;
+
 
 /**
  * Provides handy methods to work with OOXML packages
@@ -48,22 +51,28 @@ public final class PackageHelper {
      * @param stream The InputStream to read from - which is closed when it is read
      * @return OPCPackage
      * @throws IOException If reading data from the stream fails
+     * @throws POIXMLException If the stream is not a valid OPC package
      */
     public static OPCPackage open(InputStream stream) throws IOException {
         return open(stream, true);
     }
 
     /**
-     * @param stream      The InputStream to read from
+     * @param stream The InputStream to read from
      * @param closeStream whether to close the stream
      * @return OPCPackage
      * @throws IOException If reading data from the stream fails
+     * @throws POIXMLException If the stream is not a valid OPC package
      * @since POI 5.2.0
      */
     public static OPCPackage open(InputStream stream, boolean closeStream) throws IOException {
         try {
             return OPCPackage.open(stream, closeStream);
         } catch (InvalidFormatException e) {
+            final Throwable cause = e.getCause();
+            if (cause instanceof InvalidZipException) {
+                throw (InvalidZipException) cause;
+            }
             throw new POIXMLException(e);
         } finally {
             if (closeStream) {
@@ -75,9 +84,9 @@ public final class PackageHelper {
     /**
      * Clone the specified package.
      *
-     * @param pkg  the package to clone
-     * @param file the destination file
-     * @return the cloned package
+     * @param   pkg   the package to clone
+     * @param   file  the destination file
+     * @return  the cloned package
      * @deprecated this method is not used internally and creates temp files that are not well handled
      */
     @Deprecated
@@ -121,16 +130,16 @@ public final class PackageHelper {
      */
     private static void copy(OPCPackage pkg, PackagePart part, OPCPackage tgt, PackagePart part_tgt) throws OpenXML4JException, IOException {
         PackageRelationshipCollection rels = part.getRelationships();
-        if (rels != null) for (PackageRelationship rel : rels) {
+        if(rels != null) for (PackageRelationship rel : rels) {
             PackagePart p;
-            if (rel.getTargetMode() == TargetMode.EXTERNAL) {
+            if(rel.getTargetMode() == TargetMode.EXTERNAL){
                 part_tgt.addExternalRelationship(rel.getTargetURI().toString(), rel.getRelationshipType(), rel.getId());
                 //external relations don't have associated package parts
                 continue;
             }
             URI uri = rel.getTargetURI();
 
-            if (uri.getRawFragment() != null) {
+            if(uri.getRawFragment() != null) {
                 part_tgt.addRelationship(uri, rel.getTargetMode(), rel.getRelationshipType(), rel.getId());
                 continue;
             }
@@ -139,7 +148,7 @@ public final class PackageHelper {
             part_tgt.addRelationship(p.getPartName(), rel.getTargetMode(), rel.getRelationshipType(), rel.getId());
 
             PackagePart dest;
-            if (!tgt.containPart(p.getPartName())) {
+            if(!tgt.containPart(p.getPartName())){
                 dest = tgt.createPart(p.getPartName(), p.getContentType());
                 try (
                         InputStream in = p.getInputStream();

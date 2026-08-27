@@ -1,22 +1,4 @@
-/*
- *  ====================================================================
- *    Licensed to the Apache Software Foundation (ASF) under one or more
- *    contributor license agreements.  See the NOTICE file distributed with
- *    this work for additional information regarding copyright ownership.
- *    The ASF licenses this file to You under the Apache License, Version 2.0
- *    (the "License"); you may not use this file except in compliance with
- *    the License.  You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
- * ====================================================================
- */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.temp;
 
@@ -34,7 +16,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.Enumeration;
-
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
@@ -48,6 +29,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.CryptoFunctions;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Beta;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.IOUtils;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.RandomSingleton;
+
 
 /**
  * An example {@code ZipEntrySource} that has encrypted temp files to ensure that
@@ -66,7 +48,7 @@ public final class AesZipFileZipEntrySource implements ZipEntrySource {
 
     private AesZipFileZipEntrySource(File tmpFile, Cipher ci) throws IOException {
         this.tmpFile = tmpFile;
-        this.zipFile = new ZipFile(tmpFile);
+        this.zipFile = ZipFile.builder().setFile(tmpFile).get();
         this.ci = ci;
         this.closed = false;
     }
@@ -93,7 +75,7 @@ public final class AesZipFileZipEntrySource implements ZipEntrySource {
 
     @Override
     public void close() throws IOException {
-        if (!closed) {
+        if(!closed) {
             zipFile.close();
             if (!tmpFile.delete()) {
                 Log.w(TAG, String.format("%s can't be removed (or was already removed).", tmpFile.getAbsolutePath()));
@@ -117,7 +99,7 @@ public final class AesZipFileZipEntrySource implements ZipEntrySource {
             try {
                 copyToFile(is, tmpFile, keyBytes, ivBytes);
                 return fileToSource(tmpFile, keyBytes, ivBytes);
-            } catch (IOException | RuntimeException e) {
+            } catch (IOException|RuntimeException e) {
                 if (!tmpFile.delete()) {
                     Log.i(TAG, "Temp file was not deleted, may already have been deleted by another method.");
                 }
@@ -137,7 +119,7 @@ public final class AesZipFileZipEntrySource implements ZipEntrySource {
              ZipArchiveOutputStream zos = new ZipArchiveOutputStream(fos)) {
 
             ZipArchiveEntry ze;
-            while ((ze = zis.getNextZipEntry()) != null) {
+            while ((ze = zis.getNextEntry()) != null) {
                 // the cipher output stream pads the data, therefore we can't reuse the ZipEntry with set sizes
                 // as those will be validated upon close()
                 ZipArchiveEntry zeNew = new ZipArchiveEntry(ze.getName());

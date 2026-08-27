@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.dsig;
 
@@ -39,7 +40,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
-
 import javax.xml.crypto.MarshalException;
 import javax.xml.crypto.URIDereferencer;
 import javax.xml.crypto.dsig.XMLSignature;
@@ -55,6 +55,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.EncryptedDocumentException;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.util.DocumentHelper;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.util.XPathHelper;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackagePart;
+
 
 public class SignaturePart {
     private static final String TAG = "SignaturePart";
@@ -97,7 +98,7 @@ public class SignaturePart {
      * Helper method for examining the xml signature
      *
      * @return the xml signature document
-     * @throws IOException  if the xml signature doesn't exist or can't be read
+     * @throws IOException if the xml signature doesn't exist or can't be read
      * @throws XmlException if the xml signature is malformed
      */
     public SignatureDocument getSignatureDocument() throws IOException, XmlException {
@@ -108,6 +109,7 @@ public class SignaturePart {
 
     /**
      * @return true, when the xml signature is valid, false otherwise
+     *
      * @throws EncryptedDocumentException if the signature can't be extracted or if its malformed
      */
     public boolean validate() {
@@ -121,10 +123,10 @@ public class SignaturePart {
                 doc = DocumentHelper.readDocument(stream);
             }
 
-            NodeList nl = (NodeList) xpath.compile("//*[@Id]").evaluate(doc, XPathConstants.NODESET);
+            NodeList nl = (NodeList)xpath.compile("//*[@Id]").evaluate(doc, XPathConstants.NODESET);
             final int length = nl.getLength();
-            for (int i = 0; i < length; i++) {
-                ((Element) nl.item(i)).setIdAttribute("Id", true);
+            for (int i=0; i<length; i++) {
+                ((Element)nl.item(i)).setIdAttribute("Id", true);
             }
 
             DOMValidateContext domValidateContext = new DOMValidateContext(keySelector, doc);
@@ -181,7 +183,7 @@ public class SignaturePart {
         final XPath xpath = XPathHelper.getFactory().newXPath();
         xpath.setNamespaceContext(new XPathNSContext());
 
-        final Map<String, Consumer<String>> m = new HashMap<>();
+        final Map<String,Consumer<String>> m = new HashMap<>();
         m.put("//mdssi:SignatureTime/mdssi:Value", signatureConfig::setExecutionTime);
         m.put("//xd:ClaimedRole", signatureConfig::setXadesRole);
         m.put("//dsss:SignatureComments", signatureConfig::setSignatureDescription);
@@ -189,17 +191,17 @@ public class SignaturePart {
         m.put("//ds:CanonicalizationMethod", signatureConfig::setCanonicalizationMethod);
         m.put("//xd:CommitmentTypeId/xd:Description", signatureConfig::setCommitmentType);
 
-        for (Map.Entry<String, Consumer<String>> me : m.entrySet()) {
-            String val = (String) xpath.compile(me.getKey()).evaluate(doc, XPathConstants.STRING);
+        for (Map.Entry<String,Consumer<String>> me : m.entrySet()) {
+            String val = (String)xpath.compile(me.getKey()).evaluate(doc, XPathConstants.STRING);
             me.getValue().accept(val);
         }
     }
 
     private class XPathNSContext implements NamespaceContext {
-        final Map<String, String> nsMap = new HashMap<>();
+        final Map<String,String> nsMap = new HashMap<>();
 
         {
-            signatureInfo.getSignatureConfig().getNamespacePrefixes().forEach((k, v) -> nsMap.put(v, k));
+            signatureInfo.getSignatureConfig().getNamespacePrefixes().forEach((k,v) -> nsMap.put(v,k));
             nsMap.put("dsss", MS_DIGSIG_NS);
             nsMap.put("ds", XML_DIGSIG_NS);
         }
@@ -207,13 +209,11 @@ public class SignaturePart {
         public String getNamespaceURI(String prefix) {
             return nsMap.get(prefix);
         }
-
         @SuppressWarnings("rawtypes")
         @Override
         public Iterator getPrefixes(String val) {
             return null;
         }
-
         public String getPrefix(String uri) {
             return null;
         }

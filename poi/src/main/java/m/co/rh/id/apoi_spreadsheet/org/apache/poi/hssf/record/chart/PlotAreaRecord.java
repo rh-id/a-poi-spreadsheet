@@ -15,6 +15,8 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.chart;
 
 import java.util.Map;
@@ -25,8 +27,9 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.RecordInputStream;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.StandardRecord;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndianOutput;
 
+
 /**
- * preceeds and identifies a frame as belonging to the plot area.
+ * precedes and identifies a frame as belonging to the plot area.
  */
 public final class PlotAreaRecord extends StandardRecord {
     public static final short sid = 0x1035;

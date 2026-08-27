@@ -15,15 +15,21 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record;
+
+
 
 import android.util.Log;
 
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.common.UnicodeString;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.IntMapper;
+
+
+
 
 /**
  * Handles the task of deserializing a SST string.  The two main entry points are
@@ -46,7 +52,7 @@ class SSTDeserializer {
             // Extract exactly the count of strings from the SST record.
             UnicodeString str;
             if (in.available() == 0 && (!in.hasNextRecord() || in.getNextSid() != ContinueRecord.sid)) {
-                Log.e(TAG, String.format("Ran out of data before creating all the strings! String at index %d", i));
+                Log.e(TAG, String.format("Ran out of data before creating all the strings! String at index %s", i));
 
                 // not much sense in trying to continue reading in this case, file seems to be broken
                 return;

@@ -17,6 +17,7 @@
 // Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -99,6 +100,10 @@ public class TestXSSFTextParagraph {
             assertNull(text.getBulletFontColor());
             text.setBulletFontColor(color);
             assertEquals(color, text.getBulletFontColor());
+
+            final byte[] colorBytes = new byte[]{(byte) 255, 127, 0};
+            text.setBulletFontColor(colorBytes);
+            assertArrayEquals(colorBytes, text.getBulletFontColorAsBytes());
 
             assertEquals(100.0, text.getBulletFontSize(), 0.01);
             text.setBulletFontSize(1.0);
@@ -200,6 +205,34 @@ public class TestXSSFTextParagraph {
             assertNotNull(text.toString());
 
             new XSSFTextParagraph(text.getXmlObject(), shape.getCTShape());
+        }
+    }
+
+    @Test
+    public void testXSSFTextParagraph2() throws IOException {
+        try (XSSFWorkbook wb = new XSSFWorkbook()) {
+            XSSFSheet sheet = wb.createSheet();
+            XSSFDrawing drawing = sheet.createDrawingPatriarch();
+
+            XSSFTextBox shape = drawing.createTextbox(new XSSFClientAnchor(0, 0, 0, 0, 2, 2, 3, 4));
+            XSSFTextRun run = shape.getTextParagraphs().get(0).getTextRuns().get(0);
+            final byte[] colorBytes = new byte[]{0, (byte) 255, (byte) 255};
+            run.setFont("Arial");
+            run.setFontColor(colorBytes);
+            run.setText("Test String");
+
+            List<XSSFTextParagraph> paras = shape.getTextParagraphs();
+            assertEquals(1, paras.size());
+
+            XSSFTextParagraph text = paras.get(0);
+            assertEquals("Test String", text.getText());
+
+            List<XSSFTextRun> runs = text.getTextRuns();
+            assertEquals(1, runs.size());
+            XSSFTextRun run2 = runs.get(0);
+            assertEquals(run.getText(), run2.getText());
+            assertEquals(run.getFontFamily(), run2.getFontFamily());
+            assertArrayEquals(run.getFontColorAsBytes(), run2.getFontColorAsBytes());
         }
     }
 }

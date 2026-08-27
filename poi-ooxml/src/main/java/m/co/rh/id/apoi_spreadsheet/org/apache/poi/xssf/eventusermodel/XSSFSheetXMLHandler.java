@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.eventusermodel;
 
 import static m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFRelation.NS_SPREADSHEETML;
@@ -33,12 +34,11 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.BuiltinFormats;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.DataFormatter;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.RichTextString;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.CellAddress;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.model.Comments;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.model.SharedStrings;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.model.Styles;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.model.*;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFComment;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFRichTextString;
+
 
 /**
  * This class handles the streaming processing of a sheet#.xml
@@ -219,8 +219,8 @@ public class XSSFSheetXMLHandler extends DefaultHandler {
             formula.setLength(0);
 
             // Mark us as being a formula if not already
-            if (this.nextDataType == xssfDataType.NUMBER) {
-                this.nextDataType = xssfDataType.FORMULA;
+            if (this.nextDataType == XSSFSheetXMLHandler.xssfDataType.NUMBER) {
+                this.nextDataType = XSSFSheetXMLHandler.xssfDataType.FORMULA;
             }
 
             // Decide where to get the formula string from
@@ -257,7 +257,7 @@ public class XSSFSheetXMLHandler extends DefaultHandler {
         } else if ("row".equals(localName)) {
             String rowNumStr = attributes.getValue("r");
             if (rowNumStr != null) {
-                rowNum = Integer.parseInt(rowNumStr) - 1;
+                rowNum = parseInt(rowNumStr) - 1;
             } else {
                 rowNum = nextRowNum;
             }
@@ -288,7 +288,7 @@ public class XSSFSheetXMLHandler extends DefaultHandler {
                 XSSFCellStyle style = null;
                 if (stylesTable != null) {
                     if (cellStyleStr != null) {
-                        int styleIndex = Integer.parseInt(cellStyleStr);
+                        int styleIndex = parseInt(cellStyleStr);
                         style = stylesTable.getStyleAt(styleIndex);
                     } else if (stylesTable.getNumCellStyles() > 0) {
                         style = stylesTable.getStyleAt(0);
@@ -396,10 +396,11 @@ public class XSSFSheetXMLHandler extends DefaultHandler {
                         if (this.formatString != null) {
                             try {
                                 // Try to use the value as a formattable number
-                                double d = Double.parseDouble(fv);
+                                double d = parseDouble(fv);
                                 thisStr = formatter.formatRawCellContents(d, this.formatIndex, this.formatString);
-                            } catch (NumberFormatException e) {
+                            } catch (Exception e) {
                                 // Formula is a String result not a Numeric one
+                                Log.i(TAG, String.format("Error formatting cell '%s' - will use its raw value instead (format '%s')", cellRef, this.formatString));
                                 thisStr = fv;
                             }
                         } else {
@@ -416,10 +417,10 @@ public class XSSFSheetXMLHandler extends DefaultHandler {
                     break;
 
                 case SST_STRING:
-                    String sstIndex = value.toString();
-                    if (sstIndex.length() > 0) {
+                    String sstIndex = value.toString().trim();
+                    if (!sstIndex.isEmpty()) {
                         try {
-                            int idx = Integer.parseInt(sstIndex);
+                            int idx = parseInt(sstIndex);
                             RichTextString rtss = sharedStringsTable.getItemAt(idx);
                             thisStr = rtss.toString();
                         } catch (NumberFormatException ex) {
@@ -430,10 +431,17 @@ public class XSSFSheetXMLHandler extends DefaultHandler {
 
                 case NUMBER:
                     String n = value.toString();
-                    if (this.formatString != null && n.length() > 0)
-                        thisStr = formatter.formatRawCellContents(Double.parseDouble(n), this.formatIndex, this.formatString);
-                    else
+                    if (this.formatString != null && !n.isEmpty()) {
+                        try {
+                            thisStr = formatter.formatRawCellContents(
+                                    parseDouble(n), this.formatIndex, this.formatString);
+                        } catch (Exception e) {
+                            Log.i(TAG, String.format("Error formatting cell '%s' - will use its raw value instead (format '%s')", cellRef, this.formatString));
+                            thisStr = n;
+                        }
+                    } else {
                         thisStr = n;
+                    }
                     break;
 
                 default:
@@ -505,13 +513,20 @@ public class XSSFSheetXMLHandler extends DefaultHandler {
         }
     }
 
-
     /**
      * Output an empty-cell comment.
      */
     private void outputEmptyCellComment(CellAddress cellRef) {
         XSSFComment comment = comments.findCellComment(cellRef);
         output.cell(cellRef.formatAsString(), null, comment);
+    }
+
+    private static int parseInt(String value) throws NumberFormatException {
+        return Integer.parseInt(value.trim());
+    }
+
+    private static double parseDouble(String value) throws NumberFormatException {
+        return Double.parseDouble(value.trim());
     }
 
     private enum EmptyCellCommentsCheckType {

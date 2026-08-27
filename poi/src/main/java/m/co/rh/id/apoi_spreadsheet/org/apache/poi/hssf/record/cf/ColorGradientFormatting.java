@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.cf;
 
@@ -34,13 +35,16 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.GenericRecordUtil;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndianInput;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndianOutput;
 
+
+
+
 /**
  * Color Gradient / Color Scale Conditional Formatting Rule Record.
  * (Called Color Gradient in the file format docs, but more commonly
- * Color Scale in the UI)
+ *  Color Scale in the UI)
  */
 public final class ColorGradientFormatting implements Duplicatable, GenericRecord {
-    private static final String TAG = "ColorGradientFormatting";
+    private static final String LOGGER_TAG = "ColorGradientFormatting";
 
     private static final BitField clamp = BitFieldFactory.getInstance(0x01);
     private static final BitField background = BitFieldFactory.getInstance(0x02);
@@ -71,16 +75,16 @@ public final class ColorGradientFormatting implements Duplicatable, GenericRecor
         int numI = in.readByte();
         int numG = in.readByte();
         if (numI != numG) {
-            Log.w(TAG, String.format("Inconsistent Color Gradient definition, found %d vs %d entries", numI, numG));
+            Log.w(LOGGER_TAG, String.format("Inconsistent Color Gradient definition, found %s vs %s entries", numI, numG));
         }
         options = in.readByte();
 
         thresholds = new ColorGradientThreshold[numI];
-        for (int i = 0; i < thresholds.length; i++) {
+        for (int i=0; i<thresholds.length; i++) {
             thresholds[i] = new ColorGradientThreshold(in);
         }
         colors = new ExtendedColor[numG];
-        for (int i = 0; i < colors.length; i++) {
+        for (int i=0; i<colors.length; i++) {
             in.readDouble(); // Slightly pointless step counter
             colors[i] = new ExtendedColor(in);
         }
@@ -89,7 +93,6 @@ public final class ColorGradientFormatting implements Duplicatable, GenericRecor
     public int getNumControlPoints() {
         return thresholds.length;
     }
-
     public void setNumControlPoints(int num) {
         if (num != thresholds.length) {
             ColorGradientThreshold[] nt = new ColorGradientThreshold[num];
@@ -109,7 +112,6 @@ public final class ColorGradientFormatting implements Duplicatable, GenericRecor
     public ColorGradientThreshold[] getThresholds() {
         return thresholds;
     }
-
     public void setThresholds(ColorGradientThreshold[] thresholds) {
         this.thresholds = (thresholds == null) ? null : thresholds.clone();
         updateThresholdPositions();
@@ -118,7 +120,6 @@ public final class ColorGradientFormatting implements Duplicatable, GenericRecor
     public ExtendedColor[] getColors() {
         return colors;
     }
-
     public void setColors(ExtendedColor[] colors) {
         this.colors = (colors == null) ? null : colors.clone();
     }
@@ -126,29 +127,27 @@ public final class ColorGradientFormatting implements Duplicatable, GenericRecor
     public boolean isClampToCurve() {
         return getOptionFlag(clamp);
     }
-
     public boolean isAppliesToBackground() {
         return getOptionFlag(background);
     }
-
     private boolean getOptionFlag(BitField field) {
         return field.isSet(options);
     }
 
     private void updateThresholdPositions() {
-        double step = 1d / (thresholds.length - 1);
-        for (int i = 0; i < thresholds.length; i++) {
-            thresholds[i].setPosition(step * i);
+        double step = 1d / (thresholds.length-1);
+        for (int i=0; i<thresholds.length; i++) {
+            thresholds[i].setPosition(step*i);
         }
     }
 
     @Override
     public Map<String, Supplier<?>> getGenericProperties() {
         return GenericRecordUtil.getGenericProperties(
-                "clampToCurve", this::isClampToCurve,
-                "background", this::isAppliesToBackground,
-                "thresholds", this::getThresholds,
-                "colors", this::getColors
+            "clampToCurve", this::isClampToCurve,
+            "background", this::isAppliesToBackground,
+            "thresholds", this::getThresholds,
+            "colors", this::getColors
         );
     }
 
@@ -156,7 +155,7 @@ public final class ColorGradientFormatting implements Duplicatable, GenericRecor
         return GenericRecordJsonWriter.marshal(this);
     }
 
-    public ColorGradientFormatting copy() {
+    public ColorGradientFormatting copy()  {
         return new ColorGradientFormatting(this);
     }
 
@@ -183,9 +182,9 @@ public final class ColorGradientFormatting implements Duplicatable, GenericRecor
             t.serialize(out);
         }
 
-        double step = 1d / (colors.length - 1);
-        for (int i = 0; i < colors.length; i++) {
-            out.writeDouble(i * step);
+        double step = 1d / (colors.length-1);
+        for (int i=0; i<colors.length; i++) {
+            out.writeDouble(i*step);
 
             ExtendedColor c = colors[i];
             c.serialize(out);

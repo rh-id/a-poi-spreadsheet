@@ -30,12 +30,15 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.FormulaError.forInt;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.util.Calendar;
 import java.util.Date;
@@ -65,6 +68,21 @@ public abstract class BaseTestCell {
      */
     protected BaseTestCell(ITestDataProvider testDataProvider) {
         _testDataProvider = testDataProvider;
+    }
+
+    protected static TimeZone userTimeZone;
+
+    @BeforeClass
+    public static void setTimeZone() {
+        userTimeZone = LocaleUtil.getUserTimeZone();
+        LocaleUtil.setUserTimeZone(TimeZone.getTimeZone("CET"));
+        LocaleUtil.setUserLocale(Locale.US);
+    }
+
+    @AfterClass
+    public static void resetTimeZone() {
+        LocaleUtil.setUserTimeZone(userTimeZone);
+        LocaleUtil.setUserLocale(Locale.ROOT);
     }
 
     @Test
@@ -353,6 +371,9 @@ public abstract class BaseTestCell {
             dateStyle.setDataFormat(formatId);
             r.getCell(7).setCellStyle(dateStyle);
 
+            // null rich text
+            r.createCell(8).setCellValue(factory.createRichTextString(null)); // blank
+
             assertEquals("Boolean", "FALSE", r.getCell(0).toString());
             assertEquals("Boolean", "TRUE", r.getCell(1).toString());
             assertEquals("Numeric", "1.5", r.getCell(2).toString());
@@ -362,8 +383,8 @@ public abstract class BaseTestCell {
             assertEquals("Blank", "", r.getCell(6).toString());
             // toString on a date-formatted cell displays dates as dd-MMM-yyyy, which has locale problems with the month
             String dateCell1 = r.getCell(7).toString();
-            assertTrue("Date (Day)", dateCell1.startsWith("02-"));
-            assertTrue("Date (Year)", dateCell1.endsWith("-2010"));
+            assertEquals("2/2/10 0:00", dateCell1);
+            assertEquals("Blank", "", r.getCell(8).toString());
 
 
             //Write out the file, read it in, and then check cell values
@@ -378,6 +399,7 @@ public abstract class BaseTestCell {
                 assertEquals("Blank", "", r.getCell(6).toString());
                 String dateCell2 = r.getCell(7).toString();
                 assertEquals("Date", dateCell1, dateCell2);
+                assertEquals("Blank", "", r.getCell(8).toString());
             }
         }
     }
@@ -1422,6 +1444,27 @@ public abstract class BaseTestCell {
     }
 
     @Test
+    public void testZeroDate() throws IOException {
+        try (Workbook wb = _testDataProvider.createWorkbook()) {
+            Cell cellA1 = getInstance(wb);
+            cellA1.setCellValue(1.0);
+            assertEquals(LocalDate.parse("1900-01-01"),
+                    cellA1.getLocalDateTimeCellValue().toLocalDate());
+
+            cellA1.setCellValue(0.0);
+            // this value is not strictly correct but our time only support relies on this
+            // time only means cells that have values with just times but no date parts
+            assertEquals(LocalDate.parse("1899-12-31"),
+                    cellA1.getLocalDateTimeCellValue().toLocalDate());
+
+            cellA1.setCellValue(0.5);
+            assertEquals(LocalTime.parse("12:00"),
+                    cellA1.getLocalDateTimeCellValue().toLocalTime());
+
+        }
+    }
+
+    @Test
     public void setCellType_FORMULA_onAnArrayFormulaCell_doesNothing() throws IOException {
         try (Workbook wb = _testDataProvider.createWorkbook()) {
             Cell cell = getInstance(wb);
@@ -1444,6 +1487,36 @@ public abstract class BaseTestCell {
         cell.setBlank();
 
         verify(cell).setBlank();
+    }
+
+    @Test
+    public void setCellNullString() throws IOException {
+        try (Workbook wb = _testDataProvider.createWorkbook()) {
+            Cell cell = getInstance(wb);
+
+            cell.setCellValue((String)null);
+
+            // setting string "null" leads to a BLANK cell
+            assertEquals(CellType.BLANK, cell.getCellType());
+            assertEquals("", cell.getStringCellValue());
+            assertEquals("", cell.toString());
+
+            cell.setCellType(CellType.STRING);
+
+            // forcing to string type leads to STRING cell, but still empty strings
+            assertEquals(CellType.STRING, cell.getCellType());
+            assertEquals("", cell.getStringCellValue());
+            assertEquals("", cell.toString());
+
+            try (Workbook wb2 = _testDataProvider.writeOutAndReadBack(wb)) {
+                // read first sheet, first row, first cell
+                Cell cellBack = wb2.iterator().next().iterator().next().iterator().next();
+
+                assertEquals(CellType.STRING, cell.getCellType());
+                assertEquals("", cell.getStringCellValue());
+                assertEquals("", cell.toString());
+            }
+        }
     }
 
     private Cell getInstance(Workbook wb) {

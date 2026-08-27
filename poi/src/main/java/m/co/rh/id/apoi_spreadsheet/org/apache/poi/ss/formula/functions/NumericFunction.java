@@ -15,18 +15,21 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions;
 
 import static m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.ErrorEval.VALUE_INVALID;
-
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.*;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LocaleUtil;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.*;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LocaleUtil;
+
 
 public abstract class NumericFunction implements Function {
 
@@ -106,7 +109,11 @@ public abstract class NumericFunction implements Function {
             DecimalFormat nf = (DecimalFormat) NumberFormat.getCurrencyInstance(LocaleUtil.getUserLocale());
             int decimalPlaces = Math.max(nPlaces, 0);
             if (LocaleUtil.getUserLocale().getCountry().equalsIgnoreCase("US")) {
-                nf.setNegativePrefix("(" + nf.getDecimalFormatSymbols().getCurrencySymbol());
+                // Java 23 removed "COMPAT" locale provider and thus
+                // we need to ensure that the dollar-sign is used and not "USD" as Java 23 and newer
+                // would do
+                nf.setPositivePrefix("$");
+                nf.setNegativePrefix("($");
                 nf.setNegativeSuffix(")");
             }
             nf.setMinimumFractionDigits(decimalPlaces);

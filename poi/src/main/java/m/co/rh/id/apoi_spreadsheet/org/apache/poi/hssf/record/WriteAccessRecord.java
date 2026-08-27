@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record;
 
@@ -33,9 +34,10 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndianOutput;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.RecordFormatException;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.StringUtil;
 
+
 /**
  * Title: Write Access Record (0x005C)<p>
- * <p>
+ *
  * Description: Stores the username of that who owns the spreadsheet generator (on unix the user's
  * login, on Windoze its the name you typed when you installed the thing)
  */
@@ -48,11 +50,8 @@ public final class WriteAccessRecord extends StandardRecord {
     private static final int DATA_SIZE = 112;
     private static final int STRING_SIZE = DATA_SIZE - 3;
 
-    /**
-     * this record is always padded to a constant length
-     */
+    /** this record is always padded to a constant length */
     private static final byte[] PADDING = new byte[STRING_SIZE];
-
     static {
         Arrays.fill(PADDING, PAD_CHAR);
     }
@@ -91,7 +90,7 @@ public final class WriteAccessRecord extends StandardRecord {
                 in.readPlain(data, 0, data.length);
                 int i = data.length;
                 // PAD_CHAR is filled for every byte even for UTF16 strings
-                while (i > 0 && data[i - 1] == PAD_CHAR) {
+                while (i>0 && data[i-1] == PAD_CHAR) {
                     i--;
                 }
                 byteCnt = i;
@@ -104,7 +103,7 @@ public final class WriteAccessRecord extends StandardRecord {
                 data = IOUtils.safelyAllocate(byteCnt, DATA_SIZE);
                 LittleEndian.putUShort(data, 0, nChars);
                 LittleEndian.putByte(data, 2, is16BitFlag);
-                in.readFully(data, 3, byteCnt - 3);
+                in.readFully(data, 3, byteCnt-3);
                 charset = StandardCharsets.UTF_8;
             }
         } else {
@@ -112,10 +111,19 @@ public final class WriteAccessRecord extends StandardRecord {
             data = IOUtils.safelyAllocate(in.remaining(), STRING_SIZE);
             in.readFully(data);
             if (UTF16FLAG.isSet(is16BitFlag)) {
-                byteCnt = Math.min(nChars * 2, data.length);
+                // the spec only allows up to 109 bytes for the string in this record, but it seems some broken
+                // software out there will generate invalid records
+                int min = Math.min(nChars * 2, data.length);
+
+                // make sure byteCnt is divisible by 2 as we read UTF-16LE
+                byteCnt = min - (min % 2);
+
                 charset = StandardCharsets.UTF_16LE;
             } else {
+                // the spec only allows up to 109 bytes for the string in this record, but it seems some broken
+                // software out there will generate invalid records
                 byteCnt = Math.min(nChars, data.length);
+
                 charset = StandardCharsets.ISO_8859_1;
             }
         }
@@ -134,7 +142,8 @@ public final class WriteAccessRecord extends StandardRecord {
         boolean is16bit = StringUtil.hasMultibyte(username);
         int encodedByteCount = username.length() * (is16bit ? 2 : 1);
         if (encodedByteCount > STRING_SIZE) {
-            throw new IllegalArgumentException("Name is too long: " + username);
+            throw new IllegalArgumentException("Name is too long, expecting up to " + STRING_SIZE +
+                    " bytes, but had: " + encodedByteCount + " bytes: " + username);
         }
 
         field_1_username = username;

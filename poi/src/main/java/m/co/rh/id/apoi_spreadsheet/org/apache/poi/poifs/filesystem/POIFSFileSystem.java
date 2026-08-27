@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.filesystem;
 
 import android.util.Log;
@@ -52,6 +53,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.storage.BATBlock.BATBloc
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.storage.HeaderBlock;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.IOUtils;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
+
 
 /**
  * <p>This is the main class of the POIFS system; it manages the entire
@@ -416,8 +418,7 @@ public class POIFSFileSystem extends BlockStore
             int xbatFATs = Math.min(remainingFATs, bigBlockSize.getXBATEntriesPerBlock());
             for (int j = 0; j < xbatFATs; j++) {
                 int fatAt = xfat.getValueAt(j);
-                if (fatAt == POIFSConstants.UNUSED_BLOCK || fatAt == POIFSConstants.END_OF_CHAIN)
-                    break;
+                if (fatAt == POIFSConstants.UNUSED_BLOCK || fatAt == POIFSConstants.END_OF_CHAIN) break;
                 readBAT(fatAt, loopDetector);
             }
             remainingFATs -= xbatFATs;
@@ -457,9 +458,7 @@ public class POIFSFileSystem extends BlockStore
         // Ensure there's a spot in the file for it
         ByteBuffer buffer = ByteBuffer.allocate(bigBlockSize.getBigBlockSize());
         // Header isn't in BATs
-        long writeToOffset = 1L + offset;
-        long writeToBlock = bigBlockSize.getBigBlockSize();
-        long writeTo = Math.multiplyExact(writeToOffset, writeToBlock);
+        long writeTo = Math.multiplyExact(1L + offset, bigBlockSize.getBigBlockSize());
         _data.write(buffer, writeTo);
         // All done
         return newBAT;
@@ -990,7 +989,7 @@ public class POIFSFileSystem extends BlockStore
     @Override
     protected void releaseBuffer(ByteBuffer buffer) {
         if (_data instanceof FileBackedDataSource) {
-            ((FileBackedDataSource) _data).releaseBuffer(buffer);
+            ((FileBackedDataSource)_data).releaseBuffer(buffer);
         }
     }
 

@@ -22,6 +22,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTPageMargins;
@@ -36,7 +40,12 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.PageOrder;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.PaperSize;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.PrintCellComments;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.PrintOrientation;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.PrintSetup;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Sheet;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Workbook;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.WorkbookFactory;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.XSSFITestDataProvider;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.XSSFTestDataSamples;
 
 /**
  * Tests for {@link XSSFPrintSetup}
@@ -315,5 +324,38 @@ public class TestXSSFPrintSetup {
 
         ps.setLeftToRight(false);
         assertFalse(ps.getLeftToRight());
+    }
+
+    @Test
+    public void test69266() throws IOException {
+        byte[] bytes;
+        try (Workbook workbook = XSSFTestDataSamples.openSampleWorkbook("sample.xlsx")) {
+            Sheet sheet = workbook.getSheetAt(0);
+
+            // Set Fit to Page options
+            sheet.setFitToPage(true);
+            PrintSetup printSetup = sheet.getPrintSetup();
+            printSetup.setFitWidth((short) 1);  // Fit to 1 page wide
+            printSetup.setFitHeight((short) 2); // Fit to 1 page tall
+
+            // Write the modified workbook out
+            try (ByteArrayOutputStream fos = new ByteArrayOutputStream()) {
+                workbook.write(fos);
+
+                fos.flush();
+                bytes = fos.toByteArray();
+            }
+        }
+
+        // verify that information is written out and read in properly again
+        try (Workbook workbook = WorkbookFactory.create(new ByteArrayInputStream(bytes))) {
+            Sheet sheet = workbook.getSheetAt(0);
+
+            // verify Fit to Page options
+            assertTrue(sheet.getFitToPage());
+            PrintSetup printSetup = sheet.getPrintSetup();
+            assertEquals(1, printSetup.getFitWidth());
+            assertEquals(2, printSetup.getFitHeight());
+        }
     }
 }

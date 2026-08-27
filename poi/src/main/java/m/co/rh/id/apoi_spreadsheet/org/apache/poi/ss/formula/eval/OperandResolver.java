@@ -15,14 +15,18 @@
    limitations under the License.
 ==================================================================== */
 
-package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval;
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.EvaluationCell;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.DateUtil;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.CellRangeAddress;
+package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval;
 
 import java.time.DateTimeException;
 import java.util.regex.Pattern;
+
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.EvaluationCell;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.LazyRefEval;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.DateUtil;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.CellRangeAddress;
+
 
 /**
  * Provides functionality for evaluating arguments to functions and operators.
@@ -266,6 +270,14 @@ public final class OperandResolver {
                 throw EvaluationException.invalidValue();
             }
             return dd;
+        }
+        if (ev instanceof LazyRefEval) {
+            final LazyRefEval lre = (LazyRefEval) ev;
+            final ValueEval innerValueEval = lre.getInnerValueEvalForFirstSheet();
+            if (innerValueEval == ev) {
+                throw new IllegalStateException("Circular lazy reference " + lre);
+            }
+            return coerceValueToDouble(innerValueEval);
         }
         throw new IllegalStateException("Unexpected arg eval type (" + ev.getClass().getName() + ")");
     }

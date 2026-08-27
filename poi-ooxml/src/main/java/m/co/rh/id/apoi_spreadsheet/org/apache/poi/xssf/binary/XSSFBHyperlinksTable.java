@@ -15,7 +15,11 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.binary;
+
+import com.zaxxer.sparsebits.SparseBitSet;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import com.zaxxer.sparsebits.SparseBitSet;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackagePart;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackageRelationship;
@@ -36,6 +39,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.CellRangeAddress;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.CellRangeUtil;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFRelation;
+
 
 /**
  * @since 3.16-beta3
@@ -152,7 +156,7 @@ public class XSSFBHyperlinksTable {
             CellRangeAddress cellRangeAddress = new CellRangeAddress(hyperlinkCellRange.firstRow, hyperlinkCellRange.lastRow, hyperlinkCellRange.firstCol, hyperlinkCellRange.lastCol);
 
             String url = relIdToHyperlink.get(relId);
-            if (location.length() == 0) {
+            if (location.isEmpty()) {
                 location = url;
             }
 

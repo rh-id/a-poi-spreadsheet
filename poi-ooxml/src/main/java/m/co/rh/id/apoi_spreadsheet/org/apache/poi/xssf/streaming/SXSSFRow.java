@@ -15,6 +15,8 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.streaming;
 
 import java.util.Iterator;
@@ -34,6 +36,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Row;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Sheet;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.NotImplemented;
+
 
 /**
  * Streaming version of XSSFRow implementing the "BigGridDemo" strategy.
@@ -111,7 +114,7 @@ public class SXSSFRow implements Row, Comparable<SXSSFRow>
      * Use this to create new cells within the row and return it.
      * <p>
      * The cell that is returned is a {@link CellType#BLANK}. The type can be changed
-     * either through calling {@code setCellValue} or {@code setCellType}.
+     * either through calling {@code setCellValue} or {@code setCellFormula}.
      *
      * @param column - the column number this cell represents (zero-based)
      * @return Cell a high level representation of the created cell.
@@ -128,7 +131,7 @@ public class SXSSFRow implements Row, Comparable<SXSSFRow>
      * Use this to create new cells within the row and return it.
      * <p>
      * The cell that is returned is a {@link CellType#BLANK}. The type can be changed
-     * either through calling setCellValue or setCellType.
+     * either through calling setCellValue or setCellFormula.
      *
      * @param column - the column number this cell represents (zero-based)
      * @return Cell a high level representation of the created cell.

@@ -15,9 +15,31 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.model;
 
 import static m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.POIXMLTypeLoader.DEFAULT_XML_OPTIONS;
+
+import org.apache.xmlbeans.XmlException;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTBorder;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTBorders;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTCellStyleXfs;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTCellXfs;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTDxf;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTDxfs;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTFill;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTFills;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTFont;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTFonts;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTNumFmt;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTNumFmts;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTStylesheet;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTTableStyle;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTTableStyles;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTXf;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.STPatternType;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.StyleSheetDocument;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -53,25 +75,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFTableStyle;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.extensions.XSSFCellBorder;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.extensions.XSSFCellFill;
-import org.apache.xmlbeans.XmlException;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTBorder;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTBorders;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTCellStyleXfs;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTCellXfs;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTDxf;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTDxfs;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTFill;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTFills;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTFont;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTFonts;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTNumFmt;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTNumFmts;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTStylesheet;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTTableStyle;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTTableStyles;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTXf;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.STPatternType;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.StyleSheetDocument;
+
 
 /**
  * Table of styles shared across all sheets in a workbook.
@@ -844,6 +848,11 @@ public class StylesTable extends POIXMLDocumentPart implements Styles {
      */
     public TableStyle getTableStyle(String name) {
         if (name == null) return null;
+        TableStyle tableStyle = getExplicitTableStyle(name);
+        if (tableStyle != null) {
+            return tableStyle;
+        }
+
         try {
             return XSSFBuiltinTableStyle.valueOf(name).getStyle();
         } catch (IllegalArgumentException e) {

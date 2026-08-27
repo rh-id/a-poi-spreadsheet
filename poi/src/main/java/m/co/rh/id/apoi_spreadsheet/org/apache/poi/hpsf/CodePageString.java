@@ -14,8 +14,11 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.hpsf;
+
+
 
 import android.util.Log;
 
@@ -23,12 +26,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.CodePageUtil;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.IOUtils;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndian;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndianByteArrayInputStream;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndianConsts;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.*;
+
+
 
 
 @Internal
@@ -55,7 +55,7 @@ public class CodePageString {
         return MAX_RECORD_LENGTH;
     }
 
-    public void read(LittleEndianByteArrayInputStream lei) {
+    public void read( LittleEndianByteArrayInputStream lei ) {
         int offset = lei.getReadIndex();
         int size = lei.readInt();
         _value = IOUtils.safelyAllocate(size, MAX_RECORD_LENGTH);
@@ -73,46 +73,46 @@ public class CodePageString {
         // trailing null characters and an OLEPS implementation MUST be able to handle such strings.
 
         lei.readFully(_value);
-        if (_value[size - 1] != 0) {
+        if (_value[size - 1] != 0 ) {
             // TODO Some files, such as TestVisioWithCodepage.vsd, are currently
             // triggering this for values that don't look like codepages
             // See Bug #52258 for details
-            Log.w(TAG, String.format("CodePageString started at offset #%d is not NULL-terminated", offset));
+            Log.w(TAG, String.format("CodePageString started at offset #%s is not NULL-terminated", offset));
         }
 
         TypedPropertyValue.skipPadding(lei);
     }
 
-    public String getJavaValue(int codepage) throws UnsupportedEncodingException {
-        int cp = (codepage == -1) ? Property.DEFAULT_CODEPAGE : codepage;
+    public String getJavaValue( int codepage ) throws UnsupportedEncodingException {
+        int cp = ( codepage == -1 ) ? Property.DEFAULT_CODEPAGE : codepage;
         String result = CodePageUtil.getStringFromCodePage(_value, cp);
 
 
-        final int terminator = result.indexOf('\0');
-        if (terminator == -1) {
+        final int terminator = result.indexOf( '\0' );
+        if ( terminator == -1 ) {
             Log.w(TAG, "String terminator (\\0) for CodePageString property value not found. " +
                     "Continue without trimming and hope for the best.");
             return result;
         }
-        if (terminator != result.length() - 1) {
+        if ( terminator != result.length() - 1 ) {
             Log.d(TAG, "String terminator (\\0) for CodePageString property value occurred before the end of " +
                     "string. Trimming and hope for the best.");
         }
-        return result.substring(0, terminator);
+        return result.substring( 0, terminator );
     }
 
     public int getSize() {
         return LittleEndianConsts.INT_SIZE + _value.length;
     }
 
-    public void setJavaValue(String string, int codepage) throws UnsupportedEncodingException {
-        int cp = (codepage == -1) ? Property.DEFAULT_CODEPAGE : codepage;
+    public void setJavaValue( String string, int codepage ) throws UnsupportedEncodingException {
+        int cp = ( codepage == -1 ) ? Property.DEFAULT_CODEPAGE : codepage;
         _value = CodePageUtil.getBytesInCodePage(string + "\0", cp);
     }
 
-    public int write(OutputStream out) throws IOException {
-        LittleEndian.putUInt(_value.length, out);
-        out.write(_value);
+    public int write( OutputStream out ) throws IOException {
+        LittleEndian.putUInt( _value.length, out );
+        out.write( _value );
         return LittleEndianConsts.INT_SIZE + _value.length;
     }
 }

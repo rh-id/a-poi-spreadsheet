@@ -14,9 +14,11 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ddf;
+
 
 import android.graphics.Rect;
 import android.util.Log;
@@ -38,27 +40,22 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.IOUtils;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndian;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Removal;
 
+
 public final class EscherMetafileBlip extends EscherBlipRecord {
     private static final String TAG = "EscherMetafileBlip";
     //arbitrarily selected; may need to increase
     private static final int DEFAULT_MAX_RECORD_LENGTH = 100_000_000;
     private static int MAX_RECORD_LENGTH = DEFAULT_MAX_RECORD_LENGTH;
 
-    /**
-     * @deprecated use EscherRecordTypes.BLIP_EMF.typeID
-     */
+    /** @deprecated use EscherRecordTypes.BLIP_EMF.typeID */
     @Deprecated
     @Removal(version = "5.3")
     public static final short RECORD_ID_EMF = EscherRecordTypes.BLIP_EMF.typeID;
-    /**
-     * @deprecated use EscherRecordTypes.BLIP_WMF.typeID
-     */
+    /** @deprecated use EscherRecordTypes.BLIP_WMF.typeID */
     @Deprecated
     @Removal(version = "5.3")
     public static final short RECORD_ID_WMF = EscherRecordTypes.BLIP_WMF.typeID;
-    /**
-     * @deprecated use EscherRecordTypes.BLIP_PICT.typeID
-     */
+    /** @deprecated use EscherRecordTypes.BLIP_PICT.typeID */
     @Deprecated
     @Removal(version = "5.3")
     public static final short RECORD_ID_PICT = EscherRecordTypes.BLIP_PICT.typeID;
@@ -121,36 +118,24 @@ public final class EscherMetafileBlip extends EscherBlipRecord {
 
     @Override
     public int fillFields(byte[] data, int offset, EscherRecordFactory recordFactory) {
-        int bytesAfterHeader = readHeader(data, offset);
+        int bytesAfterHeader = readHeader( data, offset );
         int pos = offset + HEADER_SIZE;
-        System.arraycopy(data, pos, field_1_UID, 0, 16);
-        pos += 16;
+        System.arraycopy( data, pos, field_1_UID, 0, 16 ); pos += 16;
 
-        if ((getOptions() ^ getSignature()) == 0x10) {
-            System.arraycopy(data, pos, field_2_UID, 0, 16);
-            pos += 16;
+        if((getOptions() ^ getSignature()) == 0x10){
+            System.arraycopy( data, pos, field_2_UID, 0, 16 ); pos += 16;
         }
 
-        field_2_cb = LittleEndian.getInt(data, pos);
-        pos += 4;
-        field_3_rcBounds_x1 = LittleEndian.getInt(data, pos);
-        pos += 4;
-        field_3_rcBounds_y1 = LittleEndian.getInt(data, pos);
-        pos += 4;
-        field_3_rcBounds_x2 = LittleEndian.getInt(data, pos);
-        pos += 4;
-        field_3_rcBounds_y2 = LittleEndian.getInt(data, pos);
-        pos += 4;
-        field_4_ptSize_w = LittleEndian.getInt(data, pos);
-        pos += 4;
-        field_4_ptSize_h = LittleEndian.getInt(data, pos);
-        pos += 4;
-        field_5_cbSave = LittleEndian.getInt(data, pos);
-        pos += 4;
-        field_6_fCompression = data[pos];
-        pos++;
-        field_7_fFilter = data[pos];
-        pos++;
+        field_2_cb = LittleEndian.getInt( data, pos ); pos += 4;
+        field_3_rcBounds_x1 = LittleEndian.getInt( data, pos ); pos += 4;
+        field_3_rcBounds_y1 = LittleEndian.getInt( data, pos ); pos += 4;
+        field_3_rcBounds_x2 = LittleEndian.getInt( data, pos ); pos += 4;
+        field_3_rcBounds_y2 = LittleEndian.getInt( data, pos ); pos += 4;
+        field_4_ptSize_w = LittleEndian.getInt( data, pos ); pos += 4;
+        field_4_ptSize_h = LittleEndian.getInt( data, pos ); pos += 4;
+        field_5_cbSave = LittleEndian.getInt( data, pos ); pos += 4;
+        field_6_fCompression = data[pos]; pos++;
+        field_7_fFilter = data[pos]; pos++;
 
         raw_pictureData = IOUtils.safelyClone(data, pos, field_5_cbSave, MAX_RECORD_LENGTH);
         pos += field_5_cbSave;
@@ -164,7 +149,7 @@ public final class EscherMetafileBlip extends EscherBlipRecord {
         }
 
         int remaining = bytesAfterHeader - pos + offset + HEADER_SIZE;
-        if (remaining > 0) {
+        if(remaining > 0) {
             remainingData = IOUtils.safelyClone(data, pos, remaining, MAX_RECORD_LENGTH);
         }
         return bytesAfterHeader + HEADER_SIZE;
@@ -175,44 +160,29 @@ public final class EscherMetafileBlip extends EscherBlipRecord {
         listener.beforeRecordSerialize(offset, getRecordId(), this);
 
         int pos = offset;
-        LittleEndian.putShort(data, pos, getOptions());
-        pos += 2;
-        LittleEndian.putShort(data, pos, getRecordId());
-        pos += 2;
-        LittleEndian.putInt(data, pos, getRecordSize() - HEADER_SIZE);
-        pos += 4;
+        LittleEndian.putShort( data, pos, getOptions() ); pos += 2;
+        LittleEndian.putShort( data, pos, getRecordId() ); pos += 2;
+        LittleEndian.putInt( data, pos, getRecordSize() - HEADER_SIZE ); pos += 4;
 
-        System.arraycopy(field_1_UID, 0, data, pos, field_1_UID.length);
-        pos += field_1_UID.length;
+        System.arraycopy( field_1_UID, 0, data, pos, field_1_UID.length ); pos += field_1_UID.length;
         if ((getOptions() ^ getSignature()) == 0x10) {
-            System.arraycopy(field_2_UID, 0, data, pos, field_2_UID.length);
-            pos += field_2_UID.length;
+            System.arraycopy( field_2_UID, 0, data, pos, field_2_UID.length ); pos += field_2_UID.length;
         }
-        LittleEndian.putInt(data, pos, field_2_cb);
-        pos += 4;
-        LittleEndian.putInt(data, pos, field_3_rcBounds_x1);
-        pos += 4;
-        LittleEndian.putInt(data, pos, field_3_rcBounds_y1);
-        pos += 4;
-        LittleEndian.putInt(data, pos, field_3_rcBounds_x2);
-        pos += 4;
-        LittleEndian.putInt(data, pos, field_3_rcBounds_y2);
-        pos += 4;
-        LittleEndian.putInt(data, pos, field_4_ptSize_w);
-        pos += 4;
-        LittleEndian.putInt(data, pos, field_4_ptSize_h);
-        pos += 4;
-        LittleEndian.putInt(data, pos, field_5_cbSave);
-        pos += 4;
-        data[pos] = field_6_fCompression;
-        pos++;
-        data[pos] = field_7_fFilter;
-        pos++;
+        LittleEndian.putInt( data, pos, field_2_cb ); pos += 4;
+        LittleEndian.putInt( data, pos, field_3_rcBounds_x1 ); pos += 4;
+        LittleEndian.putInt( data, pos, field_3_rcBounds_y1 ); pos += 4;
+        LittleEndian.putInt( data, pos, field_3_rcBounds_x2 ); pos += 4;
+        LittleEndian.putInt( data, pos, field_3_rcBounds_y2 ); pos += 4;
+        LittleEndian.putInt( data, pos, field_4_ptSize_w ); pos += 4;
+        LittleEndian.putInt( data, pos, field_4_ptSize_h ); pos += 4;
+        LittleEndian.putInt( data, pos, field_5_cbSave ); pos += 4;
+        data[pos] = field_6_fCompression; pos++;
+        data[pos] = field_7_fFilter; pos++;
 
-        System.arraycopy(raw_pictureData, 0, data, pos, raw_pictureData.length);
+        System.arraycopy( raw_pictureData, 0, data, pos, raw_pictureData.length );
         pos += raw_pictureData.length;
-        if (remainingData != null) {
-            System.arraycopy(remainingData, 0, data, pos, remainingData.length);
+        if(remainingData != null) {
+            System.arraycopy( remainingData, 0, data, pos, remainingData.length );
         }
 
         listener.afterRecordSerialize(offset + getRecordSize(), getRecordId(), getRecordSize(), this);
@@ -239,10 +209,10 @@ public final class EscherMetafileBlip extends EscherBlipRecord {
     @Override
     public int getRecordSize() {
         int size = 8 + 50 + raw_pictureData.length;
-        if (remainingData != null) {
+        if(remainingData != null) {
             size += remainingData.length;
         }
-        if ((getOptions() ^ getSignature()) == 0x10) {
+        if((getOptions() ^ getSignature()) == 0x10){
             size += field_2_UID.length;
         }
         return size;
@@ -320,8 +290,8 @@ public final class EscherMetafileBlip extends EscherBlipRecord {
     public Rect getBounds() {
         return new Rect(field_3_rcBounds_x1,
                 field_3_rcBounds_y1,
-                field_3_rcBounds_x2 - field_3_rcBounds_x1,
-                field_3_rcBounds_y2 - field_3_rcBounds_y1);
+                field_3_rcBounds_x2,
+                field_3_rcBounds_y2);
     }
 
     /**
@@ -408,6 +378,7 @@ public final class EscherMetafileBlip extends EscherBlipRecord {
     public void setFilter(byte filter) {
         field_7_fFilter = filter;
     }
+
 
 
     /**

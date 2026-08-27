@@ -15,6 +15,8 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.hpsf;
 
 import static m.co.rh.id.apoi_spreadsheet.org.apache.poi.hpsf.ClassIDPredefined.DOC_SUMMARY;
@@ -27,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hpsf.wellknown.PropertyIDMap;
+
 
 /**
  * Convenience class representing a DocumentSummary Information stream in a
@@ -767,7 +770,7 @@ public class DocumentSummaryInformation extends PropertySet {
                 final long id = p.getID();
                 if (id == PropertyIDMap.PID_CODEPAGE) {
                     cps.setCodepage((Integer)p.getValue());
-                } else if (id > PropertyIDMap.PID_CODEPAGE) {
+                } else if (id > PropertyIDMap.PID_CODEPAGE && dictionary != null) {
                     propertyCount++;
                     final CustomProperty cp = new CustomProperty(p, dictionary.get(id));
                     cps.put(cp.getName(), cp);

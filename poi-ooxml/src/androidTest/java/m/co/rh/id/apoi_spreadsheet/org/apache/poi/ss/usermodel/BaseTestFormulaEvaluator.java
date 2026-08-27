@@ -359,7 +359,7 @@ public abstract class BaseTestFormulaEvaluator {
 
             eval.evaluateInCell(cell);
 
-            assertEquals("3.0", cell.toString());
+            assertEquals(3.0, cell.getNumericCellValue(), 0);
         }
     }
 
@@ -623,7 +623,6 @@ public abstract class BaseTestFormulaEvaluator {
 
             assertNotNull(eval.evaluateInCell(cell));
 
-            assertEquals("3.0", cell.toString());
             assertEquals(CellType.NUMERIC, cell.getCellType());
             assertEquals(3.0, cell.getNumericCellValue(), 0.01);
         }

@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula;
 
@@ -31,65 +32,19 @@ import java.util.TreeSet;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.SpreadsheetVersion;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.CollaboratingWorkbooksEnvironment.WorkbookNotFoundException;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.atp.AnalysisToolPak;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.AreaEval;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.BlankEval;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.BoolEval;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.ErrorEval;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.EvaluationException;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.ExternalNameEval;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.FunctionEval;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.FunctionNameEval;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.MissingArgEval;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.NotImplementedException;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.NumberEval;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.OperandResolver;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.RefListEval;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.StringEval;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.ValueEval;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.*;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.function.FunctionMetadataRegistry;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.ArrayMode;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.Choose;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.FreeRefFunction;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.Function;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.IfFunc;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ptg.Area3DPtg;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ptg.Area3DPxg;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ptg.AreaErrPtg;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ptg.AreaPtg;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ptg.ArrayPtg;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ptg.AttrPtg;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ptg.BoolPtg;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ptg.ControlPtg;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ptg.DeletedArea3DPtg;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ptg.DeletedRef3DPtg;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ptg.ErrPtg;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ptg.ExpPtg;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ptg.FuncVarPtg;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ptg.IntPtg;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ptg.MemAreaPtg;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ptg.MemErrPtg;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ptg.MemFuncPtg;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ptg.MissingArgPtg;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ptg.NamePtg;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ptg.NameXPtg;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ptg.NameXPxg;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ptg.NumberPtg;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ptg.OperationPtg;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ptg.Ptg;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ptg.Ref3DPtg;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ptg.Ref3DPxg;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ptg.RefErrorPtg;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ptg.RefPtg;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ptg.RefPtgBase;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ptg.StringPtg;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ptg.UnionPtg;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ptg.UnknownPtg;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions.*;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ptg.*;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.udf.AggregatingUDFFinder;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.udf.UDFFinder;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.CellType;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.CellRangeAddressBase;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.CellReference;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
+
+
+
 
 /**
  * Evaluates formula cells.
@@ -125,7 +80,7 @@ public final class WorkbookEvaluator {
     private boolean dbgEvaluationOutputForNextEval;
 
     // special logger for formula evaluation output (because of possibly very large output)
-    private final String EVAL_TAG = "POI.FormulaEval";
+    private static final String EVAL_TAG = "POI.FormulaEval";
     // current indent level for evaluation; negative value for no output
     private int dbgEvaluationOutputIndent = -1;
 
@@ -360,7 +315,6 @@ public final class WorkbookEvaluator {
             String message = String.format("Evaluated %s!%s to %s", sheetName, cr.formatAsString(), resultForLogging);
             Log.d(TAG, message);
         }
-
         // Usually (result === cce.getValue())
         // But sometimes: (result==ErrorEval.CIRCULAR_REF_ERROR, cce.getValue()==null)
         // When circular references are detected, the cache entry is only updated for
@@ -423,7 +377,7 @@ public final class WorkbookEvaluator {
 
         String dbgIndentStr = "";        // always init. to non-null just for defensive avoiding NPE
         if (dbgEvaluationOutputForNextEval) {
-            // first evaluation call when ouput is desired, so iit. this evaluator instance
+            // first evaluation call when output is desired, so iit. this evaluator instance
             dbgEvaluationOutputIndent = 1;
             dbgEvaluationOutputForNextEval = true;
         }
@@ -451,9 +405,7 @@ public final class WorkbookEvaluator {
             // since we don't know how to handle these yet :(
             Ptg ptg = ptgs[i];
             if (dbgEvaluationOutputIndent > 0) {
-                if (Log.isLoggable(EVAL_TAG, Log.WARN)) {
-                    Log.w(EVAL_TAG, String.format("%s  * ptg %d: %s, stack: %s", dbgIndentStr, i, ptg, stack));
-                }
+                Log.i(EVAL_TAG, String.format("%s  * ptg %s: %s, stack: %s", dbgIndentStr, i, ptg, stack));
             }
             if (ptg instanceof AttrPtg) {
                 AttrPtg attrPtg = (AttrPtg) ptg;
@@ -616,7 +568,7 @@ public final class WorkbookEvaluator {
         }
 
         if (dbgEvaluationOutputIndent > 0) {
-            Log.i(EVAL_TAG, String.format("%s finished eval of %s: %s", dbgIndentStr, new CellReference(ec.getRowIndex(), ec.getColumnIndex()).formatAsString(), result));
+            Log.i(EVAL_TAG, String.format("%sfinished eval of %s: %s", dbgIndentStr, new CellReference(ec.getRowIndex(), ec.getColumnIndex()).formatAsString(), result));
             dbgEvaluationOutputIndent--;
             if (dbgEvaluationOutputIndent == 1) {
                 // this evaluation is done, reset indent to stop logging
@@ -1022,7 +974,7 @@ public final class WorkbookEvaluator {
     }
 
     /**
-     * Register a ATP function in runtime.
+     * Register an ATP function in runtime.
      *
      * @param name the function name
      * @param func the function to register

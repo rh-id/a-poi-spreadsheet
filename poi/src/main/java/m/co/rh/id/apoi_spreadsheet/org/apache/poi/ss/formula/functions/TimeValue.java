@@ -14,21 +14,22 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions;
+
+
+
+import android.util.Log;
 
 import java.time.DateTimeException;
 import java.time.LocalDate;
 
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.BlankEval;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.ErrorEval;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.EvaluationException;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.NumberEval;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.OperandResolver;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.ValueEval;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.*;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.DateUtil;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.DateParser;
+
 
 /**
  * Implementation for the TIMEVALUE() Excel function.<p>
@@ -75,7 +76,7 @@ public class TimeValue extends Fixed1ArgFunction {
                 }
             }
         } catch (DateTimeException dte) {
-            android.util.Log.i(TAG, "Failed to parse date/time", dte);
+            Log.i(TAG, "Failed to parse date/time", dte);
             return ErrorEval.VALUE_INVALID;
         } catch (EvaluationException e) {
             return e.getErrorEval();

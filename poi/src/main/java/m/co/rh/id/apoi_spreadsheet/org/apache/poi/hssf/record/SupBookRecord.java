@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record;
 
@@ -26,6 +27,7 @@ import java.util.function.Supplier;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.GenericRecordUtil;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndianOutput;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.StringUtil;
+
 
 /**
  * A External Workbook Description (Supplemental Book).
@@ -82,11 +84,9 @@ public final class SupBookRecord extends StandardRecord {
     public static SupBookRecord createInternalReferences(short numberOfSheets) {
         return new SupBookRecord(false, numberOfSheets);
     }
-
     public static SupBookRecord createAddInFunctions() {
-        return new SupBookRecord(true, (short) 1 /* this field MUST be 0x0001 for add-in referencing */);
+        return new SupBookRecord(true, (short)1 /* this field MUST be 0x0001 for add-in referencing */);
     }
-
     public static SupBookRecord createExternalReferences(String url, String[] sheetNames) {
         return new SupBookRecord(url, sheetNames);
     }
@@ -94,15 +94,12 @@ public final class SupBookRecord extends StandardRecord {
     public boolean isExternalReferences() {
         return field_3_sheet_names != null;
     }
-
     public boolean isInternalReferences() {
         return field_3_sheet_names == null && !_isAddInFunctions;
     }
-
     public boolean isAddInFunctions() {
         return field_3_sheet_names == null && _isAddInFunctions;
     }
-
     /**
      * called by the constructor, should set class level fields.  Should throw
      * runtime exception for bad/incomplete data.
@@ -114,7 +111,7 @@ public final class SupBookRecord extends StandardRecord {
 
         field_1_number_of_sheets = in.readShort();
 
-        if (recLen > SMALL_RECORD_SIZE) {
+        if(recLen > SMALL_RECORD_SIZE) {
             // 5.38.1 External References
             _isAddInFunctions = false;
 
@@ -131,24 +128,24 @@ public final class SupBookRecord extends StandardRecord {
         field_3_sheet_names = null;
 
         short nextShort = in.readShort();
-        if (nextShort == TAG_INTERNAL_REFERENCES) {
+        if(nextShort == TAG_INTERNAL_REFERENCES) {
             // 5.38.2 'Internal References'
             _isAddInFunctions = false;
-        } else if (nextShort == TAG_ADD_IN_FUNCTIONS) {
+        } else if(nextShort == TAG_ADD_IN_FUNCTIONS) {
             // 5.38.3 'Add-In Functions'
             _isAddInFunctions = true;
-            if (field_1_number_of_sheets != 1) {
+            if(field_1_number_of_sheets != 1) {
                 throw new IllegalArgumentException("Expected 0x0001 for number of sheets field in 'Add-In Functions' but got ("
-                        + field_1_number_of_sheets + ")");
+                     + field_1_number_of_sheets + ")");
             }
         } else {
             throw new IllegalArgumentException("invalid EXTERNALBOOK code ("
-                    + Integer.toHexString(nextShort) + ")");
+                     + Integer.toHexString(nextShort) + ")");
         }
-    }
+     }
 
     protected int getDataSize() {
-        if (!isExternalReferences()) {
+        if(!isExternalReferences()) {
             return SMALL_RECORD_SIZE;
         }
         int sum = 2; // u16 number of sheets
@@ -164,7 +161,7 @@ public final class SupBookRecord extends StandardRecord {
     public void serialize(LittleEndianOutput out) {
         out.writeShort(field_1_number_of_sheets);
 
-        if (isExternalReferences()) {
+        if(isExternalReferences()) {
             StringUtil.writeUnicodeString(out, field_2_encoded_url);
 
             for (String field_3_sheet_name : field_3_sheet_names) {
@@ -177,22 +174,22 @@ public final class SupBookRecord extends StandardRecord {
         }
     }
 
-    public void setNumberOfSheets(short number) {
+    public void setNumberOfSheets(short number){
         field_1_number_of_sheets = number;
     }
 
-    public short getNumberOfSheets() {
+    public short getNumberOfSheets(){
         return field_1_number_of_sheets;
     }
 
-    public short getSid() {
+    public short getSid()
+    {
         return sid;
     }
-
     public String getURL() {
         String encodedUrl = field_2_encoded_url;
         if (encodedUrl != null && encodedUrl.length() >= 2) {
-            switch (encodedUrl.charAt(0)) {
+            switch(encodedUrl.charAt(0)) {
                 case 0: // Reference to an empty workbook name
                 case 2: // Self-referential external reference
                     // will this just be empty string?
@@ -204,46 +201,44 @@ public final class SupBookRecord extends StandardRecord {
         }
         return encodedUrl;
     }
-
     private static String decodeFileName(String encodedUrl) {
         /* see "MICROSOFT OFFICE EXCEL 97-2007  BINARY FILE FORMAT SPECIFICATION" */
         StringBuilder sb = new StringBuilder();
-        for (int i = 1; i < encodedUrl.length(); i++) {
+        for(int i=1; i<encodedUrl.length(); i++) {
             char c = encodedUrl.charAt(i);
             switch (c) {
-                case CH_VOLUME:
-                    char driveLetter = encodedUrl.charAt(++i);
-                    if (driveLetter == '@') {
-                        sb.append("\\\\");
-                    } else {
-                        //Windows notation for drive letters
-                        sb.append(driveLetter).append(":");
-                    }
-                    break;
-                case CH_SAME_VOLUME:
-                case CH_DOWN_DIR:
-                    sb.append(PATH_SEPERATOR);
-                    break;
-                case CH_UP_DIR:
-                    sb.append("..").append(PATH_SEPERATOR);
-                    break;
-                case CH_LONG_VOLUME:
-                    //Don't known to handle...
-                    Log.w(TAG, "Found unexpected key: ChLongVolume - IGNORING");
-                    break;
-                case CH_STARTUP_DIR:
-                case CH_ALT_STARTUP_DIR:
-                case CH_LIB_DIR:
-                    Log.w(TAG, "EXCEL.EXE path unknown - using this directory instead: .");
-                    sb.append('.').append(PATH_SEPERATOR);
-                    break;
-                default:
-                    sb.append(c);
+            case CH_VOLUME:
+                char driveLetter = encodedUrl.charAt(++i);
+                if (driveLetter == '@') {
+                    sb.append("\\\\");
+                } else {
+                    //Windows notation for drive letters
+                    sb.append(driveLetter).append(":");
+                }
+                break;
+            case CH_SAME_VOLUME:
+            case CH_DOWN_DIR:
+                sb.append(PATH_SEPERATOR);
+                break;
+            case CH_UP_DIR:
+                sb.append("..").append(PATH_SEPERATOR);
+                break;
+            case CH_LONG_VOLUME:
+                //Don't known to handle...
+                Log.w(TAG, "Found unexpected key: ChLongVolume - IGNORING");
+                break;
+            case CH_STARTUP_DIR:
+            case CH_ALT_STARTUP_DIR:
+            case CH_LIB_DIR:
+                Log.w(TAG, "EXCEL.EXE path unknown - using this directory instead: .");
+                sb.append('.').append(PATH_SEPERATOR);
+                break;
+            default:
+                sb.append(c);
             }
         }
         return sb.toString();
     }
-
     public String[] getSheetNames() {
         return field_3_sheet_names == null ? null : field_3_sheet_names.clone();
     }
@@ -266,12 +261,12 @@ public final class SupBookRecord extends StandardRecord {
     @Override
     public Map<String, Supplier<?>> getGenericProperties() {
         return GenericRecordUtil.getGenericProperties(
-                "externalReferences", this::isExternalReferences,
-                "internalReferences", this::isInternalReferences,
-                "url", this::getURL,
-                "numberOfSheets", this::getNumberOfSheets,
-                "sheetNames", this::getSheetNames,
-                "addInFunctions", this::isAddInFunctions
+            "externalReferences", this::isExternalReferences,
+            "internalReferences", this::isInternalReferences,
+            "url", this::getURL,
+            "numberOfSheets", this::getNumberOfSheets,
+            "sheetNames", this::getSheetNames,
+            "addInFunctions", this::isAddInFunctions
         );
     }
 }

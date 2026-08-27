@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record;
 
@@ -41,6 +42,9 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndianOutput;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.RecordFormatException;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.StringUtil;
 
+
+
+
 /**
  * ftPictFmla (0x0009)<p>
  * A sub-record within the OBJ record which stores a reference to an object
@@ -51,35 +55,28 @@ public final class EmbeddedObjectRefSubRecord extends SubRecord {
 
     public static final short sid = 0x0009;
 
-    private static final byte[] EMPTY_BYTE_ARRAY = {};
+    private static final byte[] EMPTY_BYTE_ARRAY = { };
 
     private int field_1_unknown_int;
-    /**
-     * either an area or a cell ref
-     */
+    /** either an area or a cell ref */
     private Ptg field_2_refPtg;
-    /**
-     * for when the 'formula' doesn't parse properly
-     */
+    /** for when the 'formula' doesn't parse properly */
     private byte[] field_2_unknownFormulaData;
-    /**
-     * note- this byte is not present in the encoding if the string length is zero
-     */
+    /** note- this byte is not present in the encoding if the string length is zero */
     private boolean field_3_unicode_flag;  // Flags whether the string is Unicode.
-    private String field_4_ole_classname; // Classname of the embedded OLE document (e.g. Word.Document.8)
-    /**
-     * Formulas often have a single non-zero trailing byte.
+    private String  field_4_ole_classname; // Classname of the embedded OLE document (e.g. Word.Document.8)
+    /** Formulas often have a single non-zero trailing byte.
      * This is in a similar position to he pre-streamId padding
      * It is unknown if the value is important (it seems to mirror a value a few bytes earlier)
-     */
-    private Byte field_4_unknownByte;
+     *  */
+    private Byte  field_4_unknownByte;
     private Integer field_5_stream_id;   // ID of the OLE stream containing the actual data.
     private byte[] field_6_unknown;
 
 
     // currently for testing only - needs review
     public EmbeddedObjectRefSubRecord() {
-        field_2_unknownFormulaData = new byte[]{0x02, 0x6C, 0x6A, 0x16, 0x01,}; // just some sample data.  These values vary a lot
+        field_2_unknownFormulaData = new byte[] { 0x02, 0x6C, 0x6A, 0x16, 0x01, }; // just some sample data.  These values vary a lot
         field_6_unknown = EMPTY_BYTE_ARRAY;
         field_4_ole_classname = null;
     }
@@ -97,7 +94,7 @@ public final class EmbeddedObjectRefSubRecord extends SubRecord {
     }
 
     public EmbeddedObjectRefSubRecord(LittleEndianInput in, int size) {
-        this(in, size, -1);
+        this(in,size,-1);
     }
 
     EmbeddedObjectRefSubRecord(LittleEndianInput in, int size, int cmoOt) {
@@ -137,8 +134,8 @@ public final class EmbeddedObjectRefSubRecord extends SubRecord {
             int nChars = in.readUShort();
             stringByteCount += LittleEndianConsts.SHORT_SIZE;
             if (nChars > 0) {
-                // OOO: the 4th way Xcl stores a unicode string: not even a Grbit byte present if length 0
-                field_3_unicode_flag = (in.readByte() & 0x01) != 0;
+                 // OOO: the 4th way Xcl stores a unicode string: not even a Grbit byte present if length 0
+                field_3_unicode_flag = ( in.readByte() & 0x01 ) != 0;
                 stringByteCount += LittleEndianConsts.BYTE_SIZE;
                 if (field_3_unicode_flag) {
                     field_4_ole_classname = StringUtil.readUnicodeLE(in, nChars);
@@ -160,15 +157,15 @@ public final class EmbeddedObjectRefSubRecord extends SubRecord {
             int b = in.readByte();
             remaining -= LittleEndianConsts.BYTE_SIZE;
             if (field_2_refPtg != null && field_4_ole_classname == null) {
-                field_4_unknownByte = (byte) b;
+                field_4_unknownByte = (byte)b;
             }
         }
         int nUnexpectedPadding = remaining - dataLenAfterFormula;
 
         if (nUnexpectedPadding > 0) {
-            Log.e(TAG, String.format("Discarding %d unexpected padding bytes", nUnexpectedPadding));
+            Log.e(TAG, String.format("Discarding %s unexpected padding bytes", nUnexpectedPadding));
             readRawData(in, nUnexpectedPadding);
-            remaining -= nUnexpectedPadding;
+            remaining-=nUnexpectedPadding;
         }
 
         // Fetch the stream ID
@@ -189,15 +186,11 @@ public final class EmbeddedObjectRefSubRecord extends SubRecord {
         try (LittleEndianInputStream in = new LittleEndianInputStream(
                 UnsynchronizedByteArrayInputStream.builder().setByteArray(formulaRawBytes).get())) {
             byte ptgSid = in.readByte();
-            switch (ptgSid) {
-                case AreaPtg.sid:
-                    return new AreaPtg(in);
-                case Area3DPtg.sid:
-                    return new Area3DPtg(in);
-                case RefPtg.sid:
-                    return new RefPtg(in);
-                case Ref3DPtg.sid:
-                    return new Ref3DPtg(in);
+            switch(ptgSid) {
+                case AreaPtg.sid:   return new AreaPtg(in);
+                case Area3DPtg.sid: return new Area3DPtg(in);
+                case RefPtg.sid:    return new RefPtg(in);
+                case Ref3DPtg.sid:  return new Ref3DPtg(in);
             }
             return null;
         } catch (IOException e) {
@@ -236,7 +229,7 @@ public final class EmbeddedObjectRefSubRecord extends SubRecord {
         }
         // pad to next 2 byte boundary
         if ((result % 2) != 0) {
-            result++;
+            result ++;
         }
         return result;
     }
@@ -247,9 +240,8 @@ public final class EmbeddedObjectRefSubRecord extends SubRecord {
         if (field_5_stream_id != null) {
             result += 4;
         }
-        return result + field_6_unknown.length;
+        return result +  field_6_unknown.length;
     }
-
     protected int getDataSize() {
         int formulaSize = field_2_refPtg == null ? field_2_unknownFormulaData.length : field_2_refPtg.getSize();
         int idOffset = getStreamIDOffset(formulaSize);
@@ -282,13 +274,13 @@ public final class EmbeddedObjectRefSubRecord extends SubRecord {
         // don't write 0x03, stringLen, flag, text
         if (field_4_ole_classname != null) {
             out.writeByte(0x03);
-            pos += 1;
+            pos+=1;
             int stringLen = field_4_ole_classname.length();
             out.writeShort(stringLen);
-            pos += 2;
+            pos+=2;
             if (stringLen > 0) {
                 out.writeByte(field_3_unicode_flag ? 0x01 : 0x00);
-                pos += 1;
+                pos+=1;
 
                 if (field_3_unicode_flag) {
                     StringUtil.putUnicodeLE(field_4_ole_classname, out);
@@ -301,7 +293,7 @@ public final class EmbeddedObjectRefSubRecord extends SubRecord {
         }
 
         // pad to next 2-byte boundary (requires 0 or 1 bytes)
-        switch (idOffset - (pos - 6)) { // 6 for 3 shorts: sid, dataSize, idOffset
+        switch(idOffset - (pos - 6)) { // 6 for 3 shorts: sid, dataSize, idOffset
             case 1:
                 out.writeByte(field_4_unknownByte == null ? 0x00 : field_4_unknownByte.intValue());
                 break;
@@ -362,14 +354,14 @@ public final class EmbeddedObjectRefSubRecord extends SubRecord {
     @Override
     public Map<String, Supplier<?>> getGenericProperties() {
         return GenericRecordUtil.getGenericProperties(
-                "f2unknown", () -> field_1_unknown_int,
-                "f3unknown", () -> field_2_unknownFormulaData,
-                "formula", () -> field_2_refPtg,
-                "unicodeFlag", () -> field_3_unicode_flag,
-                "oleClassname", () -> field_4_ole_classname,
-                "f4unknown", () -> field_4_unknownByte,
-                "streamId", () -> field_5_stream_id,
-                "f7unknown", () -> field_6_unknown
+            "f2unknown", () -> field_1_unknown_int,
+            "f3unknown", () -> field_2_unknownFormulaData,
+            "formula", () -> field_2_refPtg,
+            "unicodeFlag", () -> field_3_unicode_flag,
+            "oleClassname", () -> field_4_ole_classname,
+            "f4unknown", () -> field_4_unknownByte,
+            "streamId", () -> field_5_stream_id,
+            "f7unknown", () -> field_6_unknown
         );
     }
 }

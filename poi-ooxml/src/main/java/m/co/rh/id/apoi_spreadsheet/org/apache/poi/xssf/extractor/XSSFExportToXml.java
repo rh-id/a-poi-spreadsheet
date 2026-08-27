@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.extractor;
 
@@ -37,7 +38,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Vector;
-
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
@@ -62,10 +62,12 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFTableColumn
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.helpers.XSSFSingleXmlCell;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.helpers.XSSFXmlColumnPr;
 
+
 /**
+ *
  * Maps an XLSX to an XML according to one of the mapping defined.
- * <p>
- * <p>
+ *
+ *
  * The output XML Schema must respect this limitations:
  *
  * <ul>
@@ -79,7 +81,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.helpers.XSSFXml
  * <li> no &lt;substitutionGroup&gt; in complex type/element declaration </li>
  * </ul>
  */
-public class XSSFExportToXml implements Comparator<String> {
+public class XSSFExportToXml implements Comparator<String>{
     private static final String TAG = "XSSFExportToXml";
 
 
@@ -91,7 +93,6 @@ public class XSSFExportToXml implements Comparator<String> {
 
     private XSSFMap map;
     private final HashMap<String, Integer> indexMap = new HashMap<>();
-
     /**
      * Creates a new exporter and sets the mapping to be used when generating the XML output document
      *
@@ -102,11 +103,12 @@ public class XSSFExportToXml implements Comparator<String> {
     }
 
     /**
+     *
      * Exports the data in an XML stream
      *
-     * @param os       OutputStream in which will contain the output XML
+     * @param os OutputStream in which will contain the output XML
      * @param validate if true, validates the XML against the XML Schema
-     * @throws SAXException         If validating the document fails
+     * @throws SAXException If validating the document fails
      * @throws TransformerException If transforming the document fails
      */
     public void exportToXML(OutputStream os, boolean validate) throws SAXException, TransformerException {
@@ -116,13 +118,13 @@ public class XSSFExportToXml implements Comparator<String> {
     /**
      * Exports the data in an XML stream
      *
-     * @param os       OutputStream in which will contain the output XML
+     * @param os OutputStream in which will contain the output XML
      * @param encoding the output charset encoding
      * @param validate if true, validates the XML against the XML Schema
-     * @throws SAXException         If validating the document fails
+     * @throws SAXException If validating the document fails
      * @throws TransformerException If transforming the document fails
      */
-    public void exportToXML(OutputStream os, String encoding, boolean validate) throws SAXException, TransformerException {
+    public void exportToXML(OutputStream os, String encoding, boolean validate) throws SAXException, TransformerException{
         List<XSSFSingleXmlCell> singleXMLCells = map.getRelatedSingleXMLCell();
         List<XSSFTable> tables = map.getRelatedTables();
 
@@ -133,7 +135,7 @@ public class XSSFExportToXml implements Comparator<String> {
         final Element root;
 
         if (isNamespaceDeclared()) {
-            root = doc.createElementNS(getNamespace(), rootElement);
+            root = doc.createElementNS(getNamespace(),rootElement);
         } else {
             root = doc.createElementNS("", rootElement);
         }
@@ -141,14 +143,14 @@ public class XSSFExportToXml implements Comparator<String> {
 
 
         List<String> xpaths = new Vector<>();
-        Map<String, XSSFSingleXmlCell> singleXmlCellsMappings = new HashMap<>();
-        Map<String, XSSFTable> tableMappings = new HashMap<>();
+        Map<String,XSSFSingleXmlCell> singleXmlCellsMappings = new HashMap<>();
+        Map<String,XSSFTable> tableMappings = new HashMap<>();
 
-        for (XSSFSingleXmlCell simpleXmlCell : singleXMLCells) {
+        for(XSSFSingleXmlCell simpleXmlCell : singleXMLCells) {
             xpaths.add(simpleXmlCell.getXpath());
             singleXmlCellsMappings.put(simpleXmlCell.getXpath(), simpleXmlCell);
         }
-        for (XSSFTable table : tables) {
+        for(XSSFTable table : tables) {
             String commonXPath = table.getCommonXpath();
             xpaths.add(commonXPath);
             tableMappings.put(commonXPath, table);
@@ -157,8 +159,8 @@ public class XSSFExportToXml implements Comparator<String> {
         indexMap.clear();
         xpaths.sort(this);
         indexMap.clear();
-
-        for (String xpath : xpaths) {
+        
+        for(String xpath : xpaths) {
 
             XSSFSingleXmlCell simpleXmlCell = singleXmlCellsMappings.get(xpath);
             XSSFTable table = tableMappings.get(xpath);
@@ -166,12 +168,12 @@ public class XSSFExportToXml implements Comparator<String> {
             if (!xpath.matches(".*\\[.*")) {
 
                 // Exports elements and attributes mapped with simpleXmlCell
-                if (simpleXmlCell != null) {
+                if (simpleXmlCell!=null) {
                     XSSFCell cell = simpleXmlCell.getReferencedCell();
-                    if (cell != null) {
-                        Node currentNode = getNodeByXPath(xpath, doc.getFirstChild(), doc, false);
-                        mapCellOnNode(cell, currentNode);
-
+                    if (cell!=null) {
+                        Node currentNode = getNodeByXPath(xpath,doc.getFirstChild(),doc,false);
+                        mapCellOnNode(cell,currentNode);
+                        
                         //remove nodes which are empty in order to keep the output xml valid
                         // FIXME: what should be done if currentNode.getTextContent() is null?
                         if ("".equals(currentNode.getTextContent()) && currentNode.getParentNode() != null) {
@@ -181,7 +183,7 @@ public class XSSFExportToXml implements Comparator<String> {
                 }
 
                 // Exports elements and attributes mapped with tables
-                if (table != null) {
+                if (table!=null) {
 
                     List<XSSFTableColumn> tableColumns = table.getColumns();
 
@@ -190,7 +192,7 @@ public class XSSFExportToXml implements Comparator<String> {
                     int startRow = table.getStartCellReference().getRow() + table.getHeaderRowCount();
                     int endRow = table.getEndCellReference().getRow();
 
-                    for (int i = startRow; i <= endRow; i++) {
+                    for(int i = startRow; i<= endRow; i++) {
                         XSSFRow row = sheet.getRow(i);
 
                         Node tableRootNode = getNodeByXPath(table.getCommonXpath(), doc.getFirstChild(), doc, true);
@@ -202,7 +204,7 @@ public class XSSFExportToXml implements Comparator<String> {
                                 XSSFXmlColumnPr xmlColumnPr = tableColumn.getXmlColumnPr();
                                 if (xmlColumnPr != null) {
                                     String localXPath = xmlColumnPr.getLocalXPath();
-                                    Node currentNode = getNodeByXPath(localXPath, tableRootNode, doc, false);
+                                    Node currentNode = getNodeByXPath(localXPath,tableRootNode,doc,false);
                                     mapCellOnNode(cell, currentNode);
                                 }
                             }
@@ -216,7 +218,7 @@ public class XSSFExportToXml implements Comparator<String> {
 
         boolean isValid = true;
         if (validate) {
-            isValid = isValid(doc);
+            isValid =isValid(doc);
         }
 
         if (isValid) {
@@ -248,7 +250,7 @@ public class XSSFExportToXml implements Comparator<String> {
      * @throws SAXException If validating the document fails
      */
     @SuppressWarnings({"squid:S2755"})
-    private boolean isValid(Document xml) throws SAXException {
+    private boolean isValid(Document xml) throws SAXException{
         try {
             SchemaFactory factory = XMLHelper.getSchemaFactory();
 
@@ -256,11 +258,11 @@ public class XSSFExportToXml implements Comparator<String> {
             Schema schema = factory.newSchema(source);
             Validator validator = schema.newValidator();
             validator.validate(new DOMSource(xml));
-
+            
             //if no exceptions where raised, the document is valid
             return true;
-        } catch (IOException e) {
-            Log.e(TAG, "document is not valid");
+        } catch(IOException e) {
+            Log.e(TAG, "document is not valid", e);
         }
 
         return false;
@@ -269,43 +271,37 @@ public class XSSFExportToXml implements Comparator<String> {
 
     private void mapCellOnNode(XSSFCell cell, Node node) {
 
-        String value = "";
+        String value ="";
         switch (cell.getCellType()) {
 
-            case STRING:
-                value = cell.getStringCellValue();
-                break;
-            case BOOLEAN:
-                value += cell.getBooleanCellValue();
-                break;
-            case ERROR:
-                value = cell.getErrorCellString();
-                break;
-            case FORMULA:
-                if (cell.getCachedFormulaResultType() == CellType.STRING) {
-                    value = cell.getStringCellValue();
-                } else if (cell.getCachedFormulaResultType() == CellType.BOOLEAN) {
-                    value += cell.getBooleanCellValue();
-                } else if (cell.getCachedFormulaResultType() == CellType.ERROR) {
-                    value = cell.getErrorCellString();
-                } else if (cell.getCachedFormulaResultType() == CellType.NUMERIC) {
-                    if (DateUtil.isCellDateFormatted(cell)) {
-                        value = getFormattedDate(cell);
-                    } else {
-                        value += cell.getNumericCellValue();
-                    }
-                }
-                break;
+        case STRING: value = cell.getStringCellValue(); break;
+        case BOOLEAN: value += cell.getBooleanCellValue(); break;
+        case ERROR: value = cell.getErrorCellString();  break;
+        case FORMULA:
+           if (cell.getCachedFormulaResultType() == CellType.STRING) {
+               value = cell.getStringCellValue();
+           } else if (cell.getCachedFormulaResultType() == CellType.BOOLEAN) {
+               value += cell.getBooleanCellValue();
+           } else if (cell.getCachedFormulaResultType() == CellType.ERROR) {
+               value = cell.getErrorCellString();
+           } else if (cell.getCachedFormulaResultType() == CellType.NUMERIC) {
+               if (DateUtil.isCellDateFormatted(cell)) {
+                  value = getFormattedDate(cell);
+               } else {
+                  value += cell.getNumericCellValue();
+               }
+           }
+           break;
+        
+        case NUMERIC: 
+             if (DateUtil.isCellDateFormatted(cell)) {
+                  value = getFormattedDate(cell);
+              } else {
+                 value += cell.getRawValue();
+              }
+            break;
 
-            case NUMERIC:
-                if (DateUtil.isCellDateFormatted(cell)) {
-                    value = getFormattedDate(cell);
-                } else {
-                    value += cell.getRawValue();
-                }
-                break;
-
-            default:
+        default:
 
         }
         if (node instanceof Element) {
@@ -317,7 +313,7 @@ public class XSSFExportToXml implements Comparator<String> {
     }
 
     private String removeNamespace(String elementName) {
-        return elementName.matches(".*:.*") ? elementName.split(":")[1] : elementName;
+        return elementName.matches(".*:.*")?elementName.split(":")[1]:elementName;
     }
 
     private String getFormattedDate(XSSFCell cell) {
@@ -326,27 +322,27 @@ public class XSSFExportToXml implements Comparator<String> {
         return sdf.format(cell.getDateCellValue());
     }
 
-    private Node getNodeByXPath(String xpath, Node rootNode, Document doc, boolean createMultipleInstances) {
+    private Node getNodeByXPath(String xpath,Node rootNode,Document doc,boolean createMultipleInstances) {
         String[] xpathTokens = xpath.split("/");
 
 
         Node currentNode = rootNode;
         // The first token is empty, the second is the root node
-        for (int i = 2; i < xpathTokens.length; i++) {
+        for(int i =2; i<xpathTokens.length;i++) {
 
             String axisName = removeNamespace(xpathTokens[i]);
 
 
             if (!axisName.startsWith("@")) {
 
-                NodeList list = currentNode.getChildNodes();
+                NodeList list =currentNode.getChildNodes();
 
                 Node selectedNode = null;
-                if (!(createMultipleInstances && i == xpathTokens.length - 1)) {
+                if (!(createMultipleInstances && i==xpathTokens.length-1) ) {
                     // select the last child node only if we need to map to a single cell
                     selectedNode = selectNode(axisName, list);
                 }
-                if (selectedNode == null) {
+                if (selectedNode==null) {
                     selectedNode = createElement(doc, currentNode, axisName);
                 }
                 currentNode = selectedNode;
@@ -361,7 +357,7 @@ public class XSSFExportToXml implements Comparator<String> {
         String attributeName = axisName.substring(1);
         NamedNodeMap attributesMap = currentNode.getAttributes();
         Node attribute = attributesMap.getNamedItem(attributeName);
-        if (attribute == null) {
+        if (attribute==null) {
             attribute = doc.createAttributeNS("", attributeName);
             attributesMap.setNamedItem(attribute);
         }
@@ -371,7 +367,7 @@ public class XSSFExportToXml implements Comparator<String> {
     private Node createElement(Document doc, Node currentNode, String axisName) {
         Node selectedNode;
         if (isNamespaceDeclared()) {
-            selectedNode = doc.createElementNS(getNamespace(), axisName);
+            selectedNode =doc.createElementNS(getNamespace(),axisName);
         } else {
             selectedNode = doc.createElementNS("", axisName);
         }
@@ -381,10 +377,10 @@ public class XSSFExportToXml implements Comparator<String> {
 
     private Node selectNode(String axisName, NodeList list) {
         Node selectedNode = null;
-        for (int j = 0; j < list.getLength(); j++) {
+        for(int j=0;j<list.getLength();j++) {
             Node node = list.item(j);
             if (node.getNodeName().equals(axisName)) {
-                selectedNode = node;
+                selectedNode=node;
                 break;
             }
         }
@@ -394,7 +390,7 @@ public class XSSFExportToXml implements Comparator<String> {
 
     private boolean isNamespaceDeclared() {
         String schemaNamespace = getNamespace();
-        return schemaNamespace != null && !schemaNamespace.isEmpty();
+        return schemaNamespace!=null && !schemaNamespace.isEmpty();
     }
 
     private String getNamespace() {
@@ -404,6 +400,7 @@ public class XSSFExportToXml implements Comparator<String> {
 
     /**
      * Compares two xpaths to define an ordering according to the XML Schema
+     *
      */
     @Override
     public int compare(String leftXpath, String rightXpath) {
@@ -417,7 +414,7 @@ public class XSSFExportToXml implements Comparator<String> {
 
         Node localComplexTypeRootNode = xmlSchema;
 
-        for (int i = 1; i < minLength; i++) {
+        for(int i =1;i <minLength; i++) {
 
             String leftElementName = leftTokens[i];
             String rightElementName = rightTokens[i];
@@ -426,15 +423,15 @@ public class XSSFExportToXml implements Comparator<String> {
                 samePath += "/" + leftElementName;
                 localComplexTypeRootNode = getComplexTypeForElement(leftElementName, xmlSchema, localComplexTypeRootNode);
             } else {
-                return indexOfElementInComplexType(samePath, leftElementName, rightElementName, localComplexTypeRootNode);
+                return indexOfElementInComplexType(samePath, leftElementName, rightElementName,localComplexTypeRootNode);
             }
         }
 
         return 0;
     }
 
-    private int indexOfElementInComplexType(String samePath, String leftElementName, String rightElementName, Node complexType) {
-        if (complexType == null) {
+    private int indexOfElementInComplexType(String samePath,String leftElementName,String rightElementName,Node complexType) {
+        if(complexType == null) {
             return 0;
         }
 
@@ -445,42 +442,42 @@ public class XSSFExportToXml implements Comparator<String> {
         final String rightWithoutNamespace = removeNamespace(rightElementName);
         int rightIndexOf = getAndStoreIndex(samePath, rightWithoutNamespace);
 
-        while (node != null && (rightIndexOf == -1 || leftIndexOf == -1)) {
+        while (node != null && (rightIndexOf==-1||leftIndexOf==-1)) {
             if (node instanceof Element && "element".equals(node.getLocalName())) {
                 String elementValue = getNameOrRefElement(node).getNodeValue();
                 if (elementValue.equals(leftWithoutNamespace)) {
                     leftIndexOf = i;
-                    indexMap.put(samePath + "/" + leftWithoutNamespace, leftIndexOf);
+                    indexMap.put(samePath+"/"+leftWithoutNamespace, leftIndexOf);
                 }
                 if (elementValue.equals(rightWithoutNamespace)) {
                     rightIndexOf = i;
-                    indexMap.put(samePath + "/" + rightWithoutNamespace, rightIndexOf);
+                    indexMap.put(samePath+"/"+rightWithoutNamespace, rightIndexOf);
                 }
             }
             i++;
             node = node.getNextSibling();
         }
-        if (leftIndexOf == -1 || rightIndexOf == -1) {
+        if(leftIndexOf == -1 || rightIndexOf == -1) {
             return 0;
         }
         return Integer.compare(leftIndexOf, rightIndexOf);
     }
-
-    private int getAndStoreIndex(String samePath, String withoutNamespace) {
-        String withPath = samePath + "/" + withoutNamespace;
+    
+    private int getAndStoreIndex(String samePath,String withoutNamespace) {
+        String withPath = samePath+"/"+withoutNamespace;
         return indexMap.getOrDefault(withPath, -1);
     }
 
     private Node getNameOrRefElement(Node node) {
         Node returnNode = node.getAttributes().getNamedItem("ref");
-        if (returnNode != null) {
+        if(returnNode != null) {
             return returnNode;
         }
-
+        
         return node.getAttributes().getNamedItem("name");
     }
 
-    private Node getComplexTypeForElement(String elementName, Node xmlSchema, Node localComplexTypeRootNode) {
+    private Node getComplexTypeForElement(String elementName,Node xmlSchema,Node localComplexTypeRootNode) {
         String elementNameWithoutNamespace = removeNamespace(elementName);
 
         String complexTypeName = getComplexTypeNameFromChildren(localComplexTypeRootNode, elementNameWithoutNamespace);
@@ -496,20 +493,20 @@ public class XSSFExportToXml implements Comparator<String> {
     }
 
     private String getComplexTypeNameFromChildren(Node localComplexTypeRootNode,
-                                                  String elementNameWithoutNamespace) {
-        if (localComplexTypeRootNode == null) {
+            String elementNameWithoutNamespace) {
+        if(localComplexTypeRootNode == null) {
             return "";
         }
 
-        Node node = localComplexTypeRootNode.getFirstChild();
+        Node node  = localComplexTypeRootNode.getFirstChild();
         String complexTypeName = "";
 
         while (node != null) {
-            if (node instanceof Element && "element".equals(node.getLocalName())) {
+            if ( node instanceof Element && "element".equals(node.getLocalName())) {
                 Node nameAttribute = getNameOrRefElement(node);
                 if (nameAttribute.getNodeValue().equals(elementNameWithoutNamespace)) {
                     Node complexTypeAttribute = node.getAttributes().getNamedItem("type");
-                    if (complexTypeAttribute != null) {
+                    if (complexTypeAttribute!=null) {
                         complexTypeName = complexTypeAttribute.getNodeValue();
                         break;
                     }
@@ -521,17 +518,17 @@ public class XSSFExportToXml implements Comparator<String> {
     }
 
     private Node getComplexTypeNodeFromSchemaChildren(Node xmlSchema, Node complexTypeNode,
-                                                      String complexTypeName) {
+            String complexTypeName) {
         Node node = xmlSchema.getFirstChild();
         while (node != null) {
-            if (node instanceof Element) {
+            if ( node instanceof Element) {
                 if ("complexType".equals(node.getLocalName())) {
                     Node nameAttribute = getNameOrRefElement(node);
                     if (nameAttribute.getNodeValue().equals(complexTypeName)) {
                         Node sequence = node.getFirstChild();
-                        while (sequence != null) {
+                        while(sequence != null) {
 
-                            if (sequence instanceof Element) {
+                            if ( sequence instanceof Element) {
                                 final String localName = sequence.getLocalName();
                                 if ("sequence".equals(localName) || "all".equals(localName)) {
                                     complexTypeNode = sequence;
@@ -540,7 +537,7 @@ public class XSSFExportToXml implements Comparator<String> {
                             }
                             sequence = sequence.getNextSibling();
                         }
-                        if (complexTypeNode != null) {
+                        if (complexTypeNode!=null) {
                             break;
                         }
 

@@ -15,10 +15,17 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import android.util.Log;
+
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTCell;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTCellFormula;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.STCellFormulaType;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.STCellType;
+
 import java.time.LocalDateTime;
 import java.util.Calendar;
 import java.util.Date;
@@ -51,14 +58,10 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.CellUtil;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Beta;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.ExceptionUtil;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LocaleUtil;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.model.CalculationChain;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.model.SharedStringsTable;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.model.StylesTable;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTCell;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTCellFormula;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.STCellFormulaType;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.STCellType;
+
 
 /**
  * High level representation of a cell in a row of a spreadsheet.
@@ -76,6 +79,7 @@ import org.openxmlformats.schemas.spreadsheetml.x2006.main.STCellType;
  */
 public final class XSSFCell extends CellBase {
 
+    private static final String TAG = "XSSFCell";
     private static final String FALSE_AS_STRING = "0";
     private static final String TRUE_AS_STRING  = "1";
     private static final String FALSE = "FALSE";
@@ -139,7 +143,7 @@ public final class XSSFCell extends CellBase {
      * Copy cell value, formula and style, from srcCell per cell copy policy
      * If srcCell is null, clears the cell value and cell style per cell copy policy
      *
-     * This does not shift references in formulas. Use {@link m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.helpers.XSSFRowShifter} to shift references in formulas.
+     * This does not shift references in formulas. Use {@link org.apache.poi.xssf.usermodel.helpers.XSSFRowShifter} to shift references in formulas.
      *
      * @param srcCell The cell to take value, formula and style from
      * @param policy The policy for copying the information, see {@link CellCopyPolicy}
@@ -247,7 +251,7 @@ public final class XSSFCell extends CellBase {
                         return 0.0;
                     }
                     try {
-                        return Double.parseDouble(v);
+                        return parseDouble(v);
                     } catch(NumberFormatException e) {
                         throw typeMismatch(CellType.NUMERIC, CellType.STRING, false);
                     }
@@ -333,12 +337,13 @@ public final class XSSFCell extends CellBase {
         } else {
             if (_cell.isSetV()) {
                 try {
-                    int idx = Integer.parseInt(_cell.getV());
+                    int idx = parseInt(_cell.getV());
                     rt = (XSSFRichTextString)_sharedStringSource.getItemAt(idx);
                 } catch (Throwable t) {
                     if (ExceptionUtil.isFatal(t)) {
                         ExceptionUtil.rethrow(t);
                     }
+                    Log.e(TAG, String.format("Failed to parse SST index '%s'", _cell.getV()), t);
                     rt = new XSSFRichTextString("");
                 }
             } else {
@@ -465,7 +470,7 @@ public final class XSSFCell extends CellBase {
      *
      * @param formula the formula to set, e.g. {@code "SUM(C4:E4)"}.
      *  If the argument is {@code null} then the current formula is removed.
-     * @throws m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.FormulaParseException if the formula has incorrect syntax or is otherwise invalid
+     * @throws org.apache.poi.ss.formula.FormulaParseException if the formula has incorrect syntax or is otherwise invalid
      * @throws IllegalStateException if the operation is not allowed, for example,
      *  when the cell is a part of a multi-cell array formula
      */
@@ -606,10 +611,10 @@ public final class XSSFCell extends CellBase {
      * the XSSFWorkbook.</p>
      *
      * <p>To change the style of a cell without affecting other cells that use the same style,
-     * use {@link m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.CellUtil#setCellStyleProperties(Cell, java.util.Map)}</p>
+     * use {@link org.apache.poi.ss.util.CellUtil#setCellStylePropertiesEnum(Cell, java.util.Map)}</p>
      *
      * @param style  reference contained in the workbook.
-     * If the value is null then the style information is removed causing the cell to used the default workbook style.
+     * If the value is null then the style information is removed causing the cell to use the default workbook style.
      * @throws IllegalArgumentException if style belongs to a different styles source (most likely because style is from a different Workbook)
      */
     @Override
@@ -779,6 +784,7 @@ public final class XSSFCell extends CellBase {
 
         return _cell.getV();
     }
+
     /**
      * Get the value of the cell as an error code.
      * <p>
@@ -939,9 +945,9 @@ public final class XSSFCell extends CellBase {
         switch (getCellType()) {
             case NUMERIC:
                 if (DateUtil.isCellDateFormatted(this)) {
-                    DateFormat sdf = new SimpleDateFormat("dd-MMM-yyyy", LocaleUtil.getUserLocale());
-                    sdf.setTimeZone(LocaleUtil.getUserTimeZone());
-                    return sdf.format(getDateCellValue());
+                    DataFormatter df = new DataFormatter();
+                    df.setUseCachedValuesForFormulaCells(true);
+                    return df.formatCellValue(this);
                 }
                 return Double.toString(getNumericCellValue());
             case STRING:
@@ -1124,12 +1130,12 @@ public final class XSSFCell extends CellBase {
             case BOOLEAN:
                 return TRUE_AS_STRING.equals(_cell.getV());
             case STRING:
-                int sstIndex = Integer.parseInt(_cell.getV());
+                int sstIndex = parseInt(_cell.getV());
                 RichTextString rt = _sharedStringSource.getItemAt(sstIndex);
                 String text = rt.getString();
                 return Boolean.parseBoolean(text);
             case NUMERIC:
-                return Double.parseDouble(_cell.getV()) != 0;
+                return parseDouble(_cell.getV()) != 0;
 
             case ERROR:
                 // fall-through
@@ -1151,13 +1157,14 @@ public final class XSSFCell extends CellBase {
                 return TRUE_AS_STRING.equals(_cell.getV()) ? TRUE : FALSE;
             case STRING:
                 try {
-                    int sstIndex = Integer.parseInt(_cell.getV());
+                    int sstIndex = parseInt(_cell.getV());
                     RichTextString rt = _sharedStringSource.getItemAt(sstIndex);
                     return rt.getString();
                 } catch (Throwable t) {
                     if (ExceptionUtil.isFatal(t)) {
                         ExceptionUtil.rethrow(t);
                     }
+                    Log.e(TAG, String.format("Failed to parse SST index '%s'", _cell.getV()), t);
                     return "";
                 }
             case NUMERIC:
@@ -1227,6 +1234,14 @@ public final class XSSFCell extends CellBase {
         CTCell ctCell = getCTCell();
         String r = new CellReference(getRowIndex(), getColumnIndex()).formatAsString();
         ctCell.setR(r);
+    }
+
+    private static int parseInt(String value) throws NumberFormatException {
+        return Integer.parseInt(value.trim());
+    }
+
+    private static double parseDouble(String value) throws NumberFormatException {
+        return Double.parseDouble(value.trim());
     }
 
 }

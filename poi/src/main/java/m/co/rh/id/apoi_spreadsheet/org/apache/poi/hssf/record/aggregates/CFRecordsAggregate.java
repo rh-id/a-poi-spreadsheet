@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record.aggregates;
 
@@ -42,44 +43,41 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.GenericRecordJsonWriter;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.GenericRecordUtil;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.RecordFormatException;
 
+
+
+
 /**
  * <p>CFRecordsAggregate - aggregates Conditional Formatting records CFHeaderRecord
  * and number of up CFRuleRecord records together to simplify access to them.</p>
  * <p>Note that Excel versions before 2007 can only cope with a maximum of 3
- * Conditional Formatting rules per sheet. Excel 2007 or newer can cope with
- * unlimited numbers, as can Apache OpenOffice. This is an Excel limitation,
- * not a file format one.</p>
+ *  Conditional Formatting rules per sheet. Excel 2007 or newer can cope with
+ *  unlimited numbers, as can Apache OpenOffice. This is an Excel limitation,
+ *  not a file format one.</p>
  */
 public final class CFRecordsAggregate extends RecordAggregate implements GenericRecord {
-    /**
-     * Excel 97-2003 allows up to 3 conditional formating rules
-     */
+    /** Excel 97-2003 allows up to 3 conditional formating rules */
     private static final int MAX_97_2003_CONDTIONAL_FORMAT_RULES = 3;
     private static final String TAG = "CFRecordsAggregate";
 
     private final CFHeaderBase header;
 
-    /**
-     * List of CFRuleRecord objects
-     */
+    /** List of CFRuleRecord objects */
     private final List<CFRuleBase> rules = new ArrayList<>();
 
     public CFRecordsAggregate(CFRecordsAggregate other) {
         header = other.header.copy();
-        other.rules.stream().map(t -> t.copy()).forEach(rules::add);
+        other.rules.stream().map(CFRuleBase::copy).forEach(rules::add);
     }
 
     private CFRecordsAggregate(CFHeaderBase pHeader, CFRuleBase[] pRules) {
-        if (pHeader == null) {
+        if(pHeader == null) {
             throw new IllegalArgumentException("header must not be null");
         }
-        if (pRules == null) {
+        if(pRules == null) {
             throw new IllegalArgumentException("rules must not be null");
         }
-        if (pRules.length > MAX_97_2003_CONDTIONAL_FORMAT_RULES) {
-            Log.w(TAG, String.format("Excel versions before 2007 require that No more than " +
-                    MAX_97_2003_CONDTIONAL_FORMAT_RULES + " rules may be specified, %d were found, this file will " +
-                    "cause problems with old Excel versions", pRules.length));
+        if(pRules.length > MAX_97_2003_CONDTIONAL_FORMAT_RULES) {
+            Log.w(TAG, "Excel versions before 2007 require that No more than " + MAX_97_2003_CONDTIONAL_FORMAT_RULES + " rules may be specified, " + pRules.length + " were found, this file will cause problems with old Excel versions");
         }
         if (pRules.length != pHeader.getNumberOfConditionalFormats()) {
             throw new RecordFormatException("Mismatch number of rules");
@@ -94,7 +92,6 @@ public final class CFRecordsAggregate extends RecordAggregate implements Generic
     public CFRecordsAggregate(CellRangeAddress[] regions, CFRuleBase[] rules) {
         this(createHeader(regions, rules), rules);
     }
-
     private static CFHeaderBase createHeader(CellRangeAddress[] regions, CFRuleBase[] rules) {
         final CFHeaderBase header;
         if (rules.length == 0 || rules[0] instanceof CFRuleRecord) {
@@ -112,20 +109,19 @@ public final class CFRecordsAggregate extends RecordAggregate implements Generic
 
     /**
      * Create CFRecordsAggregate from a list of CF Records
-     *
      * @param rs - the stream to read from
      * @return CFRecordsAggregate object
      */
     public static CFRecordsAggregate createCFAggregate(RecordStream rs) {
         Record rec = rs.getNext();
         if (rec.getSid() != CFHeaderRecord.sid &&
-                rec.getSid() != CFHeader12Record.sid) {
+            rec.getSid() != CFHeader12Record.sid) {
             throw new IllegalStateException("next record sid was " + rec.getSid()
                     + " instead of " + CFHeaderRecord.sid + " or " +
                     CFHeader12Record.sid + " as expected");
         }
 
-        CFHeaderBase header = (CFHeaderBase) rec;
+        CFHeaderBase header = (CFHeaderBase)rec;
         int nRules = header.getNumberOfConditionalFormats();
 
         CFRuleBase[] rules = new CFRuleBase[nRules];
@@ -157,20 +153,19 @@ public final class CFRecordsAggregate extends RecordAggregate implements Generic
     }
 
     private void checkRuleIndex(int idx) {
-        if (idx < 0 || idx >= rules.size()) {
+        if(idx < 0 || idx >= rules.size()) {
             throw new IllegalArgumentException("Bad rule record index (" + idx
                     + ") nRules=" + rules.size());
         }
     }
-
     private void checkRuleType(CFRuleBase r) {
         if (header instanceof CFHeaderRecord &&
-                r instanceof CFRuleRecord) {
+                 r instanceof CFRuleRecord) {
             return;
         }
         if (header instanceof CFHeader12Record &&
-                r instanceof CFRule12Record) {
-            return;
+                 r instanceof CFRule12Record) {
+           return;
         }
         throw new IllegalArgumentException("Header and Rule must both be CF or both be CF12, can't mix");
     }
@@ -179,7 +174,6 @@ public final class CFRecordsAggregate extends RecordAggregate implements Generic
         checkRuleIndex(idx);
         return rules.get(idx);
     }
-
     public void setRule(int idx, CFRuleBase r) {
         if (r == null) {
             throw new IllegalArgumentException("r must not be null");
@@ -188,12 +182,11 @@ public final class CFRecordsAggregate extends RecordAggregate implements Generic
         checkRuleType(r);
         rules.set(idx, r);
     }
-
     public void addRule(CFRuleBase r) {
         if (r == null) {
             throw new IllegalArgumentException("r must not be null");
         }
-        if (rules.size() >= MAX_97_2003_CONDTIONAL_FORMAT_RULES) {
+        if(rules.size() >= MAX_97_2003_CONDTIONAL_FORMAT_RULES) {
             Log.w(TAG, "Excel versions before 2007 cannot cope with"
                     + " any more than " + MAX_97_2003_CONDTIONAL_FORMAT_RULES
                     + " - this file will cause problems with old Excel versions");
@@ -202,7 +195,6 @@ public final class CFRecordsAggregate extends RecordAggregate implements Generic
         rules.add(r);
         header.setNumberOfConditionalFormats(rules.size());
     }
-
     public int getNumberOfRules() {
         return rules.size();
     }
@@ -210,8 +202,8 @@ public final class CFRecordsAggregate extends RecordAggregate implements Generic
     @Override
     public Map<String, Supplier<?>> getGenericProperties() {
         return GenericRecordUtil.getGenericProperties(
-                "header", this::getHeader,
-                "rules", () -> rules
+            "header", this::getHeader,
+            "rules", () -> rules
         );
     }
 
@@ -231,8 +223,9 @@ public final class CFRecordsAggregate extends RecordAggregate implements Generic
     }
 
     /**
-     * @param shifter              The {@link FormulaShifter} to use
+     * @param shifter The {@link FormulaShifter} to use
      * @param currentExternSheetIx The index for extern sheets
+     *
      * @return <code>false</code> if this whole {@link CFHeaderRecord} / {@link CFRuleRecord}s should be deleted
      */
     public boolean updateFormulasAfterCellShift(FormulaShifter shifter, int currentExternSheetIx) {
@@ -272,7 +265,7 @@ public final class CFRecordsAggregate extends RecordAggregate implements Generic
                 rule.setParsedExpression2(ptgs);
             }
             if (rule instanceof CFRule12Record) {
-                CFRule12Record rule12 = (CFRule12Record) rule;
+                CFRule12Record rule12 = (CFRule12Record)rule;
                 ptgs = rule12.getParsedExpressionScale();
                 if (ptgs != null && shifter.adjustFormula(ptgs, currentExternSheetIx)) {
                     rule12.setParsedExpressionScale(ptgs);

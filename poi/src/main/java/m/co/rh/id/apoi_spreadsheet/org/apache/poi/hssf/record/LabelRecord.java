@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record;
 
@@ -28,6 +29,7 @@ import java.util.function.Supplier;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.GenericRecordUtil;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.RecordFormatException;
 
+
 /**
  * Label Record (0x0204) - read only support for strings stored directly in the cell...
  * Don't use this (except to read), use LabelSST instead
@@ -39,18 +41,15 @@ public final class LabelRecord extends Record implements CellValueRecordInterfac
 
     public static final short sid = 0x0204;
 
-    private int field_1_row;
-    private short field_2_column;
-    private short field_3_xf_index;
-    private short field_4_string_len;
-    private byte field_5_unicode_flag;
+    private int    field_1_row;
+    private short  field_2_column;
+    private short  field_3_xf_index;
+    private short  field_4_string_len;
+    private byte   field_5_unicode_flag;
     private String field_6_value;
 
-    /**
-     * Creates new LabelRecord
-     */
-    public LabelRecord() {
-    }
+    /** Creates new LabelRecord */
+    public LabelRecord() {}
 
     public LabelRecord(LabelRecord other) {
         super(other);
@@ -66,10 +65,10 @@ public final class LabelRecord extends Record implements CellValueRecordInterfac
      * @param in the RecordInputstream to read the record from
      */
     public LabelRecord(RecordInputStream in) {
-        field_1_row = in.readUShort();
-        field_2_column = in.readShort();
-        field_3_xf_index = in.readShort();
-        field_4_string_len = in.readShort();
+        field_1_row          = in.readUShort();
+        field_2_column       = in.readShort();
+        field_3_xf_index     = in.readShort();
+        field_4_string_len   = in.readShort();
         field_5_unicode_flag = in.readByte();
         if (field_4_string_len > 0) {
             if (isUnCompressedUnicode()) {
@@ -82,43 +81,46 @@ public final class LabelRecord extends Record implements CellValueRecordInterfac
         }
 
         if (in.remaining() > 0) {
-            Log.i(TAG, String.format("LabelRecord data remains: %d : %s", in.remaining(), toHex(in.readRemainder())));
+            Log.i(TAG, String.format("LabelRecord data remains: %s : %s", in.remaining(), toHex(in.readRemainder())));
         }
     }
 
-    /*
-     * READ ONLY ACCESS... THIS IS FOR COMPATIBILITY ONLY...USE LABELSST! public
-     */
+/*
+ * READ ONLY ACCESS... THIS IS FOR COMPATIBILITY ONLY...USE LABELSST! public
+ */
     @Override
-    public int getRow() {
+    public int getRow()
+    {
         return field_1_row;
     }
 
     @Override
-    public short getColumn() {
+    public short getColumn()
+    {
         return field_2_column;
     }
 
     @Override
-    public short getXFIndex() {
+    public short getXFIndex()
+    {
         return field_3_xf_index;
     }
 
     /**
      * get the number of characters this string contains
-     *
      * @return number of characters
      */
-    public short getStringLength() {
+    public short getStringLength()
+    {
         return field_4_string_len;
     }
 
     /**
      * is this uncompressed unicode (16bit)?  Or just 8-bit compressed?
-     *
      * @return isUnicode - True for 16bit- false for 8bit
      */
-    public boolean isUnCompressedUnicode() {
+    public boolean isUnCompressedUnicode()
+    {
         return (field_5_unicode_flag & 0x01) != 0;
     }
 
@@ -128,7 +130,8 @@ public final class LabelRecord extends Record implements CellValueRecordInterfac
      * @return the text string
      * @see #getStringLength()
      */
-    public String getValue() {
+    public String getValue()
+    {
         return field_6_value;
     }
 
@@ -136,17 +139,17 @@ public final class LabelRecord extends Record implements CellValueRecordInterfac
      * THROWS A RUNTIME EXCEPTION..  USE LABELSSTRecords.  YOU HAVE NO REASON to use LABELRecord!!
      */
     @Override
-    public int serialize(int offset, byte[] data) {
+    public int serialize(int offset, byte [] data) {
         throw new RecordFormatException("Label Records are supported READ ONLY...convert to LabelSST");
     }
-
     @Override
     public int getRecordSize() {
         throw new RecordFormatException("Label Records are supported READ ONLY...convert to LabelSST");
     }
 
     @Override
-    public short getSid() {
+    public short getSid()
+    {
         return sid;
     }
 
@@ -154,22 +157,23 @@ public final class LabelRecord extends Record implements CellValueRecordInterfac
      * NO-OP!
      */
     @Override
-    public void setColumn(short col) {
+    public void setColumn(short col)
+    {
     }
 
     /**
      * NO-OP!
      */
     @Override
-    public void setRow(int row) {
+    public void setRow(int row)
+    {
     }
 
     /**
      * no op!
      */
     @Override
-    public void setXFIndex(short xf) {
-    }
+    public void setXFIndex(short xf) {}
 
     @Override
     public LabelRecord copy() {
@@ -184,12 +188,12 @@ public final class LabelRecord extends Record implements CellValueRecordInterfac
     @Override
     public Map<String, Supplier<?>> getGenericProperties() {
         return GenericRecordUtil.getGenericProperties(
-                "row", this::getRow,
-                "column", this::getColumn,
-                "xfIndex", this::getXFIndex,
-                "stringLen", this::getStringLength,
-                "unCompressedUnicode", this::isUnCompressedUnicode,
-                "value", this::getValue
+            "row", this::getRow,
+            "column", this::getColumn,
+            "xfIndex", this::getXFIndex,
+            "stringLen", this::getStringLength,
+            "unCompressedUnicode", this::isUnCompressedUnicode,
+            "value", this::getValue
         );
     }
 }

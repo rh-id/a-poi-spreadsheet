@@ -14,16 +14,19 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.standard;
 
 import static m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.CryptoFunctions.hashPassword;
+
+import org.apache.commons.io.input.BoundedInputStream;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.util.Arrays;
-
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
 import javax.crypto.SecretKey;
@@ -38,8 +41,8 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.EncryptionVerifier
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.HashAlgorithm;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.filesystem.DirectoryNode;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.filesystem.DocumentInputStream;
-import org.apache.commons.io.input.BoundedInputStream;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndian;
+
 
 /**
  */
@@ -140,8 +143,14 @@ public class StandardDecryptor extends Decryptor {
         long cipherLen = (_length/blockSize + 1) * blockSize;
         Cipher cipher = getCipher(getSecretKey());
 
-        InputStream boundedDis = new BoundedInputStream(dis, cipherLen);
-        return new BoundedInputStream(new CipherInputStream(boundedDis, cipher), _length);
+        final InputStream boundedDis = BoundedInputStream.builder()
+            .setInputStream(dis)
+            .setMaxCount(cipherLen)
+            .get();
+        return BoundedInputStream.builder()
+            .setInputStream(new CipherInputStream(boundedDis, cipher))
+            .setMaxCount(_length)
+            .get();
     }
 
     /**

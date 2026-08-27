@@ -14,6 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions;
 
 /**
@@ -23,7 +25,7 @@ public class BaseNumberUtils {
 
 
     public static double convertToDecimal(String value, int base, int maxNumberOfPlaces) throws IllegalArgumentException {
-        if (value == null || value.length() == 0) {
+        if (value == null || value.isEmpty()) {
             return 0.0;
         }
 

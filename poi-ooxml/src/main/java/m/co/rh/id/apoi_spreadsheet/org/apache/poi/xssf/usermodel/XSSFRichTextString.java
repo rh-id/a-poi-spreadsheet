@@ -15,13 +15,10 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel;
 
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Font;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.RichTextString;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.model.StylesTable;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.model.ThemesTable;
 import org.apache.xmlbeans.XmlCursor;
 import org.openxmlformats.schemas.officeDocument.x2006.sharedTypes.STXstring;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTColor;
@@ -30,13 +27,20 @@ import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTRElt;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTRPrElt;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTRst;
 
-import javax.xml.namespace.QName;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.xml.namespace.QName;
+
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Font;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.RichTextString;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.model.StylesTable;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.model.ThemesTable;
+
 
 
 /**
@@ -390,7 +394,7 @@ public class XSSFRichTextString implements RichTextString {
      * Return a copy of the font in use at a particular index.
      *
      * @param index         The index.
-     * @return              A copy of the  font that's currently being applied at that
+     * @return              A copy of the font that's currently being applied at that
      *                      index or null if no font is being applied or the
      *                      index is out of range.
      */
@@ -485,7 +489,7 @@ public class XSSFRichTextString implements RichTextString {
      */
     protected static void preserveSpaces(STXstring xs) {
         String text = xs.getStringValue();
-        if (text != null && text.length() > 0) {
+        if (text != null && !text.isEmpty()) {
             char firstChar = text.charAt(0);
             char lastChar  = text.charAt(text.length() - 1);
             if(Character.isWhitespace(firstChar) || Character.isWhitespace(lastChar)) {

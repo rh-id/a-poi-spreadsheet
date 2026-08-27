@@ -19,7 +19,6 @@ package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
 
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.OperationEvaluationContext;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.ErrorEval;
@@ -29,7 +28,6 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.OperandResolve
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.ValueEval;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.DateUtil;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.DateParser;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LocaleUtil;
 
 /**
  * <p>Calculates the number of days between two dates based on a real year,
@@ -90,9 +88,11 @@ public class Days implements FreeRefFunction {
     }
 
     private static LocalDate getDate(double date) {
-        Date d = DateUtil.getJavaDate(date, false);
-        return d.toInstant()
-                .atZone(LocaleUtil.getUserTimeZone().toZoneId())
-                .toLocalDate();
+        // Fork note: do NOT go through Instant/atZone here. On Android, the instant
+        // is anchored with one zone offset and re-zoned with historic rules that
+        // disagree for old dates (e.g. pre-1920 LMT vs modern offsets, ~18 min
+        // apart), which flips dates near local midnight to the previous day.
+        // DateUtil.getLocalDateTime uses pure calendar math and is immune.
+        return DateUtil.getLocalDateTime(date).toLocalDate();
     }
 }

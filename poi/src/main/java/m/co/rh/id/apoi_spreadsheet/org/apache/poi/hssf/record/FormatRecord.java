@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record;
 
@@ -29,6 +30,9 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.GenericRecordUtil;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndianConsts;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndianOutput;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.StringUtil;
+
+
+
 
 /**
  * Describes a number format -- those goofy strings like $(#,###)
@@ -93,16 +97,15 @@ public final class FormatRecord extends StandardRecord {
         out.writeShort(formatString.length());
         out.writeByte(field_3_hasMultibyte ? 0x01 : 0x00);
 
-        if (field_3_hasMultibyte) {
-            StringUtil.putUnicodeLE(formatString, out);
-        } else {
-            StringUtil.putCompressedUnicode(formatString, out);
-        }
+      if ( field_3_hasMultibyte ) {
+          StringUtil.putUnicodeLE( formatString, out);
+      }  else {
+          StringUtil.putCompressedUnicode( formatString, out);
+      }
     }
-
     protected int getDataSize() {
         return 5 // 2 shorts + 1 byte
-                + getFormatString().length() * (field_3_hasMultibyte ? 2 : 1);
+            + getFormatString().length() * (field_3_hasMultibyte ? 2 : 1);
     }
 
     public short getSid() {
@@ -146,13 +149,13 @@ public final class FormatRecord extends StandardRecord {
         //there can be a remaining byte (without proper final '00')
         //that should be read as a byte
         if (ris.available() == 1) {
-            char[] tmp = Arrays.copyOf(buf, buf.length + 1);
-            tmp[buf.length] = (char) ris.readUByte();
+            char[] tmp = Arrays.copyOf(buf, buf.length+1);
+            tmp[buf.length] = (char)ris.readUByte();
             buf = tmp;
         }
 
         if (ris.available() > 0) {
-            Log.i(TAG, String.format("FormatRecord has %d unexplained bytes. Silently skipping", ris.available()));
+            Log.i(TAG, String.format("FormatRecord has %s unexplained bytes. Silently skipping", ris.available()));
             //swallow what's left
             while (ris.available() > 0) {
                 ris.readByte();
@@ -169,9 +172,9 @@ public final class FormatRecord extends StandardRecord {
     @Override
     public Map<String, Supplier<?>> getGenericProperties() {
         return GenericRecordUtil.getGenericProperties(
-                "indexCode", this::getIndexCode,
-                "unicode", () -> field_3_hasMultibyte,
-                "formatString", this::getFormatString
+            "indexCode", this::getIndexCode,
+            "unicode", () -> field_3_hasMultibyte,
+            "formatString", this::getFormatString
         );
     }
 }

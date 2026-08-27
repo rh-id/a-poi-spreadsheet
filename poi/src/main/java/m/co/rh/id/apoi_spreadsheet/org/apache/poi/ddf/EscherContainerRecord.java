@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ddf;
 
@@ -33,6 +34,9 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.GenericRecordUtil;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.HexDump;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndian;
 
+
+
+
 /**
  * Escher container records store other escher records as children.
  * The container records themselves never store any information beyond
@@ -40,14 +44,14 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndian;
  * used to represent many different types of records.
  */
 public final class EscherContainerRecord extends EscherRecord implements Iterable<EscherRecord> {
-    public static final short DGG_CONTAINER = EscherRecordTypes.DGG_CONTAINER.typeID;
+    public static final short DGG_CONTAINER    = EscherRecordTypes.DGG_CONTAINER.typeID;
     public static final short BSTORE_CONTAINER = EscherRecordTypes.BSTORE_CONTAINER.typeID;
-    public static final short DG_CONTAINER = EscherRecordTypes.DG_CONTAINER.typeID;
-    public static final short SPGR_CONTAINER = EscherRecordTypes.SPGR_CONTAINER.typeID;
-    public static final short SP_CONTAINER = EscherRecordTypes.SP_CONTAINER.typeID;
+    public static final short DG_CONTAINER     = EscherRecordTypes.DG_CONTAINER.typeID;
+    public static final short SPGR_CONTAINER   = EscherRecordTypes.SPGR_CONTAINER.typeID;
+    public static final short SP_CONTAINER     = EscherRecordTypes.SP_CONTAINER.typeID;
     public static final short SOLVER_CONTAINER = EscherRecordTypes.SOLVER_CONTAINER.typeID;
 
-    private static final String TAG = "EscherContainerRecord";
+    private static final String LOGGER_TAG = "EscherContainerRecord";
 
     private static final int MAX_NESTED_CHILD_NODES = 1000;
 
@@ -77,8 +81,7 @@ public final class EscherContainerRecord extends EscherRecord implements Iterabl
 
     private final List<EscherRecord> _childRecords = new ArrayList<>();
 
-    public EscherContainerRecord() {
-    }
+    public EscherContainerRecord() {}
 
     public EscherContainerRecord(EscherContainerRecord other) {
         super(other);
@@ -91,7 +94,8 @@ public final class EscherContainerRecord extends EscherRecord implements Iterabl
         return fillFields(data, pOffset, recordFactory, 0);
     }
 
-    int fillFields(byte[] data, int pOffset, EscherRecordFactory recordFactory, int nesting) {
+    @Override
+    protected int fillFields(byte[] data, int pOffset, EscherRecordFactory recordFactory, int nesting) {
         if (nesting > MAX_NESTED_CHILD_NODES) {
             throw new IllegalStateException("Had more than the limit of " + MAX_NESTED_CHILD_NODES + " nested child notes");
         }
@@ -103,11 +107,11 @@ public final class EscherContainerRecord extends EscherRecord implements Iterabl
 
             final int childBytesWritten;
             if (child instanceof EscherContainerRecord) {
-                childBytesWritten = ((EscherContainerRecord) child).fillFields(data, offset, recordFactory, nesting + 1);
+                childBytesWritten = ((EscherContainerRecord)child).fillFields(data, offset, recordFactory, nesting + 1);
             } else if (child instanceof UnknownEscherRecord) {
-                childBytesWritten = ((UnknownEscherRecord) child).fillFields(data, offset, recordFactory, nesting + 1);
+                childBytesWritten = ((UnknownEscherRecord)child).fillFields(data, offset, recordFactory, nesting + 1);
             } else {
-                childBytesWritten = child.fillFields(data, offset, recordFactory);
+                childBytesWritten = child.fillFields(data, offset, recordFactory, nesting + 1);
             }
 
             bytesWritten += childBytesWritten;
@@ -116,30 +120,31 @@ public final class EscherContainerRecord extends EscherRecord implements Iterabl
             addChildRecord(child);
             if (offset >= data.length && bytesRemaining > 0) {
                 _remainingLength = bytesRemaining;
-                Log.w(TAG, String.format("Not enough Escher data: %d bytes remaining but no space left", bytesRemaining));
+                Log.w(LOGGER_TAG, String.format("Not enough Escher data: %s bytes remaining but no space left", bytesRemaining));
             }
         }
         return bytesWritten;
     }
 
     @Override
-    public int serialize(int offset, byte[] data, EscherSerializationListener listener) {
-        listener.beforeRecordSerialize(offset, getRecordId(), this);
+    public int serialize( int offset, byte[] data, EscherSerializationListener listener )
+    {
+        listener.beforeRecordSerialize( offset, getRecordId(), this );
 
         LittleEndian.putShort(data, offset, getOptions());
-        LittleEndian.putShort(data, offset + 2, getRecordId());
+        LittleEndian.putShort(data, offset+2, getRecordId());
         int remainingBytes = 0;
         for (EscherRecord r : this) {
             remainingBytes += r.getRecordSize();
         }
         remainingBytes += _remainingLength;
-        LittleEndian.putInt(data, offset + 4, remainingBytes);
-        int pos = offset + 8;
+        LittleEndian.putInt(data, offset+4, remainingBytes);
+        int pos = offset+8;
         for (EscherRecord r : this) {
-            pos += r.serialize(pos, data, listener);
+            pos += r.serialize(pos, data, listener );
         }
 
-        listener.afterRecordSerialize(pos, getRecordId(), pos - offset, this);
+        listener.afterRecordSerialize( pos, getRecordId(), pos - offset, this );
         return pos - offset;
     }
 
@@ -156,6 +161,7 @@ public final class EscherContainerRecord extends EscherRecord implements Iterabl
      * Do any of our (top level) children have the given recordId?
      *
      * @param recordId the recordId of the child
+     *
      * @return true, if any child has the given recordId
      */
     public boolean hasChildOfType(short recordId) {
@@ -163,7 +169,7 @@ public final class EscherContainerRecord extends EscherRecord implements Iterabl
     }
 
     @Override
-    public EscherRecord getChild(int index) {
+    public EscherRecord getChild( int index ) {
         return _childRecords.get(index);
     }
 
@@ -189,6 +195,7 @@ public final class EscherContainerRecord extends EscherRecord implements Iterabl
 
     /**
      * @return a spliterator over the child records
+     *
      * @since POI 5.2.0
      */
     @Override
@@ -204,6 +211,12 @@ public final class EscherContainerRecord extends EscherRecord implements Iterabl
         if (childRecords == _childRecords) {
             throw new IllegalStateException("Child records private data member has escaped");
         }
+
+        if (childRecords.size() > MAX_NUMBER_OF_CHILDREN) {
+            throw new IllegalStateException("Cannot add more than " + MAX_NUMBER_OF_CHILDREN +
+                    " child records, you can use 'EscherRecord.setMaxNumberOfChildren()' to increase the allow size");
+        }
+
         _childRecords.clear();
         _childRecords.addAll(childRecords);
     }
@@ -219,6 +232,7 @@ public final class EscherContainerRecord extends EscherRecord implements Iterabl
     }
 
 
+
     /**
      * Returns all of our children which are also
      * EscherContainers (may be 0, 1, or vary rarely 2 or 3)
@@ -228,7 +242,7 @@ public final class EscherContainerRecord extends EscherRecord implements Iterabl
     public List<EscherContainerRecord> getChildContainers() {
         List<EscherContainerRecord> containers = new ArrayList<>();
         for (EscherRecord r : this) {
-            if (r instanceof EscherContainerRecord) {
+            if(r instanceof EscherContainerRecord) {
                 containers.add((EscherContainerRecord) r);
             }
         }
@@ -256,19 +270,24 @@ public final class EscherContainerRecord extends EscherRecord implements Iterabl
      * @param record the record to be added
      */
     public void addChildRecord(EscherRecord record) {
+        if (_childRecords.size() >= MAX_NUMBER_OF_CHILDREN) {
+            throw new IllegalStateException("Cannot add more than " + MAX_NUMBER_OF_CHILDREN +
+                    " child records, you can use 'EscherRecord.setMaxNumberOfChildren()' to increase the allow size");
+        }
+
         _childRecords.add(record);
     }
 
     /**
      * Add a child record before the record with given recordId
      *
-     * @param record               the record to be added
+     * @param record the record to be added
      * @param insertBeforeRecordId the recordId of the next sibling
      */
     public void addChildBefore(EscherRecord record, int insertBeforeRecordId) {
         int idx = 0;
         for (EscherRecord rec : this) {
-            if (rec.getRecordId() == (short) insertBeforeRecordId) {
+            if(rec.getRecordId() == (short)insertBeforeRecordId) {
                 break;
             }
             // TODO - keep looping? Do we expect multiple matches?
@@ -277,10 +296,11 @@ public final class EscherContainerRecord extends EscherRecord implements Iterabl
         _childRecords.add(idx, record);
     }
 
-    public <T extends EscherRecord> T getChildById(short recordId) {
-        for (EscherRecord childRecord : this) {
-            if (childRecord.getRecordId() == recordId) {
-                @SuppressWarnings("unchecked") final T result = (T) childRecord;
+    public <T extends EscherRecord> T getChildById( short recordId ) {
+        for ( EscherRecord childRecord : this ) {
+            if ( childRecord.getRecordId() == recordId ) {
+                @SuppressWarnings( "unchecked" )
+                final T result = (T) childRecord;
                 return result;
             }
         }
@@ -291,14 +311,14 @@ public final class EscherContainerRecord extends EscherRecord implements Iterabl
      * Recursively find records with the specified record ID
      *
      * @param recordId the recordId to be searched for
-     * @param out      - list to store found records
+     * @param out - list to store found records
      */
-    public void getRecordsById(short recordId, List<EscherRecord> out) {
+    public void getRecordsById(short recordId, List<EscherRecord> out){
         for (EscherRecord r : this) {
-            if (r instanceof EscherContainerRecord) {
-                EscherContainerRecord c = (EscherContainerRecord) r;
-                c.getRecordsById(recordId, out);
-            } else if (r.getRecordId() == recordId) {
+            if(r instanceof EscherContainerRecord) {
+                EscherContainerRecord c = (EscherContainerRecord)r;
+                c.getRecordsById(recordId, out );
+            } else if (r.getRecordId() == recordId){
                 out.add(r);
             }
         }
@@ -307,8 +327,8 @@ public final class EscherContainerRecord extends EscherRecord implements Iterabl
     @Override
     public Map<String, Supplier<?>> getGenericProperties() {
         return GenericRecordUtil.getGenericProperties(
-                "base", super::getGenericProperties,
-                "isContainer", this::isContainerRecord
+            "base", super::getGenericProperties,
+            "isContainer", this::isContainerRecord
         );
     }
 

@@ -258,6 +258,27 @@ public final class TestXSSFSheet extends BaseTestXSheet {
         }
     }
 
+    @Test
+    public void autoSizeColumnWithArbitraryExtraWidth() throws IOException {
+        try (XSSFWorkbook workbook = new XSSFWorkbook()) {
+            XSSFSheet sheet = workbook.createSheet("Sheet 1");
+            XSSFCell cell = sheet.createRow(0).createCell(13);
+            cell.setCellValue("test");
+            sheet.autoSizeColumn(13);
+            final int size1 = sheet.getColumnWidth(13);
+
+            sheet.setArbitraryExtraWidth(10.0);
+            sheet.autoSizeColumn(13);
+            final int size2 = sheet.getColumnWidth(13);
+
+            assertEquals(size1 + 10, size2);
+
+            ColumnHelper columnHelper = sheet.getColumnHelper();
+            CTCol col = columnHelper.getColumn(13, false);
+            assertTrue(col.getBestFit());
+        }
+    }
+
 
     @Test
     public void setCellComment() throws IOException {
@@ -355,6 +376,7 @@ public final class TestXSSFSheet extends BaseTestXSheet {
             sheet.removeMergedRegion(1);
             assertEquals("E5:F6", ctWorksheet.getMergeCells().getMergeCellArray(1).getRef());
             assertEquals(2, sheet.getNumMergedRegions());
+            assertEquals(2, ctWorksheet.getMergeCells().getCount());
             sheet.removeMergedRegion(1);
             sheet.removeMergedRegion(0);
             assertEquals(0, sheet.getNumMergedRegions());
@@ -364,11 +386,15 @@ public final class TestXSSFSheet extends BaseTestXSheet {
             assertEquals(1, sheet.addMergedRegion(region_2));
             assertEquals(2, sheet.addMergedRegion(region_3));
             assertEquals(3, sheet.addMergedRegion(region_4));
+            assertEquals(4, sheet.getNumMergedRegions());
+            assertEquals(4, ctWorksheet.getMergeCells().getCount());
             // test invalid indexes OOBE
             Set<Integer> rmIdx = new HashSet<>(Arrays.asList(5, 6));
             sheet.removeMergedRegions(rmIdx);
             rmIdx = new HashSet<>(Arrays.asList(1, 3));
             sheet.removeMergedRegions(rmIdx);
+            assertEquals(2, sheet.getNumMergedRegions());
+            assertEquals(2, ctWorksheet.getMergeCells().getCount());
             assertEquals("A1:B2", ctWorksheet.getMergeCells().getMergeCellArray(0).getRef());
             assertEquals("E5:F6", ctWorksheet.getMergeCells().getMergeCellArray(1).getRef());
         }

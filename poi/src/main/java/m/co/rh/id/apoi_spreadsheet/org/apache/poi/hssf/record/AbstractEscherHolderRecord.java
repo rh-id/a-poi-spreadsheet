@@ -15,6 +15,8 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.record;
 
 import java.util.ArrayList;
@@ -28,6 +30,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ddf.NullEscherSerializationLis
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.util.LazilyConcatenatedByteArray;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndian;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Removal;
+
 
 /**
  * The escher container record is used to hold escher records.  It is abstract and
@@ -79,7 +82,7 @@ public abstract class AbstractEscherHolderRecord extends Record {
     }
     private void convertToEscherRecords( int offset, int size, byte[] data )
     {
-         escherRecords.clear();
+        escherRecords.clear();
         EscherRecordFactory recordFactory = new DefaultEscherRecordFactory();
         int pos = offset;
         while ( pos < offset + size )

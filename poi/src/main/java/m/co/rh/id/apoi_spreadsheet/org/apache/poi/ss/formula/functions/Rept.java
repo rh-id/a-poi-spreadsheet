@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions;
 
@@ -24,23 +25,23 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.OperandResolve
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.StringEval;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.ValueEval;
 
+
 /**
  * Implementation for Excel REPT () function.
  * <p>
  * <b>Syntax</b>:<br> <b>REPT  </b>(<b>text</b>,<b>number_times</b> )<br>
  * <p>
  * Repeats text a given number of times. Use REPT to fill a cell with a number of instances of a text string.
- * <p>
+ *
  * text : text The text that you want to repeat.
  * number_times:    A positive number specifying the number of times to repeat text.
- * <p>
+ *
  * If number_times is 0 (zero), REPT returns "" (empty text).
  * If this argument contains a decimal value, this function ignores the numbers to the right side of the decimal point.
- * <p>
+ *
  * The result of the REPT function cannot be longer than 32,767 characters, or REPT returns #VALUE!.
  */
-public class Rept extends Fixed2ArgFunction {
-
+public class Rept extends Fixed2ArgFunction  {
 
     @Override
     public ValueEval evaluate(int srcRowIndex, int srcColumnIndex, ValueEval text, ValueEval number_times) {
@@ -59,13 +60,13 @@ public class Rept extends Fixed2ArgFunction {
             return ErrorEval.VALUE_INVALID;
         }
 
-        int numberOfTimeInt = (int) numberOfTime;
+        int numberOfTimeInt = (int)numberOfTime;
         StringBuilder strb = new StringBuilder(strText1.length() * numberOfTimeInt);
-        for (int i = 0; i < numberOfTimeInt; i++) {
+        for(int i = 0; i < numberOfTimeInt; i++) {
             strb.append(strText1);
         }
 
-        if (strb.toString().length() > 32767) {
+        if (strb.length() > 32767) {
             return ErrorEval.VALUE_INVALID;
         }
 

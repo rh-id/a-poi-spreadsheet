@@ -44,12 +44,14 @@ import org.openxmlformats.schemas.spreadsheetml.x2006.main.STPatternType;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.STVerticalAlignment;
 
 import java.io.IOException;
+import java.util.EnumMap;
 
 import m.co.rh.id.apoi_spreadsheet.POIJUnit4ClassRunner;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.BorderStyle;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Cell;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.CellPropertyType;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.CellStyle;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.DataFormat;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.FillPatternType;
@@ -1111,5 +1113,91 @@ public class TestXSSFCellStyle {
         assertNull(cellStyle.getRightBorderXSSFColor());
 
         workbook.close();
+    }
+
+    @Test
+    public void cloneToHSSF() throws IOException {
+        try (
+                XSSFWorkbook xssfWorkbook = new XSSFWorkbook();
+                HSSFWorkbook hssfWorkbook = new HSSFWorkbook()
+        ) {
+            XSSFCellStyle cellStyle = xssfWorkbook.createCellStyle();
+            DataFormat format = xssfWorkbook.createDataFormat();
+
+            cellStyle.setDataFormat(format.getFormat("###0"));
+
+            cellStyle.setFillBackgroundColor(IndexedColors.DARK_BLUE.getIndex());
+            cellStyle.setFillForegroundColor(IndexedColors.DARK_RED.getIndex());
+            cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            cellStyle.setAlignment(HorizontalAlignment.RIGHT);
+            cellStyle.setVerticalAlignment(VerticalAlignment.TOP);
+
+            HSSFCellStyle hssfCellStyle = hssfWorkbook.createCellStyle();
+            hssfCellStyle.cloneStyleFrom(cellStyle);
+
+            // not everything is cloned by some properties are set
+            assertEquals(cellStyle.getDataFormat(), hssfCellStyle.getDataFormat());
+            assertEquals(IndexedColors.DARK_BLUE.getIndex(), hssfCellStyle.getFillBackgroundColor());
+            assertEquals(IndexedColors.DARK_RED.getIndex(), hssfCellStyle.getFillForegroundColor());
+            assertEquals(FillPatternType.SOLID_FOREGROUND, hssfCellStyle.getFillPattern());
+            assertEquals(HorizontalAlignment.RIGHT, hssfCellStyle.getAlignment());
+            assertEquals(VerticalAlignment.TOP, hssfCellStyle.getVerticalAlignment());
+        }
+    }
+
+    @Test
+    public void cloneFromHSSF() throws IOException {
+        try (
+                XSSFWorkbook xssfWorkbook = new XSSFWorkbook();
+                HSSFWorkbook hssfWorkbook = new HSSFWorkbook()
+        ) {
+            HSSFCellStyle cellStyle = hssfWorkbook.createCellStyle();
+            DataFormat format = hssfWorkbook.createDataFormat();
+
+            cellStyle.setDataFormat(format.getFormat("###0"));
+
+            cellStyle.setFillBackgroundColor(IndexedColors.DARK_BLUE.getIndex());
+            cellStyle.setFillForegroundColor(IndexedColors.DARK_RED.getIndex());
+            cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            cellStyle.setAlignment(HorizontalAlignment.RIGHT);
+            cellStyle.setVerticalAlignment(VerticalAlignment.TOP);
+
+            XSSFCellStyle xssfCellStyle = xssfWorkbook.createCellStyle();
+            xssfCellStyle.cloneStyleFrom(cellStyle);
+
+            // not everything is cloned by some properties are set
+            assertEquals(cellStyle.getDataFormat(), xssfCellStyle.getDataFormat());
+            // assertEquals(IndexedColors.DARK_BLUE.getIndex(), xssfCellStyle.getFillBackgroundColor());
+            assertEquals(IndexedColors.DARK_RED.getIndex(), xssfCellStyle.getFillForegroundColor());
+            assertEquals(FillPatternType.SOLID_FOREGROUND, xssfCellStyle.getFillPattern());
+            assertEquals(HorizontalAlignment.RIGHT, xssfCellStyle.getAlignment());
+            assertEquals(VerticalAlignment.TOP, xssfCellStyle.getVerticalAlignment());
+        }
+    }
+
+    @Test
+    public void cachedPropertiesInvalidation() throws IOException {
+        try (XSSFWorkbook xssfWorkbook = new XSSFWorkbook()) {
+            XSSFCellStyle cellStyle = xssfWorkbook.createCellStyle();
+            DataFormat format = xssfWorkbook.createDataFormat();
+
+            cellStyle.setDataFormat(format.getFormat("###0"));
+
+            cellStyle.setFillBackgroundColor(IndexedColors.DARK_BLUE.getIndex());
+            cellStyle.setFillForegroundColor(IndexedColors.DARK_RED.getIndex());
+            cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            cellStyle.setAlignment(HorizontalAlignment.RIGHT);
+            cellStyle.setVerticalAlignment(VerticalAlignment.TOP);
+
+            EnumMap<CellPropertyType, Object> formatProperties = cellStyle.getFormatProperties();
+            assertNotNull(formatProperties);
+            assertEquals(formatProperties, cellStyle.getFormatProperties());
+
+            cellStyle.setVerticalAlignment(VerticalAlignment.BOTTOM);
+            assertNotEquals(formatProperties, cellStyle.getFormatProperties());
+        }
     }
 }

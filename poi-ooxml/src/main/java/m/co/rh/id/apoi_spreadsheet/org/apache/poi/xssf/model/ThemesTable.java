@@ -14,9 +14,16 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.model;
 
 import static m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.POIXMLTypeLoader.DEFAULT_XML_OPTIONS;
+
+import org.apache.xmlbeans.XmlException;
+import org.openxmlformats.schemas.drawingml.x2006.main.CTColor;
+import org.openxmlformats.schemas.drawingml.x2006.main.CTColorScheme;
+import org.openxmlformats.schemas.drawingml.x2006.main.ThemeDocument;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,42 +33,41 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.POIXMLDocumentPart;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackagePart;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.IndexedColorMap;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFColor;
-import org.apache.xmlbeans.XmlException;
-import org.openxmlformats.schemas.drawingml.x2006.main.CTColor;
-import org.openxmlformats.schemas.drawingml.x2006.main.CTColorScheme;
-import org.openxmlformats.schemas.drawingml.x2006.main.ThemeDocument;
+
 
 /**
  * Class that represents theme of XLSX document. The theme includes specific
  * colors and fonts.
  */
 public class ThemesTable extends POIXMLDocumentPart implements Themes {
-   public enum ThemeElement {
-       LT1(0, "Lt1"),
-       DK1(1,"Dk1"),
-       LT2(2,"Lt2"),
-       DK2(3,"Dk2"),
-       ACCENT1(4,"Accent1"),
-       ACCENT2(5,"Accent2"),
-       ACCENT3(6,"Accent3"),
-       ACCENT4(7,"Accent4"),
-       ACCENT5(8,"Accent5"),
-       ACCENT6(9,"Accent6"),
-       HLINK(10,"Hlink"),
-       FOLHLINK(11,"FolHlink"),
-       UNKNOWN(-1,null);
+    public enum ThemeElement {
+        LT1(0, "Lt1"),
+        DK1(1, "Dk1"),
+        LT2(2, "Lt2"),
+        DK2(3, "Dk2"),
+        ACCENT1(4, "Accent1"),
+        ACCENT2(5, "Accent2"),
+        ACCENT3(6, "Accent3"),
+        ACCENT4(7, "Accent4"),
+        ACCENT5(8, "Accent5"),
+        ACCENT6(9, "Accent6"),
+        HLINK(10, "Hlink"),
+        FOLHLINK(11, "FolHlink"),
+        UNKNOWN(-1, null);
 
-       public static ThemeElement byId(int idx) {
-           if (idx >= values().length || idx < 0) return UNKNOWN;
-           return values()[idx];
-       }
-       ThemeElement(int idx, String name) {
-           this.idx = idx;
-           this.name = name;
-       }
-       public final int idx;
-       public final String name;
-   }
+        public static ThemeElement byId(int idx) {
+            if (idx >= values().length || idx < 0) return UNKNOWN;
+            return values()[idx];
+        }
+
+        ThemeElement(int idx, String name) {
+            this.idx = idx;
+            this.name = name;
+        }
+
+        public final int idx;
+        public final String name;
+    }
 
     private IndexedColorMap colorMap;
     private ThemeDocument theme;

@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml;
 
 import android.util.Log;
@@ -32,6 +33,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackageRelations
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackageRelationshipCollection;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackagingURIHelper;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
+
 
 /**
  * Represents a descriptor of a OOXML relation.
@@ -53,7 +55,7 @@ public abstract class POIXMLRelation {
         POIXMLDocumentPart init(POIXMLDocumentPart parent, PackagePart part) throws IOException, XmlException;
     }
 
-    private static final String TAG = "POIXMLRelation";
+    private static final String LOGGER_TAG = "POIXMLRelation";
 
     /**
      * Describes the content stored in a part.
@@ -80,10 +82,10 @@ public abstract class POIXMLRelation {
     /**
      * Instantiates a POIXMLRelation.
      *
-     * @param type                   content type
-     * @param rel                    relationship
-     * @param defaultName            default item name
-     * @param noArgConstructor       method used to construct instances of this relationship from scratch
+     * @param type content type
+     * @param rel  relationship
+     * @param defaultName default item name
+     * @param noArgConstructor method used to construct instances of this relationship from scratch
      * @param packagePartConstructor method used to construct instances of this relationship with a package part
      */
     protected POIXMLRelation(String type, String rel, String defaultName,
@@ -101,14 +103,13 @@ public abstract class POIXMLRelation {
     /**
      * Instantiates a POIXMLRelation.
      *
-     * @param type        content type
-     * @param rel         relationship
+     * @param type content type
+     * @param rel  relationship
      * @param defaultName default item name
      */
     protected POIXMLRelation(String type, String rel, String defaultName) {
         this(type, rel, defaultName, null, null, null);
     }
-
     /**
      * Return the content type. Content types define a media type, a subtype, and an
      * optional set of parameters, as defined in RFC 2616.
@@ -147,7 +148,7 @@ public abstract class POIXMLRelation {
      * @return the filename including the suffix
      */
     public String getFileName(int index) {
-        if (!_defaultName.contains("#")) {
+        if(! _defaultName.contains("#")) {
             // Generic filename in all cases
             return getDefaultFileName();
         }
@@ -156,7 +157,7 @@ public abstract class POIXMLRelation {
 
     /**
      * Returns the index of the filename within the package for the given part.
-     * e.g. 4 for /xl/comments4.xml
+     *  e.g. 4 for /xl/comments4.xml
      *
      * @param part the part to read the suffix from
      * @return the suffix
@@ -168,7 +169,8 @@ public abstract class POIXMLRelation {
 
     /**
      * @return the constructor method used to construct instances of this relationship from scratch
-     * @since 4.1.2
+     *
+     *  @since 4.1.2
      */
     public NoArgConstructor getNoArgConstructor() {
         return noArgConstructor;
@@ -176,7 +178,8 @@ public abstract class POIXMLRelation {
 
     /**
      * @return the constructor method used to construct instances of this relationship with a package part
-     * @since 4.1.2
+     *
+     *  @since 4.1.2
      */
     public PackagePartConstructor getPackagePartConstructor() {
         return packagePartConstructor;
@@ -184,18 +187,19 @@ public abstract class POIXMLRelation {
 
     /**
      * @return the constructor method used to construct instances of this relationship with a package part
-     * @since 4.1.2
+     *
+     *  @since 4.1.2
      */
     public ParentPartConstructor getParentPartConstructor() {
         return parentPartConstructor;
     }
 
     /**
-     * Fetches the InputStream to read the contents, based
-     * of the specified core part, for which we are defined
-     * as a suitable relationship
+     *  Fetches the InputStream to read the contents, based
+     *  of the specified core part, for which we are defined
+     *  as a suitable relationship
      *
-     * @since 3.16-beta3
+     *  @since 3.16-beta3
      */
     public InputStream getContents(PackagePart corePart) throws IOException, InvalidFormatException {
         if (corePart == null) {
@@ -204,7 +208,7 @@ public abstract class POIXMLRelation {
         PackageRelationshipCollection prc =
                 corePart.getRelationshipsByType(getRelation());
         Iterator<PackageRelationship> it = prc.iterator();
-        if (it.hasNext()) {
+        if(it.hasNext()) {
             PackageRelationship rel = it.next();
             PackagePartName relName = PackagingURIHelper.createPartName(rel.getTargetURI());
             PackagePart part = corePart.getPackage().getPart(relName);
@@ -213,7 +217,7 @@ public abstract class POIXMLRelation {
             }
             return part.getInputStream();
         }
-        Log.w(TAG, String.format("No part %s found", getDefaultFileName()));
+        Log.w(LOGGER_TAG, String.format("No part %s found", getDefaultFileName()));
         return null;
     }
 }

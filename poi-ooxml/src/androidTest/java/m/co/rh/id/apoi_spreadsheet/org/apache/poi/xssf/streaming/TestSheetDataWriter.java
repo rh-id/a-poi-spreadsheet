@@ -30,6 +30,7 @@ import org.junit.runner.RunWith;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 
 import m.co.rh.id.apoi_spreadsheet.POIJUnit4ClassRunner;
@@ -88,5 +89,18 @@ public final class TestSheetDataWriter {
         } finally {
             IOUtils.closeQuietly(writer);
         }
+    }
+
+    @Test
+    public void testDispose() throws IOException {
+        SheetDataWriter writer = new SheetDataWriter();
+        assertTrue(writer.dispose());
+    }
+
+    @Test
+    public void testWriterDispose() throws IOException {
+        StringWriter sw = new StringWriter();
+        SheetDataWriter writer = new SheetDataWriter(sw);
+        assertTrue(writer.dispose());
     }
 }

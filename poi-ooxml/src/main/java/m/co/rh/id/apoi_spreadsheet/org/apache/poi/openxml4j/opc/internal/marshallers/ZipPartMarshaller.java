@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.internal.marshallers;
 
@@ -29,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.util.Objects;
 
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.util.DocumentHelper;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.exceptions.OpenXML4JException;
@@ -37,6 +39,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackagePart;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackagePartName;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackageRelationship;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackageRelationshipCollection;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackageRelationshipTypes;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackagingURIHelper;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.StreamHelper;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.TargetMode;
@@ -44,6 +47,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.internal.PartMar
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.internal.ZipHelper;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.IOUtils;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFRelation;
+
 
 /**
  * Zip part marshaller. This marshaller is use to save any part in a zip stream.
@@ -55,25 +59,26 @@ public final class ZipPartMarshaller implements PartMarshaller {
      * Save the specified part to the given stream.
      *
      * @param part The {@link PackagePart} to save
-     * @param os   The stream to write the data to
+     * @param os The stream to write the data to
      * @return true if saving was successful or there was nothing to save,
-     * false if an error occurred.
-     * In case of errors, logging via Log4j 2 is used to provide more information.
-     * @throws OpenXML4JException Throws if the stream cannot be written to or an internal exception is thrown.
+     *      false if an error occurred.
+     *      In case of errors, logging via Log4j 2 is used to provide more information.
+     * @throws OpenXML4JException
+     *      Throws if the stream cannot be written to or an internal exception is thrown.
      */
     @Override
     public boolean marshall(PackagePart part, OutputStream os)
             throws OpenXML4JException {
         if (!(os instanceof ZipArchiveOutputStream)) {
             Log.e(TAG, String.format("Unexpected class %s", os.getClass().getName()));
-            throw new OpenXML4JException("ZipOutputStream expected !");
+            throw new OpenXML4JException("ZipArchiveOutputStream expected !");
             // Normally should happen only in development phase, so just throw
             // exception
         }
 
         // check if there is anything to save for some parts. We don't do this for all parts as some code
         // might depend on empty parts being saved, e.g. some unit tests verify this currently.
-        if (part.getSize() == 0 && part.getPartName().getName().equals(XSSFRelation.SHARED_STRINGS.getDefaultFileName())) {
+        if(part.getSize() == 0 && part.getPartName().getName().equals(XSSFRelation.SHARED_STRINGS.getDefaultFileName())) {
             return true;
         }
 
@@ -82,6 +87,8 @@ public final class ZipPartMarshaller implements PartMarshaller {
                 .getZipItemNameFromOPCName(part.getPartName().getURI()
                         .getPath()));
         try {
+            ZipHelper.adjustEntryTime(partEntry);
+
             // Create next zip entry
             zos.putArchiveEntry(partEntry);
 
@@ -101,7 +108,7 @@ public final class ZipPartMarshaller implements PartMarshaller {
             PackagePartName relationshipPartName = PackagingURIHelper
                     .getRelationshipPartName(part.getPartName());
 
-            marshallRelationshipPart(part.getRelationships(),
+            return marshallRelationshipPart(part.getRelationships(),
                     relationshipPartName, zos);
         }
 
@@ -111,13 +118,16 @@ public final class ZipPartMarshaller implements PartMarshaller {
     /**
      * Save relationships into the part.
      *
-     * @param rels        The relationships collection to marshall.
-     * @param relPartName Part name of the relationship part to marshall.
-     * @param zos         Zip output stream in which to save the XML content of the
-     *                    relationships serialization.
+     * @param rels
+     *            The relationships collection to marshall.
+     * @param relPartName
+     *            Part name of the relationship part to marshall.
+     * @param zos
+     *            Zip output stream in which to save the XML content of the
+     *            relationships serialization.
      * @return true if saving was successful,
-     * false if an error occurred.
-     * In case of errors, logging via Log4j 2 is used to provide more information.
+     *      false if an error occurred.
+     *      In case of errors, logging via Log4j 2 is used to provide more information.
      */
     public static boolean marshallRelationshipPart(
             PackageRelationshipCollection rels, PackagePartName relPartName,
@@ -152,7 +162,14 @@ public final class ZipPartMarshaller implements PartMarshaller {
             // the relationship Target
             String targetValue;
             URI uri = rel.getTargetURI();
-            if (rel.getTargetMode() == TargetMode.EXTERNAL) {
+            if (Objects.equals(rel.getRelationshipType(), PackageRelationshipTypes.HYPERLINK_PART)) {
+                // Save the target as-is - we don't need to validate it,
+                targetValue = uri.toString();
+                if (rel.getTargetMode() == TargetMode.EXTERNAL) {
+                    // add TargetMode attribute (as it is external link external)
+                    relElem.setAttribute(PackageRelationship.TARGET_MODE_ATTRIBUTE_NAME, "External");
+                }
+            } else if (rel.getTargetMode() == TargetMode.EXTERNAL) {
                 // Save the target as-is - we don't need to validate it,
                 //  alter it etc
                 targetValue = uri.toString();
@@ -176,6 +193,8 @@ public final class ZipPartMarshaller implements PartMarshaller {
         ZipArchiveEntry ctEntry = new ZipArchiveEntry(ZipHelper.getZipURIFromOPCName(
                 relPartName.getURI().toASCIIString()).getPath());
         try {
+            ZipHelper.adjustEntryTime(ctEntry);
+
             zos.putArchiveEntry(ctEntry);
             try {
                 return StreamHelper.saveXmlInStream(xmlOutDoc, zos);

@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.IOException;
+import java.util.Date;
 
 import m.co.rh.id.apoi_spreadsheet.POIJUnit4ClassRunner;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ConditionalFormattingEvaluator;
@@ -34,6 +35,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Cell;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.CellStyle;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.DataFormatter;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.FormulaEvaluator;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Sheet;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Workbook;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.CellReference;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.XSSFITestDataProvider;
@@ -123,6 +125,57 @@ public final class TestXSSFDataFormat extends BaseTestDataFormat {
             assertEquals("SUM(A1:C1)", formatter.formatCellValue(d1));
             formatter.setUseCachedValuesForFormulaCells(true);
             assertEquals("6.75", formatter.formatCellValue(d1));
+        }
+    }
+
+    @Test
+    public void testFormatCellValue() throws IOException {
+        DataFormatter df = new DataFormatter();
+
+        assertEquals("", df.formatCellValue(null));
+
+        try (Workbook wb = new XSSFWorkbook()) {
+            Cell cell = wb.createSheet("test").createRow(0).createCell(0);
+            assertEquals("", df.formatCellValue(cell));
+
+            cell.setCellValue(123);
+            assertEquals("123", df.formatCellValue(cell));
+
+            /* This is flaky, likely because of timezone
+            cell.setCellValue(new Date(234092383));
+            assertEquals("25571.75107", df.formatCellValue(cell));
+            */
+
+            cell.setCellValue("abcdefgh");
+            assertEquals("abcdefgh", df.formatCellValue(cell));
+
+            cell.setCellValue(true);
+            assertEquals("TRUE", df.formatCellValue(cell));
+
+            CellStyle cellStyle = wb.createCellStyle();
+            cellStyle.setDataFormat((short) 14);
+            cell.setCellStyle(cellStyle);
+            cell.setCellValue(new Date(234092383));
+            assertEquals("1/3/70", df.formatCellValue(cell));
+
+            /* This is flaky, likely because of timezone
+            cellStyle.setDataFormat((short)9999);
+            assertEquals("25571.751069247686", df.formatCellValue(cell));
+            */
+        }
+    }
+
+    @Test
+    public void testGitHub650() throws IOException {
+        // https://github.com/apache/poi/pull/650
+        DataFormatter df = new DataFormatter();
+
+        try (Workbook wb = openSampleWorkbook("decimal-format.xlsx")) {
+            Sheet sheet = wb.getSheetAt(0);
+            Cell cell1 = sheet.getRow(0).getCell(0);
+            assertEquals("1.01", df.formatCellValue(cell1));
+            Cell cell2 = sheet.getRow(1).getCell(0);
+            assertEquals("1.00", df.formatCellValue(cell2));
         }
     }
 }

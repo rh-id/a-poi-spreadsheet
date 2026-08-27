@@ -14,9 +14,14 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.functions;
+
+
+
+import android.util.Log;
 
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.FormulaParseException;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.FormulaParser;
@@ -31,9 +36,10 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.eval.ValueEval;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ptg.Area3DPxg;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Table;
 
+
 /**
  * Implementation for Excel function INDIRECT<p>
- * <p>
+ *
  * INDIRECT() returns the cell or area reference denoted by the text argument.<p>
  *
  * <b>Syntax</b>:<br>
@@ -46,7 +52,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Table;
  */
 public final class Indirect implements FreeRefFunction {
 
-    private static final String TAG = "Indirect";
+    private static final String LOGGER_TAG = "Indirect";
     public static final FreeRefFunction instance = new Indirect();
 
     private Indirect() {
@@ -141,7 +147,7 @@ public final class Indirect implements FreeRefFunction {
             try {
                 return ec.getDynamicReference(workbookName, sheetName, refStrPart1, refStrPart2, isA1style);
             } catch (Exception e) {
-                android.util.Log.w(TAG, String.format("Indirect function: failed to parse reference %s", text), e);
+                Log.w(LOGGER_TAG, String.format("Indirect function: failed to parse reference %s", text), e);
                 return ErrorEval.REF_INVALID;
             }
         }
@@ -197,7 +203,7 @@ public final class Indirect implements FreeRefFunction {
                 // start/end with whitespace
                 return null;
             }
-            return new String[]{wbName, sheetName,};
+            return new String[] { wbName, sheetName, };
         }
 
         if (firstChar == '[') {
@@ -213,10 +219,10 @@ public final class Indirect implements FreeRefFunction {
             if (canTrim(sheetName)) {
                 return null;
             }
-            return new String[]{wbName.toString(), sheetName.toString(),};
+            return new String[] { wbName.toString(), sheetName.toString(), };
         }
         // else - just sheet name
-        return new String[]{null, text.toString(),};
+        return new String[] { null, text.toString(), };
     }
 
     /**

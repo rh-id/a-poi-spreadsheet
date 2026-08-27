@@ -15,20 +15,23 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.internal.marshallers;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import java.io.OutputStream;
 import java.util.Optional;
-
 import javax.xml.XMLConstants;
 
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.util.DocumentHelper;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackagePart;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.internal.PackagePropertiesPart;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.internal.PartMarshaller;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.util.DocumentHelper;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
+
 
 /**
  * Package properties marshaller.
@@ -89,7 +92,8 @@ public class PackagePropertiesMarshaller implements PartMarshaller {
             throws OpenXML4JException {
         if (!(part instanceof PackagePropertiesPart))
             throw new IllegalArgumentException(
-                    "'part' must be a PackagePropertiesPart instance.");
+                    "'part' must be a PackagePropertiesPart instance, but had: " + part.getClass() +
+                            ", check logs while reading.");
         propsPart = (PackagePropertiesPart) part;
 
         // Configure the document

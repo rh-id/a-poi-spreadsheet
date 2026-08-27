@@ -14,18 +14,39 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.util;
 
 import android.util.Log;
 
+import com.microsoft.schemas.compatibility.AlternateContentDocument;
+import org.apache.xmlbeans.XmlCursor;
+import org.apache.xmlbeans.XmlException;
+import org.apache.xmlbeans.XmlObject;
+import org.apache.xmlbeans.impl.values.XmlAnyTypeImpl;
+
+import java.util.Locale;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 import javax.xml.xpath.XPathFactory;
+
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
+
 
 public final class XPathHelper {
     private static final String TAG = "XPathHelper";
+
+    /**
+     * Interface for re-parsing XML content - used as replacement for XSLFShape.ReparseFactory
+     */
+    @FunctionalInterface
+    public interface ReparseFactory<T extends XmlObject> {
+        T parse(XMLStreamReader reader) throws XMLStreamException, org.apache.xmlbeans.XmlException;
+    }
 
     private static final String OSGI_ERROR =
             "Schemas (*.xsb) for <CLASS> can't be loaded - usually this happens when OSGI " +
@@ -38,11 +59,9 @@ public final class XPathHelper {
     private static final QName ALTERNATE_CONTENT_TAG = new QName(MC_NS, "AlternateContent");
     // AlternateContentDocument.AlternateContent.type.getName();
 
-    private XPathHelper() {
-    }
+    private XPathHelper() {}
 
     static final XPathFactory xpathFactory = XPathFactory.newInstance();
-
     static {
         trySetFeature(xpathFactory, XMLConstants.FEATURE_SECURE_PROCESSING, true);
     }
@@ -61,5 +80,152 @@ public final class XPathHelper {
         }
     }
 
+
+
+    /**
+     * Internal code - API may change any time!
+     * <p>
+     * The XSLFShape.selectProperty(Class, String) xquery method has some performance penalties,
+     * which can be workaround by using {@link XmlCursor}. This method also takes into account
+     * that {@code AlternateContent} tags can occur anywhere on the given path.
+     * <p>
+     * It returns the first element found - the search order is:
+     * <ul>
+     *     <li>searching for a direct child</li>
+     *     <li>searching for an AlternateContent.Choice child</li>
+     *     <li>searching for an AlternateContent.Fallback child</li>
+     * </ul>
+     * The factory flag is
+     * a workaround to process files based on a later edition. But it comes with the drawback:
+     * any change on the returned XmlObject aren't saved back to the underlying document -
+     * so it's a non updatable clone. If factory is null, a XmlException is
+     * thrown if the AlternateContent is not allowed by the surrounding element or if the
+     * extracted object is of the generic type XmlAnyTypeImpl.
+     *
+     * @param resultClass the requested result class
+     * @param factory a factory parse method reference to allow reparsing of elements
+     *                extracted from AlternateContent elements. Usually the enclosing XmlBeans type needs to be used
+     *                to parse the stream
+     * @param path the elements path, each array must contain at least 1 QName,
+     *             but can contain additional alternative tags
+     * @return the xml object at the path location, or null if not found
+     *
+     * @throws XmlException If factory is null, a XmlException is
+     *      thrown if the AlternateContent is not allowed by the surrounding element or if the
+     *      extracted object is of the generic type XmlAnyTypeImpl.
+     *
+     * @since POI 4.1.2
+     */
+     @SuppressWarnings("unchecked")
+     @Internal
+     public static <T extends XmlObject> T selectProperty(XmlObject startObject, Class<T> resultClass, ReparseFactory<T> factory, QName[]... path)
+            throws XmlException {
+        XmlObject xo = startObject;
+        try (
+                XmlCursor cur = startObject.newCursor();
+                XmlCursor innerCur = selectProperty(cur, path, 0, factory != null, false)
+        ) {
+            if (innerCur == null) {
+                return null;
+            }
+
+            // Pesky XmlBeans bug - see Bugzilla #49934
+            // it never happens when using poi-ooxml-full jar but may happen with the abridged poi-ooxml-lite jar
+            xo = innerCur.getObject();
+            if (xo instanceof XmlAnyTypeImpl) {
+                String errorTxt = OSGI_ERROR
+                        .replace("<CLASS>", resultClass.getSimpleName())
+                        .replace("<XSB>", resultClass.getSimpleName().toLowerCase(Locale.ROOT) + "*");
+            if (factory == null) {
+                throw new XmlException(errorTxt);
+            } else {
+                try {
+                    xo = factory.parse(innerCur.newXMLStreamReader());
+                } catch (XMLStreamException e) {
+                    throw new XmlException(errorTxt, e);
+                }
+            }
+            }
+
+            return (T) xo;
+        }
+    }
+
+    private static XmlCursor selectProperty(final XmlCursor cur, final QName[][] path, final int offset, final boolean reparseAlternate, final boolean isAlternate)
+            throws XmlException {
+        // first try the direct children
+        for (QName qn : path[offset]) {
+            for (boolean found = cur.toChild(qn); found; found = cur.toNextSibling(qn)) {
+                if (offset == path.length-1) {
+                    return cur;
+                }
+                cur.push();
+                XmlCursor innerCur = selectProperty(cur, path, offset+1, reparseAlternate, false);
+                if (innerCur != null) {
+                    return innerCur;
+                }
+                cur.pop();
+            }
+        }
+        // if we were called inside an alternate content handling don't look for alternates again
+        if (isAlternate || !cur.toChild(ALTERNATE_CONTENT_TAG)) {
+            return null;
+        }
+
+        // otherwise check first the choice then the fallback content
+        XmlObject xo = cur.getObject();
+        AlternateContentDocument.AlternateContent alterCont;
+        if (xo instanceof AlternateContentDocument.AlternateContent) {
+            alterCont = (AlternateContentDocument.AlternateContent)xo;
+        } else {
+            // Pesky XmlBeans bug - see Bugzilla #49934
+            // it never happens when using poi-ooxml-full jar but may happen with the abridged poi-ooxml-lite jar
+            if (!reparseAlternate) {
+                throw new XmlException(OSGI_ERROR
+                        .replace("<CLASS>", "AlternateContent")
+                        .replace("<XSB>", "alternatecontentelement")
+                );
+            }
+            try {
+                AlternateContentDocument acd = AlternateContentDocument.Factory.parse(cur.newXMLStreamReader());
+                alterCont = acd.getAlternateContent();
+            } catch (XmlException e) {
+                throw new XmlException("unable to parse AlternateContent element", e);
+            }
+        }
+
+        final int choices = alterCont.sizeOfChoiceArray();
+        for (int i=0; i<choices; i++) {
+            // TODO: check [Requires] attribute of [Choice] element, if we can handle the content
+            AlternateContentDocument.AlternateContent.Choice choice = alterCont.getChoiceArray(i);
+            XmlCursor innerCur = null;
+            try (XmlCursor cCur = choice.newCursor()) {
+                String requiresNS = cCur.namespaceForPrefix(choice.getRequires());
+                if (MAC_DML_NS.equalsIgnoreCase(requiresNS)) {
+                    // Mac DML usually contains PDFs ...
+                    continue;
+                }
+                innerCur = selectProperty(cCur, path, offset, reparseAlternate, true);
+                if (innerCur != null && innerCur != cCur) {
+                    return innerCur;
+                }
+            }
+        }
+
+        if (!alterCont.isSetFallback()) {
+            return null;
+        }
+
+        XmlCursor fCur = alterCont.getFallback().newCursor();
+        XmlCursor innerCur = null;
+        try {
+            innerCur = selectProperty(fCur, path, offset, reparseAlternate, true);
+            return innerCur;
+        } finally {
+            if (innerCur != fCur) {
+                fCur.close();
+            }
+        }
+    }
 
 }

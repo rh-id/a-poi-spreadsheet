@@ -25,7 +25,9 @@ import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import m.co.rh.id.apoi_spreadsheet.POIJUnit4ClassRunner;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.POIDataSamples;
@@ -101,6 +103,41 @@ public class TestXSSFSheetXMLHandler {
                 }, false));
 
                 sheetParser.parse(new InputSource(stream));
+            }
+        }
+    }
+
+    @Test
+    public void testSstStrayWhitespace() throws Exception {
+        try (OPCPackage xlsxPackage = OPCPackage.open(_ssTests.openResourceAsStream("bug69769.xlsx"))) {
+            final XSSFReader reader = new XSSFReader(xlsxPackage);
+            final Iterator<InputStream> iter = reader.getSheetsData();
+            final Map<String, String> cellValues = new HashMap<>();
+
+            try (InputStream stream = iter.next()) {
+                final XMLReader sheetParser = XMLHelper.getSaxParserFactory().newSAXParser().getXMLReader();
+
+                sheetParser.setContentHandler(new XSSFSheetXMLHandler(reader.getStylesTable(),
+                        new ReadOnlySharedStringsTable(xlsxPackage), new SheetContentsHandler() {
+                    @Override
+                    public void startRow(final int rowNum) {
+                    }
+
+                    @Override
+                    public void endRow(final int rowNum) {
+                    }
+
+                    @Override
+                    public void cell(final String cellReference, final String formattedValue,
+                                     final XSSFComment comment) {
+                        cellValues.put(cellReference, formattedValue);
+                    }
+                }, false));
+
+                sheetParser.parse(new InputSource(stream));
+
+                assertEquals(4, cellValues.size());
+                assertEquals("Mustermann", cellValues.get("B2"));
             }
         }
     }

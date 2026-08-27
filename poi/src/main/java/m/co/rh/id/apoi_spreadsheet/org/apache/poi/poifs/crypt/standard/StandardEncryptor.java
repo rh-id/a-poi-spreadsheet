@@ -14,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-// Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.crypt.standard;
 
@@ -33,7 +34,6 @@ import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.Arrays;
-
 import javax.crypto.Cipher;
 import javax.crypto.CipherOutputStream;
 import javax.crypto.SecretKey;
@@ -53,11 +53,11 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndianConsts;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.LittleEndianOutputStream;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.RandomSingleton;
 
+
 public class StandardEncryptor extends Encryptor {
     private static final String TAG = "StandardEncryptor";
 
-    protected StandardEncryptor() {
-    }
+    protected StandardEncryptor() {}
 
     protected StandardEncryptor(StandardEncryptor other) {
         super(other);
@@ -80,12 +80,12 @@ public class StandardEncryptor extends Encryptor {
     /**
      * Fills the fields of verifier and header with the calculated hashes based
      * on the password and a random salt
-     * <p>
+     *
      * see [MS-OFFCRYPTO] - 2.3.4.7 ECMA-376 Document Encryption Key Generation
      */
     @Override
     public void confirmPassword(String password, byte[] keySpec, byte[] keySalt, byte[] verifier, byte[] verifierSalt, byte[] integritySalt) {
-        StandardEncryptionVerifier ver = (StandardEncryptionVerifier) getEncryptionInfo().getVerifier();
+        StandardEncryptionVerifier ver = (StandardEncryptionVerifier)getEncryptionInfo().getVerifier();
 
         ver.setSalt(verifierSalt);
         SecretKey secretKey = generateSecretKey(password, ver, getKeySizeInBytes());
@@ -122,7 +122,7 @@ public class StandardEncryptor extends Encryptor {
 
     @Override
     public OutputStream getDataStream(final DirectoryNode dir)
-            throws IOException, GeneralSecurityException {
+    throws IOException, GeneralSecurityException {
         createEncryptionInfoEntry(dir);
         DataSpaceMapUtils.addDefaultDataSpace(dir);
         return new StandardCipherOutputStream(dir);
@@ -147,7 +147,7 @@ public class StandardEncryptor extends Encryptor {
             // field of the EncryptedPackage field specifies the number of bytes of
             // unencrypted data as specified in section 2.3.4.4.
             super(
-                    new CipherOutputStream(Files.newOutputStream(fileOut.toPath()), getCipher(getSecretKey(), "PKCS5Padding"))
+                new CipherOutputStream(Files.newOutputStream(fileOut.toPath()), getCipher(getSecretKey(), "PKCS5Padding"))
             );
             this.deleteFile = deleteFile;
             this.fileOut = fileOut;
@@ -183,7 +183,7 @@ public class StandardEncryptor extends Encryptor {
         }
 
         void writeToPOIFS() throws IOException {
-            int oleStreamSize = (int) (fileOut.length() + LittleEndianConsts.LONG_SIZE);
+            int oleStreamSize = (int)(fileOut.length()+LittleEndianConsts.LONG_SIZE);
             dir.createDocument(DEFAULT_POIFS_ENTRY, oleStreamSize, this);
             // TODO: any properties???
         }
@@ -214,13 +214,13 @@ public class StandardEncryptor extends Encryptor {
     }
 
     protected int getKeySizeInBytes() {
-        return getEncryptionInfo().getHeader().getKeySize() / 8;
+        return getEncryptionInfo().getHeader().getKeySize()/8;
     }
 
     protected void createEncryptionInfoEntry(DirectoryNode dir) throws IOException {
         final EncryptionInfo info = getEncryptionInfo();
-        final StandardEncryptionHeader header = (StandardEncryptionHeader) info.getHeader();
-        final StandardEncryptionVerifier verifier = (StandardEncryptionVerifier) info.getVerifier();
+        final StandardEncryptionHeader header = (StandardEncryptionHeader)info.getHeader();
+        final StandardEncryptionVerifier verifier = (StandardEncryptionVerifier)info.getVerifier();
 
         EncryptionRecord er = bos -> {
             bos.writeShort(info.getVersionMajor());

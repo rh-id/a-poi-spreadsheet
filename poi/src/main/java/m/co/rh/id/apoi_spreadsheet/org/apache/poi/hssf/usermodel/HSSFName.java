@@ -15,6 +15,8 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.usermodel;
 
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.model.HSSFFormulaParser;
@@ -26,6 +28,7 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.FormulaType;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.formula.ptg.Ptg;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Name;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.CellReference;
+
 
 /**
  * High Level Representation of a 'defined name' which could be a 'built-in' name,
@@ -41,7 +44,7 @@ public final class HSSFName implements Name {
      * Creates new HSSFName   - called by HSSFWorkbook to create a name from
      * scratch.
      *
-     * @see m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.usermodel.HSSFWorkbook#createName()
+     * @see org.apache.poi.hssf.usermodel.HSSFWorkbook#createName()
      * @param name the Name Record
      * @param book workbook object associated with the sheet.
      */
@@ -52,7 +55,7 @@ public final class HSSFName implements Name {
      * Creates new HSSFName   - called by HSSFWorkbook to create a name from
      * scratch.
      *
-     * @see m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.usermodel.HSSFWorkbook#createName()
+     * @see org.apache.poi.hssf.usermodel.HSSFWorkbook#createName()
      * @param name the Name Record
      * @param comment the Name Comment Record, optional.
      * @param book workbook object associated with the sheet.
@@ -180,7 +183,7 @@ public final class HSSFName implements Name {
      */
     private static void validateName(String name) {
 
-        if (name.length() == 0) {
+        if (name.isEmpty()) {
             throw new IllegalArgumentException("Name cannot be blank");
         }
         if (name.length() > 255) {

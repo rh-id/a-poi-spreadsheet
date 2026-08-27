@@ -1,61 +1,9 @@
-/*
- *  ====================================================================
- *    Licensed to the Apache Software Foundation (ASF) under one or more
- *    contributor license agreements.  See the NOTICE file distributed with
- *    this work for additional information regarding copyright ownership.
- *    The ASF licenses this file to You under the Apache License, Version 2.0
- *    (the "License"); you may not use this file except in compliance with
- *    the License.  You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
- * ====================================================================
- */
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xddf.usermodel.chart;
 
 import static m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.POIXMLTypeLoader.DEFAULT_XML_OPTIONS;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.function.Predicate;
-
-import javax.xml.namespace.QName;
-
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.POIXMLDocument;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.POIXMLDocumentPart;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.POIXMLException;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.POIXMLFactory;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.POIXMLRelation;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.exceptions.NotOfficeXmlFileException;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackagePart;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackageRelationship;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.CellRangeAddress;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.CellReference;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Beta;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xddf.usermodel.XDDFShapeProperties;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xddf.usermodel.text.TextContainer;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xddf.usermodel.text.XDDFTextBody;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFCell;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFRow;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFSheet;
-import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.xmlbeans.XmlException;
 import org.apache.xmlbeans.XmlOptions;
 import org.openxmlformats.schemas.drawingml.x2006.chart.CTArea3DChart;
@@ -87,6 +35,42 @@ import org.openxmlformats.schemas.drawingml.x2006.chart.ChartSpaceDocument;
 import org.openxmlformats.schemas.drawingml.x2006.main.CTShapeProperties;
 import org.openxmlformats.schemas.drawingml.x2006.main.CTTextCharacterProperties;
 import org.openxmlformats.schemas.drawingml.x2006.main.CTTextParagraphProperties;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import javax.xml.namespace.QName;
+
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.POIXMLDocument;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.POIXMLDocumentPart;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.POIXMLException;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.POIXMLFactory;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.POIXMLRelation;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.exceptions.NotOfficeXmlFileException;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackagePart;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.openxml4j.opc.PackageRelationship;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.CellRangeAddress;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.CellReference;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Beta;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.Internal;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xddf.usermodel.XDDFShapeProperties;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xddf.usermodel.text.TextContainer;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xddf.usermodel.text.XDDFTextBody;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFCell;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFRow;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFSheet;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
 
 @Beta
 public abstract class XDDFChart extends POIXMLDocumentPart implements TextContainer {
@@ -688,7 +672,7 @@ public abstract class XDDFChart extends POIXMLDocumentPart implements TextContai
         if (axes.isEmpty() && hasAxes()) {
             parseAxes();
         }
-        return axes;
+        return Collections.unmodifiableList(axes);
     }
 
     private boolean hasAxes() {

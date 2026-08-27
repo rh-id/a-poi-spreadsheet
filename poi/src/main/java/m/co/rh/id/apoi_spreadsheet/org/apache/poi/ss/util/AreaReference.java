@@ -15,6 +15,8 @@
    limitations under the License.
 ==================================================================== */
 
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util;
 
 import java.util.ArrayList;
@@ -23,6 +25,7 @@ import java.util.StringTokenizer;
 
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.SpreadsheetVersion;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.StringUtil;
+
 
 public class AreaReference {
 
@@ -326,7 +329,7 @@ public class AreaReference {
         String currentSegment = "";
         StringTokenizer st = new StringTokenizer(reference, ",");
         while(st.hasMoreTokens()) {
-            if (currentSegment.length() > 0) {
+            if (!currentSegment.isEmpty()) {
                 currentSegment += ",";
             }
             currentSegment += st.nextToken();
@@ -336,7 +339,7 @@ public class AreaReference {
                 currentSegment = "";
             }
         }
-        if (currentSegment.length() > 0) {
+        if (!currentSegment.isEmpty()) {
             results.add(currentSegment);
         }
         return results.toArray(new String[0]);
