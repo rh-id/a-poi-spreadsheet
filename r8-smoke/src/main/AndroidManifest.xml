@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Instrumentation does not require any activity; the harness app stays code-less by
+         design so the APK under test contains only the library classes governed by the
+         consumer-rules.pro files. -->
+    <application
+        android:label="a-poi-spreadsheet R8 smoke"
+        android:allowBackup="false" />
+
+</manifest>

@@ -17,3 +17,4 @@ rootProject.name = "a-poi-spreadsheet"
 include ':poi-ooxml'
 include ':poi'
 include ':base'
+include ':r8-smoke'

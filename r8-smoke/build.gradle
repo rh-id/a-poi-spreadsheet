@@ -1,0 +1,65 @@
+plugins {
+    // version omitted: AGP is already on the build classpath via the root build.gradle
+    // (com.android.library 9.3.2 apply false) and com.android.application ships in the same artifact.
+    id 'com.android.application'
+}
+
+android {
+    namespace 'm.co.rh.id.apoi_spreadsheet.r8smoke'
+    compileSdk 37
+
+    defaultConfig {
+        applicationId 'm.co.rh.id.apoi_spreadsheet.r8smoke'
+        minSdk 26
+        targetSdk 37
+        versionCode 1
+        versionName '1.0'
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+    }
+
+    // Instrumented tests must run against the MINIFIED release app - that is the entire
+    // purpose of this module (consumer-side guard for the library consumer-rules.pro).
+    testBuildType 'release'
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources false
+            signingConfig signingConfigs.debug
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            testProguardFiles file('test-rules.pro')
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    packaging {
+        resources {
+            // aalto-xml and xercesImpl both ship this service file (library modules pickFirst it module-side)
+            pickFirsts += 'META-INF/services/javax.xml.stream.XMLEventFactory'
+            // xmlsec and log4j-api both ship Maven's DEPENDENCIES file (fork excludes it module-side)
+            excludes += 'META-INF/DEPENDENCIES'
+            // all three library modules ship these legal files (fork pickFirsts them module-side)
+            pickFirsts += 'META-INF/LICENSE-a-poi-spreadsheet.txt'
+            pickFirsts += 'META-INF/NOTICE-a-poi-spreadsheet.txt'
+        }
+    }
+}
+
+dependencies {
+    // poi-ooxml pulls :poi and :base as implementation-scope (see poi-ooxml/build.gradle),
+    // so they are not exposed to this module at compile time and must be declared explicitly.
+    implementation project(':poi-ooxml')
+    implementation project(':poi')
+    implementation project(':base')
+
+    androidTestImplementation 'androidx.test:runner:1.5.2'
+    androidTestImplementation 'androidx.test:rules:1.5.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    // androidx.test:monitor (test APK) needs kotlin stdlib at runtime; this Java-only app
+    // has no reachable Kotlin code, so R8 shrinks it out of both APKs without this.
+    androidTestImplementation 'org.jetbrains.kotlin:kotlin-stdlib:2.2.10'
+}
