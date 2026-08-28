@@ -41,9 +41,9 @@ allprojects {
 Include this to your module dependency (module build.gradle)
 ```
 dependencies {
-    implementation 'com.github.rh-id.a-poi-spreadsheet:a-poi-spreadsheet:v0.0.5'
-    implementation "com.github.rh-id.a-poi-spreadsheet:a-poi-spreadsheet-base:v0.0.5"
-    implementation "com.github.rh-id.a-poi-spreadsheet:a-poi-spreadsheet-ooxml:v0.0.5"
+    implementation 'com.github.rh-id.a-poi-spreadsheet:a-poi-spreadsheet:v0.0.6'
+    implementation "com.github.rh-id.a-poi-spreadsheet:a-poi-spreadsheet-base:v0.0.6"
+    implementation "com.github.rh-id.a-poi-spreadsheet:a-poi-spreadsheet-ooxml:v0.0.6"
 }
 ```
 
