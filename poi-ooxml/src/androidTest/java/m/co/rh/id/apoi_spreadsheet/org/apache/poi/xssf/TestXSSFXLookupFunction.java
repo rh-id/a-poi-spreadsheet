@@ -18,10 +18,12 @@
 // Derived from Apache POI (https://github.com/apache/poi @ commit 6a8994ee0e6c59aa231570307a5dd213784993c3); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf;
 
+import m.co.rh.id.apoi_spreadsheet.POIJUnit4ClassRunner;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.CellRangeAddress;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.util.CellReference;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.*;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.io.IOException;
 import java.util.Locale;
@@ -32,12 +34,19 @@ import static org.junit.Assert.assertEquals;
 /**
  * Testcase for function XLOOKUP()
  */
-class TestXSSFXLookupFunction {
+// JUnit4 requires public test classes/methods. This class was package-private
+// (upstream JUnit5 style) and was silently skipped by the Android runner; under
+// R8 obfuscation (-allowaccessmodification widens members) the runner began
+// attempting it and failed validation. Made it a proper JUnit4 test class and
+// wired the fork's runner (initialises the app-context bridge that asset
+// loading, e.g. functionMetadata.txt, depends on).
+@RunWith(POIJUnit4ClassRunner.class)
+public class TestXSSFXLookupFunction {
 
     //https://support.microsoft.com/en-us/office/xlookup-function-b7fd680e-6d10-43e6-84f9-88eae8bf5929
 
     @Test
-    void testMicrosoftExample2() throws IOException {
+    public void testMicrosoftExample2() throws IOException {
         String formulaText = "XLOOKUP(B2,B5:B14,C5:D14)";
         try (XSSFWorkbook wb = initWorkbook2()) {
             XSSFFormulaEvaluator fe = new XSSFFormulaEvaluator(wb);
@@ -54,7 +63,7 @@ class TestXSSFXLookupFunction {
     }
 
     @Test
-    void testXLookupFile() throws Exception {
+    public void testXLookupFile() throws Exception {
         try (XSSFWorkbook workbook = XSSFTestDataSamples.openSampleWorkbook("xlookup.xlsx")) {
             XSSFSheet sheet = workbook.getSheetAt(0);
             XSSFFormulaEvaluator fe = new XSSFFormulaEvaluator(workbook);

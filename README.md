@@ -55,31 +55,41 @@ Set application context during `Application.onCreate` or before using it to poi 
 
 ## Proguard Configuration
 
+No manual rules are required. Every published AAR bundles its own `consumer-rules.pro` (via `consumerProguardFiles`), so R8/ProGuard picks them up automatically when your app enables minification.
+
+The bundled rules cover everything reflection makes invisible to R8:
+
+- The StAX implementation (`aalto-xml` + `stax2-api`, plus Xerces' `XMLEventFactoryImpl`), which the JDK service lookup resolves by parsing `META-INF/services` text and calling `Class.forName` — without it every `.xlsx` read/write fails under minification.
+- The XMLBeans type system (`org.apache.poi.schemas.**`, `org.apache.xmlbeans.**`) and the OOXML schema packages (`org.openxmlformats.**`, `com.microsoft.schemas.**`, `org.etsi.**`, `org.w3c.**`), whose `*Impl` and `$Enum` classes are instantiated reflectively.
+- The reflection-loaded XML-DSig security provider (`XMLDSigRI`) and the optional Xerces `SecurityManager` hardening hook.
+- The `ServiceLoader` provider factories (`HSSFWorkbookFactory`, `XSSFWorkbookFactory`, `MainExtractorFactory`, `POIXMLExtractorFactory`).
+
+Optional manual additions for consumer apps:
+
 ```
--dontwarn org.apache.**
--dontwarn org.openxmlformats.schemas.**
--dontwarn org.etsi.**
--dontwarn org.w3.**
--dontwarn com.microsoft.schemas.**
--dontwarn com.graphbuilder.**
--dontwarn aQute.bnd.annotation.spi.ServiceProvider
--dontnote org.apache.**
--dontnote org.openxmlformats.schemas.**
--dontnote org.etsi.**
--dontnote org.w3.**
--dontnote com.microsoft.schemas.**
--dontnote com.graphbuilder.**
+# Only needed if your app adds the xml-resolver artifact itself; xmlbeans' own
+# catalog-resolver fallback (JDK-internal com.sun.org.apache.xml.internal.resolver)
+# is already covered by the bundled rules
+-dontwarn org.apache.xml.resolver.**
+```
 
--keeppackagenames org.apache.poi.ss.formula.function
+If your app adds BouncyCastle itself (for encrypted workbook support), also keep its provider, since POI loads it by name (`CryptoFunctions`):
 
--keep class org.apache.logging.** { *; }
--keep class org.apache.commons.** { *; }
--keep class org.apache.xmlbeans.** { *; }
--keep class org.openxmlformats.schemas.** { *; }
--keep class com.microsoft.schemas.** { *; }
--keep class javax.xml.** { *; }
+```
+-keep class org.bouncycastle.jce.provider.BouncyCastleProvider { *; }
+```
 
--keep class schemaorg_apache_xmlbeans.system.sF1327CCA741569E70F9CA8C9AF9B44B2.TypeSystemHolder { public final static *** typeSystem; }
+Packaging notes:
+
+- The schema classes ship in `poi-ooxml-full`, which contains ~9000 `.xsb` binary resources — they must reach your APK. Default AGP packaging keeps them, so nothing to do unless you have custom packaging filters that strip them.
+- Both `aalto-xml` and `xercesImpl` ship a `META-INF/services/javax.xml.stream.XMLEventFactory` entry. If the duplicate-resource build error appears, resolve it with either file — both factory implementations are kept, so either resolution works:
+
+```
+android {
+    packaging {
+        resources.pickFirsts += "META-INF/services/javax.xml.stream.XMLEventFactory"
+    }
+}
 ```
 
 ## Licenses
@@ -92,25 +102,5 @@ Set application context during `Application.onCreate` or before using it to poi 
 
 **Downstream projects may license their own applications/libraries under any terms.** Using this library only incurs the attribution obligations listed above and in the packaged NOTICE.
 
-### Changelog
-
-#### v0.0.5
-- Updated upstream base from apache/poi@6a8994e (5.2.5 era, Feb 2024) to [REL_5_5_1](https://github.com/apache/poi/commit/094968cfc3d48224db08f0b7f0a6fc341b035114) (POI 5.5.1, Nov 2025) - 238 carried files regenerated, picked up ~2 years of upstream fixes and improvements
-- Instrumented tests refreshed from upstream: all 39 upstream-changed test files ported to JUnit 4 style (32 with material changes, 7 already in sync) + 6 new tests added (HSSFParser, XSSFParser, HSSFRowCopyRowFrom, WorkdayFunc, CellUtil, OutOfOrderColumns); new upstream classes HSSFParser/XSSFParser + HSSFReadException/XSSFReadException carried into main sources
-- Dependencies updated to upstream 5.5.1 baseline: poi-ooxml-full 5.5.1, commons-io 2.21.0, commons-collections4 4.5.0, commons-compress 1.28.0, commons-codec 1.20.0, xmlsec 3.0.6
-- Carried previously-stripped classes back from upstream where Android-safe: `CellPropertyType`, `CellPropertyCategory`, `poifs/nio/CleanerUtil`, `util/POIException`, `openxml4j/opc/OPCComplianceFlags`, `ReferenceRelationship`, `HyperlinkRelationship`, `Reproducibility`, `InvalidZipException` and more
-- Restored fork's android.graphics.Color APIs on `XSSFColor`, `XSSFTextRun`, `XSSFTextParagraph`
-- Breaking changes vs v0.0.4:
-  - `XSSFTextRun#getFontColor`/`setFontColor`, `XSSFTextParagraph#getBulletFontColor`/`setBulletFontColor` use `android.graphics.Color` (unchanged from v0.0.4, but signatures differ from upstream POI)
-  - `SignatureConfig#getTspService`/`setTspService` removed (upstream default `TSPTimeStampService` depends on BouncyCastle, not carried)
-  - `XSSFColor(java.awt.Color, IndexedColorMap)`-style awt constructors remain unavailable (use `android.graphics.Color` or `byte[]` variants)
-  - `ss.usermodel.CellStyle#getFormatProperties`/`invalidateCachedProperties` now available again (upstream API restored)
-- xmlbeans schemas now come from poi-ooxml-full 5.5.1 - the proguard keep rule for `schemaorg_apache_xmlbeans.system.*` in consumer projects remains valid
-- On-device fixes: formula evaluation now loads function metadata from Android assets; depends on log4j-api (API-only, no logging backend) for XMLBeans 5.x compatibility
-
-#### v0.0.4
-- Added Maven POM license/developer/scm metadata to all published artifacts
-- LICENSE and NOTICE now packaged inside artifacts (`META-INF/`)
-- Disclosed third-party licensing for `jsr105-api` (CDDL/GPLv2+Classpath Exception)
-- Added modification notices and license headers per Apache-2.0 §4 requirements
+See the [GitHub Releases](https://github.com/rh-id/a-poi-spreadsheet/releases) page for the changelog of each version.
 
