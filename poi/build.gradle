@@ -65,7 +65,7 @@ afterEvaluate {
                 // You can then customize attributes of the publication as shown below.
                 groupId = 'com.github.rh-id'
                 artifactId = 'a-poi-spreadsheet'
-                version = '0.0.6'
+                version = '0.0.7'
                 pom {
                     name = 'a-poi-spreadsheet'
                     description = 'Apache POI spreadsheet support for Android - HSSF/XSSF-common core adapted from Apache POI with Log4J replaced by android.util.Log'
