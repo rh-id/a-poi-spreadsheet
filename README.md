@@ -25,7 +25,27 @@ NOTE: This is not official library or project from Apache POI team.
 
 ## Using this library
 
-`minSdk` is 26 (due to required Java 8 Compatibility).
+`minSdk` is 26 (due to required Java 8 Compatibility). The library is declared and tested on API 26+.
+
+- **App `minSdk` 26 or higher**: nothing extra is needed. The manifest merges normally, no runtime guard is required (`java.time` / `java.nio.file` are always present), and the bundled `consumer-rules.pro` are picked up automatically when your app enables minification (see [Proguard Configuration](#proguard-configuration)).
+- **App `minSdk` below 26**: additional setup is required, see the next subsection.
+
+### Using this library in apps with `minSdk` below 26
+
+Apps with a lower `minSdk` (e.g. 21) can still include this library. The library dexes fine below API 26 (since v0.0.7, verified with D8/R8 full mode at `minSdk 21`), but its code requires APIs that only exist from API 26 onwards (`java.time`, `java.nio.file`). On older devices the app must simply not execute any POI code — Android loads classes lazily, so library classes sitting unused in the APK are harmless:
+
+1. Add `xmlns:tools="http://schemas.android.com/tools"` and `<uses-sdk tools:overrideLibrary="m.co.rh.id.apoi_spreadsheet.base,m.co.rh.id.apoi_spreadsheet.poi,m.co.rh.id.apoi_spreadsheet.ooxml" />` to your manifest (required because the libraries declare `minSdk 26`).
+2. Isolate all POI usage in a wrapper class and only instantiate it inside a `Build.VERSION.SDK_INT >= 26` guard, e.g.:
+```
+if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+    spreadsheetHelper.open(file); // SpreadsheetHelper is the only class touching POI
+} else {
+    // spreadsheet features unavailable on this device
+}
+```
+Never trigger the guarded path on older devices — a single unguarded POI call will crash with `NoClassDefFoundError` (e.g. `java.nio.file.OpenOption`).
+
+Actually running POI on API 21-25 is not supported or tested. If you attempt it anyway, plain core library desugaring is not enough (commons-io requires `java.nio.file`); you would need `coreLibraryDesugaring "com.android.tools:desugar_jdk_libs_nio:2.1.5"` — treat this as best-effort at your own risk.
 
 This project support jitpack, in order to use this, you need to add jitpack to your project root build.gradle:
 ```
