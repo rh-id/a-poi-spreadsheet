@@ -15,25 +15,16 @@
    limitations under the License.
 ==================================================================== */
 
-// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project.
+// Derived from Apache POI (https://github.com/apache/poi @ commit 094968cfc3d48224db08f0b7f0a6fc341b035114); this file has been modified for Android compatibility by the a-poi-spreadsheet project. The invocation uses plain reflection instead of MethodHandles because signature-polymorphic invoke blocks D8 dexing for apps with minSdk < 26.
 
 package m.co.rh.id.apoi_spreadsheet.org.apache.poi.poifs.nio;
 
-import static java.lang.invoke.MethodHandles.constant;
-import static java.lang.invoke.MethodHandles.dropArguments;
-import static java.lang.invoke.MethodHandles.filterReturnValue;
-import static java.lang.invoke.MethodHandles.guardWithTest;
-import static java.lang.invoke.MethodType.methodType;
-
 import java.io.IOException;
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.Objects;
 
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.ExceptionUtil;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.util.SuppressForbidden;
@@ -94,20 +85,19 @@ public final class CleanerUtil {
 
     @SuppressForbidden("Java 9 Jigsaw allows access to sun.misc.Cleaner, so setAccessible works")
     private static Object unmapHackImpl() {
-        final MethodHandles.Lookup lookup = MethodHandles.lookup();
         try {
             try {
                 // *** sun.misc.Unsafe unmapping (Java 9+) ***
                 final Class<?> unsafeClass = Class.forName("sun.misc.Unsafe");
                 // first check if Unsafe has the right method, otherwise we can
                 // give up without doing any security critical stuff:
-                final MethodHandle unmapper = lookup.findVirtual(unsafeClass,
-                        "invokeCleaner", methodType(void.class, ByteBuffer.class));
-                // fetch the unsafe instance and bind it to the virtual MH:
+                final Method unmapper = unsafeClass.getMethod(
+                        "invokeCleaner", ByteBuffer.class);
+                // fetch the unsafe instance and pass it as receiver to the method:
                 final Field f = unsafeClass.getDeclaredField("theUnsafe");
                 f.setAccessible(true);
                 final Object theUnsafe = f.get(null);
-                return newBufferCleaner(ByteBuffer.class, unmapper.bindTo(theUnsafe));
+                return newBufferCleaner(ByteBuffer.class, theUnsafe, unmapper, null);
             } catch (SecurityException se) {
                 // rethrow to report errors correctly (we need to catch it here,
                 // as we also catch RuntimeException below!):
@@ -117,41 +107,24 @@ public final class CleanerUtil {
                 final Class<?> directBufferClass =
                         Class.forName("java.nio.DirectByteBuffer");
 
-                final Method m = directBufferClass.getMethod("cleaner");
-                m.setAccessible(true);
-                final MethodHandle directBufferCleanerMethod = lookup.unreflect(m);
-                final Class<?> cleanerClass =
-                        directBufferCleanerMethod.type().returnType();
+                final Method cleanerMethod = directBufferClass.getMethod("cleaner");
+                cleanerMethod.setAccessible(true);
+                final Class<?> cleanerClass = cleanerMethod.getReturnType();
 
                 /*
-                 * "Compile" a MethodHandle that basically is equivalent
-                 * to the following code:
+                 * The invocation below is basically equivalent to the
+                 * following code:
                  *
                  * void unmapper(ByteBuffer byteBuffer) {
                  *   sun.misc.Cleaner cleaner =
                  *       ((java.nio.DirectByteBuffer) byteBuffer).cleaner();
                  *   if (Objects.nonNull(cleaner)) {
                  *     cleaner.clean();
-                 *   } else {
-                 *     // the noop is needed because MethodHandles#guardWithTest
-                 *     // always needs ELSE
-                 *     noop(cleaner);
                  *   }
                  * }
                  */
-                final MethodHandle cleanMethod = lookup.findVirtual(
-                        cleanerClass, "clean", methodType(void.class));
-                final MethodHandle nonNullTest = lookup.findStatic(Objects.class,
-                        "nonNull", methodType(boolean.class, Object.class))
-                        .asType(methodType(boolean.class, cleanerClass));
-                final MethodHandle noop = dropArguments(
-                        constant(Void.class, null).asType(methodType(void.class)),
-                        0, cleanerClass);
-                final MethodHandle unmapper = filterReturnValue(
-                        directBufferCleanerMethod,
-                        guardWithTest(nonNullTest, cleanMethod, noop))
-                        .asType(methodType(void.class, ByteBuffer.class));
-                return newBufferCleaner(directBufferClass, unmapper);
+                final Method cleanMethod = cleanerClass.getMethod("clean");
+                return newBufferCleaner(directBufferClass, null, cleanerMethod, cleanMethod);
             }
         } catch (SecurityException se) {
             return "Unmapping is not supported, because not all required " +
@@ -167,9 +140,8 @@ public final class CleanerUtil {
     }
 
     private static BufferCleaner newBufferCleaner(
-            final Class<?> unmappableBufferClass, final MethodHandle unmapper) {
-        assert Objects.equals(
-                methodType(void.class, ByteBuffer.class), unmapper.type());
+            final Class<?> unmappableBufferClass, final Object receiver,
+            final Method unmapperMethod, final Method cleanMethod) {
         return buffer -> {
             if (!buffer.isDirect()) {
                 throw new IllegalArgumentException(
@@ -182,7 +154,14 @@ public final class CleanerUtil {
             final Throwable error = AccessController.doPrivileged(
                     (PrivilegedAction<Throwable>) () -> {
                         try {
-                            unmapper.invokeExact(buffer);
+                            if (receiver != null) {
+                                unmapperMethod.invoke(receiver, buffer);
+                            } else {
+                                final Object cleaner = unmapperMethod.invoke(buffer);
+                                if (cleaner != null) {
+                                    cleanMethod.invoke(cleaner);
+                                }
+                            }
                         } catch (Throwable t) {
                             if (ExceptionUtil.isFatal(t)) {
                                 ExceptionUtil.rethrow(t);
