@@ -15,4 +15,5 @@
 #  limitations under the License.
 # ====================================================================
 
-m.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.usermodel.HSSFWorkbookFactory
+m.co.rh.id.apoi_spreadsheet.org.apache.poi.extractor.MainExtractorFactory
+m.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.extractor.POIXMLExtractorFactory

@@ -38,23 +38,17 @@ android {
 
     packaging {
         resources {
-            // aalto-xml and xercesImpl both ship this service file (library modules pickFirst it module-side)
-            pickFirsts += 'META-INF/services/javax.xml.stream.XMLEventFactory'
-            // xmlsec and log4j-api both ship Maven's DEPENDENCIES file (fork excludes it module-side)
+            // xmlsec and log4j-api both ship Maven's DEPENDENCIES file; consumer apps MUST
+            // exclude it (a module-side exclude does not transfer) - see README Packaging notes
             excludes += 'META-INF/DEPENDENCIES'
-            // all three library modules ship these legal files (fork pickFirsts them module-side)
-            pickFirsts += 'META-INF/LICENSE-a-poi-spreadsheet.txt'
-            pickFirsts += 'META-INF/NOTICE-a-poi-spreadsheet.txt'
         }
     }
 }
 
 dependencies {
-    // poi-ooxml pulls :poi and :base as implementation-scope (see poi-ooxml/build.gradle),
-    // so they are not exposed to this module at compile time and must be declared explicitly.
-    implementation project(':poi-ooxml')
-    implementation project(':poi')
-    implementation project(':base')
+    // Single consolidated library module (its build.gradle unions the source trees of the
+    // former :base/:poi/:poi-ooxml modules, so this one dependency is all that is needed).
+    implementation project(':a-poi-spreadsheet')
 
     androidTestImplementation 'androidx.test:runner:1.5.2'
     androidTestImplementation 'androidx.test:rules:1.5.0'
@@ -62,4 +56,149 @@ dependencies {
     // androidx.test:monitor (test APK) needs kotlin stdlib at runtime; this Java-only app
     // has no reachable Kotlin code, so R8 shrinks it out of both APKs without this.
     androidTestImplementation 'org.jetbrains.kotlin:kotlin-stdlib:2.2.10'
+}
+
+// ---------------------------------------------------------------------------
+// Consumer-side obfuscation/shrink guard.
+//
+// The library AAR ships consumer-rules.pro that keeps reflection-resolved
+// classes BY NAME (ServiceLoader provider factories, aalto StAX, XMLBeans type
+// system, XML-DSig provider). This task reads the R8 mapping produced for this
+// harness's minified release build and proves two things that would otherwise
+// only surface when someone hand-inspects the mapping:
+//   1. obfuscation is actually ACTIVE - a rules regression that silently
+//      disables renaming (e.g. a stray -dontobfuscate) must fail the build;
+//   2. every consumer-rule-pinned class stays IDENTITY-named (mapped to
+//      itself) - a rename there means the keep-by-name rules broke and
+//      ServiceLoader/Class.forName lookups would fail at runtime in real
+//      consumer apps.
+// It is wired below to always run after the release minification, so the
+// shipped rules are verified on every release build (and thus on CI).
+// ---------------------------------------------------------------------------
+tasks.register('verifyR8Mapping', DefaultTask) {
+    group = 'verification'
+    description = 'Verifies the release R8 mapping: obfuscation is active and the ' +
+            'consumer-rule-pinned classes stay identity-named under R8 full mode.'
+
+    // Deliberately no declared inputs/outputs: this task must re-execute on
+    // every minifyReleaseWithR8 run. Gradle finalizers run whenever the
+    // finalized task executes (even UP-TO-DATE), but a task WITH outputs could
+    // itself be skipped as UP-TO-DATE - keep it output-free so it never is.
+
+    // The mapping R8 writes for the minified release APK.
+    def mappingFile = layout.buildDirectory.file('outputs/mapping/release/mapping.txt')
+
+    // Classes kept BY NAME by a-poi-spreadsheet/consumer-rules.pro. Each must
+    // appear in mapping.txt mapped to ITSELF.
+    // NOTE: this check asserts CLASS names only - member-level keep regressions
+    // (e.g. a '{ *; }' keep narrowed to '{ <init>(); }') and the XML-DSig path
+    // (no runtime test exercises it) remain unguarded empirically here.
+    def pinnedClasses = [
+            // ServiceLoader provider factories (WorkbookProvider / ExtractorProvider).
+            // CANARIES ONLY: the consumer-rule keeps for these are subsumed by the
+            // harness app's blanket keep of m.co.rh.id.apoi_spreadsheet.** (see
+            // r8-smoke/proguard-rules.pro), so neither this mapping check nor tests
+            // T1-T3 independently exercises them - a consumer-rules regression
+            // limited to those keeps would stay green here while breaking real
+            // consumer apps.
+            'm.co.rh.id.apoi_spreadsheet.org.apache.poi.extractor.MainExtractorFactory',
+            'm.co.rh.id.apoi_spreadsheet.org.apache.poi.ooxml.extractor.POIXMLExtractorFactory',
+            'm.co.rh.id.apoi_spreadsheet.org.apache.poi.hssf.usermodel.HSSFWorkbookFactory',
+            'm.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFWorkbookFactory',
+            // aalto StAX impl resolved via META-INF/services + Class.forName
+            'com.fasterxml.aalto.stax.StreamReaderImpl',
+            // XMLBeans type-system holder (-keep class org.apache.xmlbeans.**)
+            'org.apache.xmlbeans.impl.schema.TypeSystemHolder',
+            // XML-DSig provider loaded by name (SignatureInfo.findProvider)
+            'org.apache.jcp.xml.dsig.internal.dom.XMLDSigRI',
+    ]
+
+    // Empirical baseline (R8 9.3.16 full mode): 13256 class lines in the mapping,
+    // 2657 of them TRULY renamed (a further 60 are recorded as class-merging
+    // removals, which happen even without obfuscation and are excluded below) -
+    // the blanket app keep plus the consumer keeps hold the POI/xerces/xmlbeans
+    // trees identity-named, so only unkept third-party deps (commons-*,
+    // log4j-api, ...) get renamed. Half the observed true-rename count leaves
+    // headroom for dependency changes while still failing loudly if obfuscation
+    // is silently disabled (which would drop the count to ~0).
+    def minRenamedClassLines = 1300
+
+    doLast {
+        File file = mappingFile.get().asFile
+        if (!file.exists() || file.length() == 0) {
+            throw new GradleException(
+                    "R8 mapping file is missing or empty: ${file}\n" +
+                    'Build the minified release APK first (:r8-smoke:assembleRelease).')
+        }
+
+        // Class mapping lines start at column 0: "original -> obfuscated:".
+        // Member lines are indented (4 spaces) and header comments start with
+        // '#'; the anchored regex below matches class lines only.
+        def classLine = ~/^(\S+) -> (\S+):$/
+        int totalClassLines = 0
+        int renamedClassLines = 0
+        int removedClassLines = 0
+        def mappingByName = [:]
+
+        file.eachLine { line ->
+            def matcher = classLine.matcher(line)
+            if (matcher.matches()) {
+                String original = matcher.group(1)
+                String obfuscated = matcher.group(2)
+                totalClassLines++
+                mappingByName[original] = obfuscated
+                if (obfuscated.startsWith('R8$$REMOVED$$CLASS$$')) {
+                    // Class merged away by R8 - recorded in the mapping even with
+                    // obfuscation disabled, so it is NOT evidence of renaming.
+                    removedClassLines++
+                } else if (original != obfuscated) {
+                    renamedClassLines++
+                }
+            }
+        }
+
+        // Guard 1: obfuscation is active (merging removals counted separately
+        // above - they occur even under -dontobfuscate).
+        if (renamedClassLines < minRenamedClassLines) {
+            throw new GradleException(
+                    "R8 obfuscation appears disabled or weakened: only ${renamedClassLines} " +
+                    "of ${totalClassLines} class lines in the mapping were truly renamed " +
+                    "(${removedClassLines} are class-merging removals, not renames; " +
+                    "expected at least ${minRenamedClassLines}). " +
+                    'Check for -dontobfuscate or an over-broad keep that renames nothing.')
+        }
+
+        // Guard 2: consumer-rule-pinned classes stay identity-named.
+        List<String> broken = pinnedClasses.findAll { name ->
+            def mapped = mappingByName[name]
+            mapped == null || mapped != name
+        }
+        if (!broken.isEmpty()) {
+            def detail = broken.collect { name ->
+                def mapped = mappingByName[name]
+                mapped == null ? "${name} is MISSING from the mapping"
+                        : "${name} was renamed to ${mapped}"
+            }.join('\n  - ')
+            throw new GradleException(
+                    'Consumer-rules.pro keep-by-name regression - the following pinned ' +
+                    'classes are missing or renamed (ServiceLoader/reflective lookups ' +
+                    "would fail at runtime in consumer apps):\n  - ${detail}")
+        }
+
+        logger.lifecycle('verifyR8Mapping: OK - obfuscation active ' +
+                "(${renamedClassLines}/${totalClassLines} class lines truly renamed, " +
+                "${removedClassLines} removed by class merging); " +
+                "all ${pinnedClasses.size()} consumer-rule-pinned classes are identity-named.")
+    }
+}
+
+// Always re-verify whenever the release minification runs - Gradle finalizers
+// execute whenever the finalized task runs, including UP-TO-DATE executions.
+afterEvaluate {
+    // tasks.named (rather than tasks.matching) so a future AGP rename of the
+    // minification task fails the configuration loudly instead of silently
+    // leaving the verification guard above unwired.
+    tasks.named('minifyReleaseWithR8') {
+        finalizedBy tasks.named('verifyR8Mapping')
+    }
 }

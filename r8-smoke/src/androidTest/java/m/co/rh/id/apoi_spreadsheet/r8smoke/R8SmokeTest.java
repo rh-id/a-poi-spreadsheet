@@ -43,12 +43,13 @@ import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.usermodel.XSSFWorkbook;
 /**
  * Permanent consumer-side smoke harness: these tests execute against the MINIFIED release APK
  * (testBuildType 'release') to empirically guard the consumer ProGuard/R8 rules that ship inside
- * the published AARs ({@code poi/consumer-rules.pro} and {@code poi-ooxml/consumer-rules.pro}).
+ * the published AAR ({@code a-poi-spreadsheet/consumer-rules.pro}, merged from the consumer
+ * rules of the former poi/poi-ooxml modules).
  *
  * <p>A failure here means a consumer-rule regression: R8 renamed/removed a class that POI loads
  * reflectively (aalto StAX implementations, XMLBeans schema types, ServiceLoader factories,
  * XML-DSig provider) or broke a signature the library resolves by name. Fix the rules in the
- * library modules' consumer-rules.pro files - not in this harness - then re-run.</p>
+ * library's consumer-rules.pro file - not in this harness - then re-run.</p>
  */
 @RunWith(AndroidJUnit4.class)
 public class R8SmokeTest {
@@ -207,5 +208,29 @@ public class R8SmokeTest {
         // diagnostic probe: which TransformerFactory resolves under minification?
         javax.xml.transform.TransformerFactory tf = javax.xml.transform.TransformerFactory.newInstance();
         Log.i(TAG, "TransformerFactory impl: " + tf.getClass().getName());
+    }
+
+    /**
+     * T5 - pins the harness premise itself: the app's proguard-rules.pro blanket keep
+     * ({@code -keep class m.co.rh.id.apoi_spreadsheet.** { *; }}) must keep library class
+     * NAMES unchanged, because this test APK references library classes by name; the names
+     * in T1-T4 would silently stop pointing at the real classes if the blanket keep was
+     * weakened (allowshrinking/allowobfuscation added or the rule dropped). The aalto side
+     * of the premise is already covered by T4.
+     */
+    @Test
+    public void libraryClassesAreIdentityNamed() throws Exception {
+        assertEquals(
+                "library classes must stay identity-named (app proguard-rules.pro blanket keep)",
+                "m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.WorkbookFactory",
+                WorkbookFactory.class.getName());
+
+        // NOTE: do NOT probe consumer-rule-pinned classes reflectively here (e.g.
+        // Class.forName("org.apache.xmlbeans.impl.schema.TypeSystemHolder")). Standalone
+        // init of that holder fails with SchemaTypeLoaderException ("Could not locate
+        // compiled schema resource org/apache/xmlbeans/impl/schema/index.xsb") because
+        // xmlbeans 5.3.0 ships no impl/schema/*.xsb resources - no real POI code path ever
+        // triggers it (T1 passes). Its identity-name is guarded statically by
+        // :r8-smoke:verifyR8Mapping instead.
     }
 }

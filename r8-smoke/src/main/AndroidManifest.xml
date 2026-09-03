@@ -2,10 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- minSdk 21 + tools:overrideLibrary mirrors the strictest real consumer: the libraries
-         declare minSdk 26 (their tested floor), but this harness proves the library still
+    <!-- minSdk 21 + tools:overrideLibrary mirrors the strictest real consumer: the library
+         declares minSdk 26 (its tested floor), but this harness proves the library still
          DEXES (D8/R8) for apps that go below it via the same manifest override they use. -->
-    <uses-sdk tools:overrideLibrary="m.co.rh.id.apoi_spreadsheet.base,m.co.rh.id.apoi_spreadsheet.poi,m.co.rh.id.apoi_spreadsheet.ooxml" />
+    <uses-sdk tools:overrideLibrary="m.co.rh.id.apoi_spreadsheet" />
 
     <!-- Instrumentation does not require any activity; the harness app stays code-less by
          design so the APK under test contains only the library classes governed by the

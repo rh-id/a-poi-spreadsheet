@@ -14,7 +14,5 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "a-poi-spreadsheet"
-include ':poi-ooxml'
-include ':poi'
-include ':base'
+include ':a-poi-spreadsheet'
 include ':r8-smoke'
