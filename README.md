@@ -64,7 +64,7 @@ Older setups that still declare repositories in the root `build.gradle` via `all
 Include this to your module dependency (module build.gradle)
 ```
 dependencies {
-    implementation 'com.github.rh-id.a-poi-spreadsheet:a-poi-spreadsheet:v0.1.0'
+    implementation 'com.github.rh-id:a-poi-spreadsheet:v0.1.0'
 }
 ```
 
